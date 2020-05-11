@@ -60,8 +60,8 @@ export const raycasterUv = (
     return undefined;
   }
   const relPos = {
-    x: ((x - width / 2) * 2) / width,
-    y: ((y - height / 2) * 2) / height,
+    x: (2 * x) / width - 1,
+    y: (2 * y) / height - 1,
   };
   raycaster.setFromCamera(relPos, camera);
   const [intersect] = raycaster.intersectObject(plane);
