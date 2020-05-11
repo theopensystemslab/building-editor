@@ -1,13 +1,11 @@
 import React from "react";
 import * as three from "three";
-import { useThree } from "react-three-fiber";
+import { useThree, PointerEvent } from "react-three-fiber";
 import { Canvas } from "react-three-fiber";
 import { OrbitControls } from "drei";
 import * as undoable from "../utils/undoable";
 
 import { Drag, raycasterUvOffset, useSimpleDrag } from "../utils";
-
-type MoveDirection = "x" | "y" | "z";
 
 // Raytracing planes
 
@@ -81,40 +79,46 @@ const App: React.FC<{
 
   //
 
+  const hoveredInfo = React.useRef<
+    | {
+        faceIndex: number;
+        distance: number;
+      }
+    | undefined
+  >(undefined);
+
   const [hovered, setHovered] = React.useState<number | undefined>(undefined);
 
   const raycaster = React.useMemo(() => new three.Raycaster(), []);
 
-  const offset = raycasterUvOffset(
-    {
-      width: dimensions.width,
-      height: dimensions.height,
-      plane: horizontalPlane,
-      raycaster,
-      camera: threeContext.camera,
-    },
-    props.drag.movement
-  );
-
-  const offsetVertical = raycasterUvOffset(
-    {
-      width: dimensions.width,
-      height: dimensions.height,
-      plane: verticalPlane,
-      raycaster,
-      camera: threeContext.camera,
-    },
-    props.drag.movement
-  );
-
-  const positionOffsets = offset &&
-    offsetVertical && {
-      x: -offset.x * planeSize,
-      y: -offset.y * planeSize,
-      z: offsetVertical.y * planeSize,
-    };
-
   const updateGeo = (prevGeo: Geo) => {
+    const offset = raycasterUvOffset(
+      {
+        width: dimensions.width,
+        height: dimensions.height,
+        plane: horizontalPlane,
+        raycaster,
+        camera: threeContext.camera,
+      },
+      props.drag.movement
+    );
+
+    const offsetVertical = raycasterUvOffset(
+      {
+        width: dimensions.width,
+        height: dimensions.height,
+        plane: verticalPlane,
+        raycaster,
+        camera: threeContext.camera,
+      },
+      props.drag.movement
+    );
+    const positionOffsets = offset &&
+      offsetVertical && {
+        x: -offset.x * planeSize,
+        y: -offset.y * planeSize,
+        z: offsetVertical.y * planeSize,
+      };
     return positionOffsets
       ? {
           ...prevGeo,
@@ -147,7 +151,7 @@ const App: React.FC<{
   };
 
   React.useEffect(() => {
-    if (positionOffsets && !drag.dragging && drag.prevDragging) {
+    if (!drag.dragging && drag.prevDragging) {
       props.onGeoChange(updateGeo(props.geo));
     }
   }, [drag]);
@@ -180,7 +184,7 @@ const App: React.FC<{
         material={invisiblePlaneMaterial}
       />
       {[0, 1, 2, 3].map((faceIndex) => {
-        const geo_ = updateGeo(props.geo);
+        const geo_ = drag.dragging ? updateGeo(props.geo) : props.geo;
 
         const planeGeo =
           faceIndex === 0
@@ -195,19 +199,41 @@ const App: React.FC<{
           <mesh
             key={faceIndex}
             geometry={new three.PlaneBufferGeometry(planeGeo.w, 1, 1, 1)}
-            onPointerOver={() => {
+            onPointerOver={(ev: PointerEvent) => {
+              if (
+                hoveredInfo.current &&
+                hoveredInfo.current.faceIndex === hovered &&
+                hoveredInfo.current.distance < ev.distance
+              ) {
+                return;
+              }
               setHovered(faceIndex);
+              hoveredInfo.current = {
+                faceIndex,
+                distance: ev.distance,
+              };
             }}
-            onPointerOut={() => {
-              if (!props.drag.dragging) {
-                setHovered((prevHovered) =>
-                  prevHovered === faceIndex ? undefined : prevHovered
-                );
+            onPointerMove={(ev: PointerEvent) => {
+              const info = {
+                faceIndex,
+                distance: ev.distance,
+              };
+
+              if (!hovered) {
+                hoveredInfo.current = info;
+                setHovered(faceIndex);
+              }
+
+              if (faceIndex === hovered) {
+                hoveredInfo.current = info;
               }
             }}
-            position={
-              positionOffsets ? [planeGeo.x, 0.5, planeGeo.y] : [0, 0, 0]
-            }
+            onPointerOut={() => {
+              setHovered((prevHovered) =>
+                prevHovered === faceIndex ? undefined : prevHovered
+              );
+            }}
+            position={[planeGeo.x, 0.5, planeGeo.y]}
             rotation={new three.Euler().setFromRotationMatrix(
               new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
             )}
