@@ -1033,6 +1033,13 @@
   resolved "https://registry.yarnpkg.com/@base2/pretty-print-object/-/pretty-print-object-1.0.0.tgz#860ce718b0b73f4009e153541faff2cb6b85d047"
   integrity sha512-4Th98KlMHr5+JkxfcoDT//6vY8vM+iSPrLNpHhRyLx2CFYi8e2RfqPLdpbnpo0Q5lQC5hNB79yes07zb02fvCw==
 
+"@bentobots/vector2@^0.1.17":
+  version "0.1.17"
+  resolved "https://registry.yarnpkg.com/@bentobots/vector2/-/vector2-0.1.17.tgz#5118ca56c40bebf0ddcdf9e1692e5796f2509eee"
+  integrity sha512-CbgKB3zSPwN/lOSSvE9hP3O5F0Oo09Ctin0DNdVmfQJnBzZknVaRW3oXCt7N5s5SfSTjN687jVaLwKhskztXgA==
+  dependencies:
+    clipper-js "^1.0.2"
+
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@cnakazawa/watch/-/watch-1.0.4.tgz#f864ae85004d0fcab6f50be9141c4da368d1656a"
@@ -2990,6 +2997,23 @@ cli-width@^2.0.0:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/cli-width/-/cli-width-2.2.1.tgz#b0433d0b4e9c847ef18868a4ef16fd5fc8271c48"
   integrity sha512-GRMWDxpOB6Dgk2E5Uo+3eEBvtOOlimMmpbFiKuLFnQzYDavtLFY3K5ona41jgN/WdRZtG7utuVSVTL4HbZHGkw==
+
+clipper-fpoint@^6.4.22:
+  version "6.4.22"
+  resolved "https://registry.yarnpkg.com/clipper-fpoint/-/clipper-fpoint-6.4.22.tgz#4b628a45f1c7a3f776a2fa959d4d3a5615419888"
+  integrity sha512-R70/hoDp0VNFvGgeCdKVPPhM/bnz0MahAjkF3ija+7fqxq03X1Bc+Lq6qTd5W4s52ubyaQt5sW/wtjSDtNHV9g==
+
+clipper-js@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/clipper-js/-/clipper-js-1.0.2.tgz#e44891dde6542cc7d0bcc6ef9684d45905714893"
+  integrity sha1-5EiR3eZULMfQvMbvloTUWQVxSJM=
+  dependencies:
+    clipper-lib "^6.2.1"
+
+clipper-lib@^6.2.1:
+  version "6.4.2"
+  resolved "https://registry.yarnpkg.com/clipper-lib/-/clipper-lib-6.4.2.tgz#f2444d87913aaea8312f9e26421b0843f4149e87"
+  integrity sha512-knglhjQX5ihNj/XCIs6zCHrTemdvHY3LPZP9XB2nq2/3igyYMFueFXtfp84baJvEE+f8pO1ZS4UVeEgmLnAprQ==
 
 cliui@^4.0.0:
   version "4.1.0"
