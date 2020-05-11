@@ -8,6 +8,16 @@
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/8ec9d434-142e-4239-8555-bc910367d7ed/deploy-status)](https://app.netlify.com/sites/buildingeditor-ui/deploys)
 
+## Reference Links
+
+### Google Drive directory
+
+https://drive.google.com/drive/u/1/folders/1k46wdNw0ciFXzUOGYdvn0Rvq8hobibOd
+
+### Spreadsheet
+
+https://docs.google.com/spreadsheets/d/1aqtQjOjc3rRSgORzr-dsqRiP9KFoJOj9wr9nlM5N_6o/edit?usp=sharing
+
 ---
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
