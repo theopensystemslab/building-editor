@@ -25,9 +25,11 @@ const horizontalPlaneRotation: three.Euler = new three.Euler().setFromRotationMa
   new three.Matrix4().makeRotationX(-Math.PI / 2)
 );
 
-const Experiment3: React.FunctionComponent<{ drag: Drag; size: number }> = (
-  props
-) => {
+const Experiment3: React.FunctionComponent<{
+  drag: Drag;
+  width: number;
+  height: number;
+}> = (props) => {
   const { drag } = props;
 
   const threeContext = useThree();
@@ -76,7 +78,8 @@ const Experiment3: React.FunctionComponent<{ drag: Drag; size: number }> = (
 
   const offset = raycasterUvOffset(
     {
-      size: props.size,
+      width: props.width,
+      height: props.height,
       plane: horizontalPlane,
       raycaster,
       camera: threeContext.camera,
@@ -86,7 +89,8 @@ const Experiment3: React.FunctionComponent<{ drag: Drag; size: number }> = (
 
   const offsetVertical = raycasterUvOffset(
     {
-      size: props.size,
+      width: props.width,
+      height: props.height,
       plane: verticalPlane,
       raycaster,
       camera: threeContext.camera,

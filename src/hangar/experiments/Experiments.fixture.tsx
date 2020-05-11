@@ -7,14 +7,25 @@ import Experiment3 from "./Experiment3";
 
 // Grid plane
 
+const dimensions = {
+  width: 600,
+  height: 400,
+};
+
 const Container: React.FunctionComponent<{
   render: Function;
-  size?: number;
-}> = ({ render, size = 400 }) => {
+}> = ({ render }) => {
   const dragStuff = useSimpleDrag();
 
   return (
-    <div style={{ width: size, height: size }}>
+    <div
+      style={{
+        ...dimensions,
+        margin: 20,
+        boxShadow: "0 0 8px 0 rgba(0, 0, 0, 0.15)",
+        backgroundColor: "#FFF",
+      }}
+    >
       <Canvas
         gl={{ antialias: true, alpha: true }}
         camera={{
@@ -29,7 +40,7 @@ const Container: React.FunctionComponent<{
         <pointLight position={[3, 9, 5]} intensity={0.3} />
         <directionalLight position={[0, 8, 10]} intensity={0.9} />
         <directionalLight position={[5, 6, 0]} intensity={0.6} />
-        {render(dragStuff.drag, size)}
+        {render(dragStuff.drag, dimensions)}
       </Canvas>
     </div>
   );
@@ -38,13 +49,13 @@ const Container: React.FunctionComponent<{
 export default {
   "1 Move Cube": (
     <Container
-      render={(drag, size) => <Experiment1 drag={drag} size={size} />}
+      render={(drag, dimensions) => <Experiment1 drag={drag} {...dimensions} />}
     />
   ),
   "2 Split Face": <Container render={() => <Experiment2 />} />,
   "3 Drag Face": (
     <Container
-      render={(drag, size) => <Experiment3 drag={drag} size={size} />}
+      render={(drag, dimensions) => <Experiment3 drag={drag} {...dimensions} />}
     />
   ),
 };
