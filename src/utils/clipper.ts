@@ -1,21 +1,27 @@
 import ClipperLib from "clipper-fpoint";
 
-const fromClipper = ({ X, Y }) => [X, Y];
-const toClipper = ([X, Y]) => ({ X, Y });
+type Point = [number, number];
+type XYPoint = { X: number; Y: number };
+
+const fromClipper = ({ X, Y }: XYPoint): Point => [X, Y];
+const toClipper = ([X, Y]: Point): XYPoint => ({ X, Y });
+
+const convertPointsForClipper = (points: Point[][]): XYPoint[][] =>
+  points.map((pts) => pts.map((pt) => toClipper(pt)));
 
 export const offset = (
-  delta,
+  delta: number,
   {
     joinType = "jtMiter",
     endType = "etClosedPolygon",
     miterLimit = Infinity,
     roundPrecision = 0,
   } = {}
-) => (points) => {
+) => (points: Point[][]): Point[] => {
   const co = new ClipperLib.ClipperOffset(miterLimit, roundPrecision);
   const solution = new ClipperLib.Paths();
   co.AddPaths(
-    points.map((pts) => pts.map(toClipper)),
+    convertPointsForClipper(points),
     ClipperLib.JoinType[joinType],
     ClipperLib.EndType[endType]
   );
@@ -23,18 +29,21 @@ export const offset = (
   return solution.map((paths) => paths.map(fromClipper));
 };
 
-export const clip = (clipType) => (points, otherPoints) => {
+const clip = (clipType: string) => (
+  points: Point[][],
+  otherPoints: Point[][]
+): Point[] => {
   const solution = new ClipperLib.Paths();
   const clipper = new ClipperLib.Clipper();
 
   clipper.AddPaths(
-    points.map((pts) => pts.map(toClipper)),
+    convertPointsForClipper(points),
     ClipperLib.PolyType.ptSubject,
     true
   );
 
   clipper.AddPaths(
-    otherPoints.map((pts) => pts.map(toClipper)),
+    convertPointsForClipper(otherPoints),
     ClipperLib.PolyType.ptClip,
     true
   );
@@ -44,4 +53,8 @@ export const clip = (clipType) => (points, otherPoints) => {
   return solution.map((paths) => paths.map(fromClipper));
 };
 
+// https://sourceforge.net/p/jsclipper/wiki/documentation/#clipperlibcliptype
+export const difference = clip("ctDifference");
+export const intersection = clip("ctIntersection");
 export const union = clip("ctUnion");
+export const xor = clip("ctXor");
