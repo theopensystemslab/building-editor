@@ -1,7 +1,7 @@
 import { bounds } from "@bentobots/vector2";
 import React from "react";
 import grid from "../../grid";
-import { offset, union } from "../../utils/clipper";
+import { offset, Point, union } from "../../utils/clipper";
 import { pointsToSVGPath } from "../../utils/svg";
 
 const TOTAL_WIDTH = grid("mm").x;
@@ -23,7 +23,7 @@ const shapes = {
   C: shape([TOTAL_WIDTH / 2, 7645]),
 };
 
-const floorShape = (height = 0) => [
+const floorShape = (height = 0): Point[] => [
   [0, height],
   [0, height + 436],
   [TOTAL_WIDTH, height + 436],

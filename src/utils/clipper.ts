@@ -1,7 +1,7 @@
 import ClipperLib from "clipper-fpoint";
 
-type Point = [number, number];
-type XYPoint = { X: number; Y: number };
+export type Point = [number, number];
+export type XYPoint = { X: number; Y: number };
 
 const fromClipper = ({ X, Y }: XYPoint): Point => [X, Y];
 const toClipper = ([X, Y]: Point): XYPoint => ({ X, Y });
@@ -17,7 +17,7 @@ export const offset = (
     miterLimit = Infinity,
     roundPrecision = 0,
   } = {}
-) => (points: Point[][]): Point[] => {
+) => (points: Point[][]): Point[][] => {
   const co = new ClipperLib.ClipperOffset(miterLimit, roundPrecision);
   const solution = new ClipperLib.Paths();
   co.AddPaths(
@@ -32,7 +32,7 @@ export const offset = (
 const clip = (clipType: string) => (
   points: Point[][],
   otherPoints: Point[][]
-): Point[] => {
+): Point[][] => {
   const solution = new ClipperLib.Paths();
   const clipper = new ClipperLib.Clipper();
 
