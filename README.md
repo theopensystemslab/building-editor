@@ -1,8 +1,12 @@
 # Building Editor
 
+### https://buildingeditor.netlify.app
+
 [![Netlify Status](https://api.netlify.com/api/v1/badges/09dfefa8-f014-4e0e-a4ad-25b8108cf859/deploy-status)](https://app.netlify.com/sites/buildingeditor/deploys)
 
-### https://buildingeditor.netlify.app
+### https://buildingeditor-ui.netlify.app
+
+[![Netlify Status](https://api.netlify.com/api/v1/badges/8ec9d434-142e-4239-8555-bc910367d7ed/deploy-status)](https://app.netlify.com/sites/buildingeditor-ui/deploys)
 
 ---
 
