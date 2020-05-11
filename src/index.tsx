@@ -1,12 +1,16 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import App from "./App";
 import "./index.css";
 import * as serviceWorker from "./serviceWorker";
 
+const [, path] = window.location.pathname.split("/");
+const AppComponent = React.lazy(() => import(`./${path || "App"}`));
+
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <AppComponent />
+    </React.Suspense>
   </React.StrictMode>,
   document.getElementById("root")
 );
