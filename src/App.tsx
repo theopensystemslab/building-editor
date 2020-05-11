@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Canvas, useFrame } from "react-three-fiber";
+import { useFrame } from "react-three-fiber";
 
 const Box: React.FC<any> = (props) => {
   // This reference will give us direct access to the mesh
@@ -31,12 +31,17 @@ const Box: React.FC<any> = (props) => {
 };
 
 const App: React.FC = () => (
-  <Canvas>
-    <ambientLight />
-    <pointLight position={[10, 10, 10]} />
-    <Box position={[-1.2, 0, 0]} />
-    <Box position={[1.2, 0, 0]} />
-  </Canvas>
+  <ul style={{ lineHeight: 2 }}>
+    <li>
+      <a href="./hangar">Hangar</a>
+    </li>
+    <li>
+      <a href="./building">Building</a>
+    </li>
+    <li>
+      <a href={process.env.REACT_APP_COSMOS_URL}>Cosmos</a>
+    </li>
+  </ul>
 );
 
 export default App;

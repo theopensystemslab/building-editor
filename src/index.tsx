@@ -4,7 +4,14 @@ import "./index.css";
 import * as serviceWorker from "./serviceWorker";
 
 const [, path] = window.location.pathname.split("/");
-const AppComponent = React.lazy(() => import(`./${path || "App"}`));
+const AppComponent = React.lazy(() =>
+  import(`./${path || "App"}`).catch(() => {
+    // redirect to root if path is not valid
+    if (window.location.href !== process.env.REACT_APP_URL) {
+      window.location.href = process.env.REACT_APP_URL;
+    }
+  })
+);
 
 ReactDOM.render(
   <React.StrictMode>
