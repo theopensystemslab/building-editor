@@ -3,6 +3,7 @@ import * as three from "three";
 import { useThree } from "react-three-fiber";
 import { Canvas } from "react-three-fiber";
 import { OrbitControls } from "drei";
+import * as undoable from "../utils/undoable";
 
 import { Drag, raycasterUvOffset, useSimpleDrag } from "../utils";
 
@@ -46,7 +47,11 @@ interface Geo {
   wy: number;
 }
 
-const App: React.FC<{ drag: Drag }> = (props) => {
+const App: React.FC<{
+  drag: Drag;
+  geo: Geo;
+  onGeoChange: (newGeo: Geo) => void;
+}> = (props) => {
   const threeContext = useThree();
 
   const { drag } = props;
@@ -75,13 +80,6 @@ const App: React.FC<{ drag: Drag }> = (props) => {
   }, []);
 
   //
-
-  const [geo, setGeo] = React.useState<Geo>({
-    x: -0.5,
-    y: -0.5,
-    wx: 1,
-    wy: 1,
-  });
 
   const [hovered, setHovered] = React.useState<number | undefined>(undefined);
 
@@ -145,12 +143,12 @@ const App: React.FC<{ drag: Drag }> = (props) => {
               }
             : {}),
         }
-      : geo;
+      : props.geo;
   };
 
   React.useEffect(() => {
     if (positionOffsets && !drag.dragging && drag.prevDragging) {
-      setGeo(updateGeo);
+      props.onGeoChange(updateGeo(props.geo));
     }
   }, [drag]);
 
@@ -182,7 +180,7 @@ const App: React.FC<{ drag: Drag }> = (props) => {
         material={invisiblePlaneMaterial}
       />
       {[0, 1, 2, 3].map((faceIndex) => {
-        const geo_ = updateGeo(geo);
+        const geo_ = updateGeo(props.geo);
 
         const planeGeo =
           faceIndex === 0
@@ -224,8 +222,31 @@ const App: React.FC<{ drag: Drag }> = (props) => {
 const Container: React.FunctionComponent<{}> = () => {
   const dragStuff = useSimpleDrag();
 
+  const [geo, setGeo] = React.useState<undoable.Undoable<Geo>>(
+    undoable.create({
+      x: -0.5,
+      y: -0.5,
+      wx: 1,
+      wy: 1,
+    })
+  );
+
   return (
     <div style={{ width: "100%", height: "100%" }}>
+      <button
+        style={{
+          position: "absolute",
+          top: 10,
+          right: 10,
+          zIndex: 10000,
+        }}
+        onClick={() => {
+          console.log("clicked");
+          setGeo(undoable.undo(geo));
+        }}
+      >
+        Undo
+      </button>
       <Canvas
         gl={{ antialias: true, alpha: true }}
         onCreated={({ gl }) => {
@@ -243,7 +264,13 @@ const Container: React.FunctionComponent<{}> = () => {
         <pointLight position={[3, 9, 5]} intensity={0.3} />
         <directionalLight position={[0, 8, 10]} intensity={0.9} />
         <directionalLight position={[5, 6, 0]} intensity={0.6} />
-        <App drag={dragStuff.drag} />
+        <App
+          drag={dragStuff.drag}
+          geo={undoable.current(geo)}
+          onGeoChange={(newGeo) => {
+            setGeo(undoable.setCurrent(geo, newGeo));
+          }}
+        />
       </Canvas>
     </div>
   );
