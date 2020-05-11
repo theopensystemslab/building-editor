@@ -101,8 +101,8 @@ const Experiment3: React.FunctionComponent<{
   const positionOffsets = offset &&
     offsetVertical && {
       x: -offset.x * planeSize,
-      y: -offset.y * planeSize,
-      z: offsetVertical.y * planeSize,
+      y: offset.y * planeSize,
+      z: -offsetVertical.y * planeSize,
     };
 
   React.useEffect(() => {

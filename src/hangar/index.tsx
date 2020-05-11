@@ -29,12 +29,12 @@ const horizontalPlaneRotation: three.Euler = new three.Euler().setFromRotationMa
 );
 
 const wallMaterial = new three.MeshPhongMaterial({
-  color: "#400",
+  color: "#444",
   side: three.DoubleSide,
 });
 
 const wallMaterialHover = new three.MeshPhongMaterial({
-  color: "#900",
+  color: "#555",
   side: three.DoubleSide,
 });
 
@@ -94,8 +94,7 @@ const App: React.FC<{
   const updateGeo = (prevGeo: Geo) => {
     const offset = raycasterUvOffset(
       {
-        width: dimensions.width,
-        height: dimensions.height,
+        ...dimensions,
         plane: horizontalPlane,
         raycaster,
         camera: threeContext.camera,
@@ -105,8 +104,7 @@ const App: React.FC<{
 
     const offsetVertical = raycasterUvOffset(
       {
-        width: dimensions.width,
-        height: dimensions.height,
+        ...dimensions,
         plane: verticalPlane,
         raycaster,
         camera: threeContext.camera,
@@ -116,16 +114,16 @@ const App: React.FC<{
     const positionOffsets = offset &&
       offsetVertical && {
         x: -offset.x * planeSize,
-        y: -offset.y * planeSize,
-        z: offsetVertical.y * planeSize,
+        y: offset.y * planeSize,
+        z: -offsetVertical.y * planeSize,
       };
     return positionOffsets
       ? {
           ...prevGeo,
           ...(hovered === 0
             ? {
-                y: prevGeo.y - positionOffsets.z,
-                wy: prevGeo.wy + positionOffsets.z,
+                y: prevGeo.y + positionOffsets.y,
+                wy: prevGeo.wy - positionOffsets.y,
               }
             : {}),
           ...(hovered === 1
@@ -137,7 +135,7 @@ const App: React.FC<{
           ...(hovered === 2
             ? {
                 y: prevGeo.y,
-                wy: prevGeo.wy - positionOffsets.z,
+                wy: prevGeo.wy + positionOffsets.y,
               }
             : {}),
           ...(hovered === 3
