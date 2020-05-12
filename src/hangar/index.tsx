@@ -48,6 +48,18 @@ interface Cube {
   wy: number;
 }
 
+const matchingIndices = (
+  indices1: { cubeIndex: number; faceIndex: number },
+  indices2: { cubeIndex: number; faceIndex: number }
+): boolean => {
+  return (
+    indices1.cubeIndex === indices2.cubeIndex &&
+    indices1.faceIndex === indices2.faceIndex
+  );
+};
+
+const snapToGrid = (val: number) => Math.round(val / 0.5) * 0.5;
+
 const Cubes: React.FC<{
   drag: Drag;
   cubes: Array<Cube>;
@@ -104,42 +116,57 @@ const Cubes: React.FC<{
       },
       props.drag.movement
     );
+
     const positionOffsets = offset &&
       offsetVertical && {
         x: -offset.x * planeSize,
         y: offset.y * planeSize,
         z: -offsetVertical.y * planeSize,
       };
+
     return positionOffsets
       ? {
           ...prevCube,
           ...(faceIndex === 0
             ? {
-                y: prevCube.y + positionOffsets.y,
-                wy: prevCube.wy - positionOffsets.y,
+                y: snapToGrid(prevCube.y + positionOffsets.y),
+                wy: snapToGrid(prevCube.wy - positionOffsets.y),
               }
             : {}),
           ...(faceIndex === 1
             ? {
                 x: prevCube.x,
-                wx: prevCube.wx + positionOffsets.x,
+                wx: snapToGrid(prevCube.wx + positionOffsets.x),
               }
             : {}),
           ...(faceIndex === 2
             ? {
                 y: prevCube.y,
-                wy: prevCube.wy + positionOffsets.y,
+                wy: snapToGrid(prevCube.wy + positionOffsets.y),
               }
             : {}),
           ...(faceIndex === 3
             ? {
-                x: prevCube.x + positionOffsets.x,
-                wx: prevCube.wx - positionOffsets.x,
+                x: snapToGrid(prevCube.x + positionOffsets.x),
+                wx: snapToGrid(prevCube.wx - positionOffsets.x),
               }
             : {}),
         }
       : prevCube;
   };
+
+  React.useEffect(() => {
+    const canvas = threeContext.gl.domElement;
+    const handleCanvasMouseUp = () => {
+      setTimeout(() => {
+        setHovered(undefined);
+      }, 50);
+    };
+    canvas.addEventListener("mouseup", handleCanvasMouseUp);
+    return () => {
+      canvas.removeEventListener("mouseup", handleCanvasMouseUp);
+    };
+  }, [threeContext]);
 
   React.useEffect(() => {
     if (hovered && !drag.dragging && drag.prevDragging) {
@@ -153,20 +180,6 @@ const Cubes: React.FC<{
     }
   }, [drag]);
 
-  const handleFacePointerDown = (
-    ev: PointerEvent,
-    cubeIndex: number,
-    faceIndex: number
-  ) => {
-    // TODO: implement
-    console.log("Pressed ", cubeIndex, faceIndex);
-  };
-
-  const handleCubePointerUp = (ev: PointerEvent, cubeIndex: number) => {
-    // TODO: implement
-    console.log("Released ", cubeIndex);
-  };
-
   return (
     <>
       <OrbitControls
@@ -177,13 +190,13 @@ const Cubes: React.FC<{
         rotateSpeed={0.7}
       />
       {props.cubes.map((cube, cubeIndex) => (
-        <group
-          onPointerUp={(ev) => {
-            handleCubePointerUp(ev, cubeIndex);
-          }}
-          key={cubeIndex}
-        >
+        <React.Fragment key={cubeIndex}>
           {[0, 1, 2, 3].map((faceIndex) => {
+            const currentIndices = {
+              cubeIndex,
+              faceIndex,
+            };
+
             const cube_ =
               drag.dragging && hovered && hovered.cubeIndex === cubeIndex
                 ? updateCube(cube, hovered.faceIndex)
@@ -210,14 +223,12 @@ const Cubes: React.FC<{
               <mesh
                 key={faceIndex}
                 geometry={new three.PlaneBufferGeometry(planeGeo.w, 1, 1, 1)}
-                onPointerDown={(ev: PointerEvent) => {
-                  handleFacePointerDown(ev, cubeIndex, faceIndex);
-                }}
                 onPointerOver={(ev: PointerEvent) => {
                   if (
+                    drag.dragging &&
                     hovered &&
                     hoveredInfo.current &&
-                    hoveredInfo.current.faceIndex === hovered.faceIndex &&
+                    matchingIndices(hoveredInfo.current, hovered) &&
                     hoveredInfo.current.distance < ev.distance
                   ) {
                     return;
@@ -236,37 +247,40 @@ const Cubes: React.FC<{
                     distance: ev.distance,
                   };
 
-                  if (!hovered) {
+                  if (!hovered && !drag.dragging) {
                     hoveredInfo.current = info;
                     setHovered({ cubeIndex, faceIndex });
+                    return;
                   }
 
-                  if (hovered && hovered.faceIndex === faceIndex) {
+                  if (hovered && matchingIndices(hovered, currentIndices)) {
                     hoveredInfo.current = info;
                   }
                 }}
                 onPointerOut={() => {
-                  setHovered((prevHovered) =>
-                    prevHovered && prevHovered.faceIndex === faceIndex
-                      ? undefined
-                      : prevHovered
-                  );
+                  if (!drag.dragging) {
+                    setHovered((prevHovered) =>
+                      prevHovered &&
+                      prevHovered.cubeIndex === cubeIndex &&
+                      prevHovered.faceIndex === faceIndex
+                        ? undefined
+                        : prevHovered
+                    );
+                  }
                 }}
                 position={[planeGeo.x, 0.5, planeGeo.y]}
                 rotation={new three.Euler().setFromRotationMatrix(
                   new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
                 )}
                 material={
-                  hovered &&
-                  hovered.cubeIndex === cubeIndex &&
-                  hovered.faceIndex === faceIndex
+                  hovered && matchingIndices(hovered, currentIndices)
                     ? wallMaterialHover
                     : wallMaterial
                 }
               />
             );
           })}
-        </group>
+        </React.Fragment>
       ))}
     </>
   );
