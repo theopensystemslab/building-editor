@@ -1,11 +1,16 @@
 import React from "react";
 import { Canvas } from "react-three-fiber";
-import { useSimpleDrag } from "../../utils";
+import { Drag, useSimpleDrag } from "../../utils";
 import Experiment1 from "./Experiment1";
 import Experiment2 from "./Experiment2";
 import Experiment3 from "./Experiment3";
 
 // Grid plane
+
+interface Dimensions {
+  width: number;
+  height: number;
+}
 
 const dimensions = {
   width: 600,
@@ -13,7 +18,7 @@ const dimensions = {
 };
 
 const Container: React.FunctionComponent<{
-  render: Function;
+  render: (drag: Drag, dimensions: Dimensions) => void;
 }> = ({ render }) => {
   const dragStuff = useSimpleDrag();
 
@@ -28,6 +33,11 @@ const Container: React.FunctionComponent<{
     >
       <Canvas
         gl={{ antialias: true, alpha: true }}
+        onCreated={(threeContext) => {
+          threeContext.camera.position.set(5, 10, 25);
+          threeContext.camera.lookAt(0, 0, 0);
+          threeContext.camera.updateProjectionMatrix();
+        }}
         camera={{
           near: 1,
           far: 120,
