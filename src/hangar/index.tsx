@@ -153,6 +153,20 @@ const Cubes: React.FC<{
     }
   }, [drag]);
 
+  const handleFacePointerDown = (
+    ev: PointerEvent,
+    cubeIndex: number,
+    faceIndex: number
+  ) => {
+    // TODO: implement
+    console.log("Pressed ", cubeIndex, faceIndex);
+  };
+
+  const handleCubePointerUp = (ev: PointerEvent, cubeIndex: number) => {
+    // TODO: implement
+    console.log("Released ", cubeIndex);
+  };
+
   return (
     <>
       <OrbitControls
@@ -163,7 +177,12 @@ const Cubes: React.FC<{
         rotateSpeed={0.7}
       />
       {props.cubes.map((cube, cubeIndex) => (
-        <React.Fragment key={cubeIndex}>
+        <group
+          onPointerUp={(ev) => {
+            handleCubePointerUp(ev, cubeIndex);
+          }}
+          key={cubeIndex}
+        >
           {[0, 1, 2, 3].map((faceIndex) => {
             const cube_ =
               drag.dragging && hovered && hovered.cubeIndex === cubeIndex
@@ -191,6 +210,9 @@ const Cubes: React.FC<{
               <mesh
                 key={faceIndex}
                 geometry={new three.PlaneBufferGeometry(planeGeo.w, 1, 1, 1)}
+                onPointerDown={(ev: PointerEvent) => {
+                  handleFacePointerDown(ev, cubeIndex, faceIndex);
+                }}
                 onPointerOver={(ev: PointerEvent) => {
                   if (
                     hovered &&
@@ -244,7 +266,7 @@ const Cubes: React.FC<{
               />
             );
           })}
-        </React.Fragment>
+        </group>
       ))}
     </>
   );

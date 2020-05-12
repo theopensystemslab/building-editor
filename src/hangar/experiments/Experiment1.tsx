@@ -130,7 +130,10 @@ const Experiment1: React.FunctionComponent<{
   };
 
   const handlePointerUp = () => {
-    setHovered(undefined);
+    // Wait until drag updates clear
+    setTimeout(() => {
+      setHovered(undefined);
+    }, 100);
   };
 
   return (
@@ -142,7 +145,7 @@ const Experiment1: React.FunctionComponent<{
         dampingFactor={0.2}
         rotateSpeed={0.7}
       />
-      <group>
+      <group onPointerUp={handlePointerUp}>
         <mesh
           ref={horizontalPlaneRef}
           geometry={plane}
@@ -173,7 +176,6 @@ const Experiment1: React.FunctionComponent<{
         )}
         <mesh
           onPointerDown={handlePointerDown}
-          onPointerUp={handlePointerUp}
           position={[permanentX, 0.5 + permanentZ, permanentY]}
           geometry={new three.BoxBufferGeometry()}
           material={
