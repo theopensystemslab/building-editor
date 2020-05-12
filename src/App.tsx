@@ -41,6 +41,9 @@ const App: React.FC = () => (
     <li>
       <a href={process.env.REACT_APP_COSMOS_URL}>Cosmos</a>
     </li>
+    <li>
+      <a href={process.env.REACT_APP_REPOSITORY_URL}>GitHub Repository</a>
+    </li>
   </ul>
 );
 
