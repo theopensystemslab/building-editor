@@ -52,6 +52,8 @@ const App: React.FC<{
   drag: Drag;
   geo: Geo;
   onGeoChange: (newGeo: Geo) => void;
+  horizontalRaycastPlane: three.Mesh;
+  verticalRaycastPlane: three.Mesh;
 }> = (props) => {
   const threeContext = useThree();
 
@@ -62,26 +64,7 @@ const App: React.FC<{
     height: threeContext.gl.domElement.clientHeight,
   };
 
-  // Set up refs for raytracing planes
-
-  const [horizontalPlane, setHorizontalPlane] = React.useState<
-    three.Mesh | undefined
-  >(undefined);
-
-  const horizontalPlaneRef = React.useCallback((plane) => {
-    setHorizontalPlane(plane);
-  }, []);
-
-  const [verticalPlane, setVerticalPlane] = React.useState<
-    three.Mesh | undefined
-  >(undefined);
-
-  const verticalPlaneRef = React.useCallback((plane) => {
-    setVerticalPlane(plane);
-  }, []);
-
-  //
-
+  // Persist hover state info frequently (every mouse move) without re-rendering
   const hoveredInfo = React.useRef<
     | {
         faceIndex: number;
@@ -98,7 +81,7 @@ const App: React.FC<{
     const offset = raycasterUvOffset(
       {
         ...dimensions,
-        plane: horizontalPlane,
+        plane: props.horizontalRaycastPlane,
         raycaster,
         camera: threeContext.camera,
       },
@@ -108,7 +91,7 @@ const App: React.FC<{
     const offsetVertical = raycasterUvOffset(
       {
         ...dimensions,
-        plane: verticalPlane,
+        plane: props.verticalRaycastPlane,
         raycaster,
         camera: threeContext.camera,
       },
@@ -171,17 +154,6 @@ const App: React.FC<{
         enableDamping
         dampingFactor={0.2}
         rotateSpeed={0.7}
-      />
-      <mesh
-        ref={horizontalPlaneRef}
-        geometry={plane}
-        rotation={horizontalPlaneRotation}
-        material={invisiblePlaneMaterial}
-      />
-      <mesh
-        ref={verticalPlaneRef}
-        geometry={plane}
-        material={invisiblePlaneMaterial}
       />
       {[0, 1, 2, 3].map((faceIndex) => {
         const geo_ = drag.dragging ? updateGeo(props.geo) : props.geo;
@@ -248,9 +220,9 @@ const App: React.FC<{
 const Container: React.FunctionComponent<{}> = () => {
   const dragStuff = useSimpleDrag();
 
-  const [editMode, setEditMode] = React.useState<EditMode>("Move");
+  // Application state
 
-  console.log(editMode);
+  const [editMode, setEditMode] = React.useState<EditMode>("Move");
 
   const [geo, setGeo] = React.useState<undoable.Undoable<Geo>>(
     undoable.create({
@@ -260,6 +232,24 @@ const Container: React.FunctionComponent<{}> = () => {
       wy: 1,
     })
   );
+
+  // Set up refs for raytracing planes
+
+  const [horizontalPlane, setHorizontalPlane] = React.useState<
+    three.Mesh | undefined
+  >(undefined);
+
+  const horizontalPlaneRef = React.useCallback((plane) => {
+    setHorizontalPlane(plane);
+  }, []);
+
+  const [verticalPlane, setVerticalPlane] = React.useState<
+    three.Mesh | undefined
+  >(undefined);
+
+  const verticalPlaneRef = React.useCallback((plane) => {
+    setVerticalPlane(plane);
+  }, []);
 
   return (
     <div className="hangar-container">
@@ -298,13 +288,28 @@ const Container: React.FunctionComponent<{}> = () => {
         <pointLight position={[3, 9, 5]} intensity={0.3} />
         <directionalLight position={[0, 8, 10]} intensity={0.9} />
         <directionalLight position={[5, 6, 0]} intensity={0.6} />
-        <App
-          drag={dragStuff.drag}
-          geo={undoable.current(geo)}
-          onGeoChange={(newGeo) => {
-            setGeo(undoable.setCurrent(geo, newGeo));
-          }}
+        <mesh
+          ref={horizontalPlaneRef}
+          geometry={plane}
+          rotation={horizontalPlaneRotation}
+          material={invisiblePlaneMaterial}
         />
+        <mesh
+          ref={verticalPlaneRef}
+          geometry={plane}
+          material={invisiblePlaneMaterial}
+        />
+        {horizontalPlane && verticalPlane && (
+          <App
+            drag={dragStuff.drag}
+            geo={undoable.current(geo)}
+            horizontalRaycastPlane={horizontalPlane}
+            verticalRaycastPlane={verticalPlane}
+            onGeoChange={(newGeo) => {
+              setGeo(undoable.setCurrent(geo, newGeo));
+            }}
+          />
+        )}
       </Canvas>
     </div>
   );
