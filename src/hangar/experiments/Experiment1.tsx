@@ -104,14 +104,7 @@ const Experiment1: React.FunctionComponent<{
     }
   }, [drag, moveDirection, positionOffsets]);
 
-  React.useEffect(() => {
-    threeContext.camera.position.set(5, 10, 25);
-    threeContext.camera.lookAt(0, 0, 0);
-    threeContext.camera.updateProjectionMatrix();
-  }, [threeContext.camera]);
-
   const handleClick = (ev: PointerEvent) => {
-    console.log(ev.faceIndex);
     if (ev.faceIndex === 9) {
       setMoveDirection("y");
     } else if (ev.faceIndex === 1) {

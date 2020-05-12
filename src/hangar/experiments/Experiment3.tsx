@@ -34,14 +34,6 @@ const Experiment3: React.FunctionComponent<{
 
   const threeContext = useThree();
 
-  // Adjust camera
-
-  React.useEffect(() => {
-    threeContext.camera.position.set(5, 10, 25);
-    threeContext.camera.lookAt(0, 0, 0);
-    threeContext.camera.updateProjectionMatrix();
-  }, [threeContext.camera]);
-
   // Set up refs for raytracing planes
 
   const [horizontalPlane, setHorizontalPlane] = React.useState<

@@ -1,17 +1,9 @@
 import React from "react";
 import * as three from "three";
-import { useThree, PointerEvent } from "react-three-fiber";
+import { PointerEvent } from "react-three-fiber";
 import { gray } from "./shared";
 
 const Experiment2: React.FunctionComponent<{}> = () => {
-  const threeContext = useThree();
-
-  React.useEffect(() => {
-    threeContext.camera.position.set(5, 10, 25);
-    threeContext.camera.lookAt(0, 0, 0);
-    threeContext.camera.updateProjectionMatrix();
-  }, [threeContext.camera]);
-
   const [cutUv, setCutUv] = React.useState<
     { x: number; y: number } | undefined
   >(undefined);

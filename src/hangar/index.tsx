@@ -41,7 +41,7 @@ const wallMaterialHover = new three.MeshPhongMaterial({
   side: three.DoubleSide,
 });
 
-interface Geo {
+interface Cube {
   x: number;
   y: number;
   wx: number;
@@ -50,8 +50,8 @@ interface Geo {
 
 const App: React.FC<{
   drag: Drag;
-  geo: Geo;
-  onGeoChange: (newGeo: Geo) => void;
+  cube: Cube;
+  onCubeChange: (newCube: Cube) => void;
   horizontalRaycastPlane: three.Mesh;
   verticalRaycastPlane: three.Mesh;
 }> = (props) => {
@@ -73,11 +73,17 @@ const App: React.FC<{
     | undefined
   >(undefined);
 
-  const [hovered, setHovered] = React.useState<number | undefined>(undefined);
+  const [hovered, setHovered] = React.useState<
+    | {
+        geoIndex: number;
+        faceIndex: number;
+      }
+    | undefined
+  >(undefined);
 
   const raycaster = React.useMemo(() => new three.Raycaster(), []);
 
-  const updateGeo = (prevGeo: Geo) => {
+  const updateCube = (prevCube: Cube, faceIndex: number) => {
     const offset = raycasterUvOffset(
       {
         ...dimensions,
@@ -105,46 +111,40 @@ const App: React.FC<{
       };
     return positionOffsets
       ? {
-          ...prevGeo,
-          ...(hovered === 0
+          ...prevCube,
+          ...(faceIndex === 0
             ? {
-                y: prevGeo.y + positionOffsets.y,
-                wy: prevGeo.wy - positionOffsets.y,
+                y: prevCube.y + positionOffsets.y,
+                wy: prevCube.wy - positionOffsets.y,
               }
             : {}),
-          ...(hovered === 1
+          ...(faceIndex === 1
             ? {
-                x: prevGeo.x,
-                wx: prevGeo.wx + positionOffsets.x,
+                x: prevCube.x,
+                wx: prevCube.wx + positionOffsets.x,
               }
             : {}),
-          ...(hovered === 2
+          ...(faceIndex === 2
             ? {
-                y: prevGeo.y,
-                wy: prevGeo.wy + positionOffsets.y,
+                y: prevCube.y,
+                wy: prevCube.wy + positionOffsets.y,
               }
             : {}),
-          ...(hovered === 3
+          ...(faceIndex === 3
             ? {
-                x: prevGeo.x + positionOffsets.x,
-                wx: prevGeo.wx - positionOffsets.x,
+                x: prevCube.x + positionOffsets.x,
+                wx: prevCube.wx - positionOffsets.x,
               }
             : {}),
         }
-      : props.geo;
+      : props.cube;
   };
 
   React.useEffect(() => {
-    if (!drag.dragging && drag.prevDragging) {
-      props.onGeoChange(updateGeo(props.geo));
+    if (hovered && !drag.dragging && drag.prevDragging) {
+      props.onCubeChange(updateCube(props.cube, hovered.faceIndex));
     }
   }, [drag]);
-
-  React.useEffect(() => {
-    threeContext.camera.position.set(5, 10, 25);
-    threeContext.camera.lookAt(0, 0, 0);
-    threeContext.camera.updateProjectionMatrix();
-  }, [threeContext.camera]);
 
   return (
     <>
@@ -156,7 +156,10 @@ const App: React.FC<{
         rotateSpeed={0.7}
       />
       {[0, 1, 2, 3].map((faceIndex) => {
-        const geo_ = drag.dragging ? updateGeo(props.geo) : props.geo;
+        const geo_ =
+          drag.dragging && hovered
+            ? updateCube(props.cube, hovered.faceIndex)
+            : props.cube;
 
         const planeGeo =
           faceIndex === 0
@@ -173,13 +176,14 @@ const App: React.FC<{
             geometry={new three.PlaneBufferGeometry(planeGeo.w, 1, 1, 1)}
             onPointerOver={(ev: PointerEvent) => {
               if (
+                hovered &&
                 hoveredInfo.current &&
-                hoveredInfo.current.faceIndex === hovered &&
+                hoveredInfo.current.faceIndex === hovered.faceIndex &&
                 hoveredInfo.current.distance < ev.distance
               ) {
                 return;
               }
-              setHovered(faceIndex);
+              setHovered({ geoIndex: -1, faceIndex });
               hoveredInfo.current = {
                 faceIndex,
                 distance: ev.distance,
@@ -193,23 +197,29 @@ const App: React.FC<{
 
               if (!hovered) {
                 hoveredInfo.current = info;
-                setHovered(faceIndex);
+                setHovered({ geoIndex: -1, faceIndex });
               }
 
-              if (faceIndex === hovered) {
+              if (hovered && hovered.faceIndex === faceIndex) {
                 hoveredInfo.current = info;
               }
             }}
             onPointerOut={() => {
               setHovered((prevHovered) =>
-                prevHovered === faceIndex ? undefined : prevHovered
+                prevHovered && prevHovered.faceIndex === faceIndex
+                  ? undefined
+                  : prevHovered
               );
             }}
             position={[planeGeo.x, 0.5, planeGeo.y]}
             rotation={new three.Euler().setFromRotationMatrix(
               new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
             )}
-            material={hovered === faceIndex ? wallMaterialHover : wallMaterial}
+            material={
+              hovered && hovered.faceIndex === faceIndex
+                ? wallMaterialHover
+                : wallMaterial
+            }
           />
         );
       })}
@@ -224,7 +234,7 @@ const Container: React.FunctionComponent<{}> = () => {
 
   const [editMode, setEditMode] = React.useState<EditMode>("Move");
 
-  const [geo, setGeo] = React.useState<undoable.Undoable<Geo>>(
+  const [cube, setCube] = React.useState<undoable.Undoable<Cube>>(
     undoable.create({
       x: -0.5,
       y: -0.5,
@@ -256,16 +266,16 @@ const Container: React.FunctionComponent<{}> = () => {
       <Sidebar
         editMode={editMode}
         onUndo={
-          undoable.canUndo(geo)
+          undoable.canUndo(cube)
             ? () => {
-                setGeo((prevGeo) => undoable.undo(prevGeo));
+                setCube((prevCube) => undoable.undo(prevCube));
               }
             : undefined
         }
         onRedo={
-          undoable.canRedo(geo)
+          undoable.canRedo(cube)
             ? () => {
-                setGeo((prevGeo) => undoable.redo(prevGeo));
+                setCube((prevCube) => undoable.redo(prevCube));
               }
             : undefined
         }
@@ -273,8 +283,11 @@ const Container: React.FunctionComponent<{}> = () => {
       />
       <Canvas
         gl={{ antialias: true, alpha: true }}
-        onCreated={({ gl }) => {
-          gl.toneMapping = three.Uncharted2ToneMapping;
+        onCreated={(threeContext) => {
+          threeContext.gl.toneMapping = three.Uncharted2ToneMapping;
+          threeContext.camera.position.set(5, 10, 25);
+          threeContext.camera.lookAt(0, 0, 0);
+          threeContext.camera.updateProjectionMatrix();
         }}
         camera={{
           near: 1,
@@ -302,11 +315,11 @@ const Container: React.FunctionComponent<{}> = () => {
         {horizontalPlane && verticalPlane && (
           <App
             drag={dragStuff.drag}
-            geo={undoable.current(geo)}
+            cube={undoable.current(cube)}
             horizontalRaycastPlane={horizontalPlane}
             verticalRaycastPlane={verticalPlane}
-            onGeoChange={(newGeo) => {
-              setGeo(undoable.setCurrent(geo, newGeo));
+            onCubeChange={(newCube) => {
+              setCube(undoable.setCurrent(cube, newCube));
             }}
           />
         )}

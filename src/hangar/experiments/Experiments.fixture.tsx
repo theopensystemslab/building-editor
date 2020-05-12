@@ -28,6 +28,11 @@ const Container: React.FunctionComponent<{
     >
       <Canvas
         gl={{ antialias: true, alpha: true }}
+        onCreated={(threeContext) => {
+          threeContext.camera.position.set(5, 10, 25);
+          threeContext.camera.lookAt(0, 0, 0);
+          threeContext.camera.updateProjectionMatrix();
+        }}
         camera={{
           near: 1,
           far: 120,
