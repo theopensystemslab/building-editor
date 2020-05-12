@@ -1,14 +1,14 @@
 import "./index.css";
 import React from "react";
 import * as three from "three";
-import { useThree, PointerEvent } from "react-three-fiber";
+import { useThree, CanvasContext, PointerEvent } from "react-three-fiber";
 import { Canvas } from "react-three-fiber";
 import { OrbitControls } from "drei";
 import * as undoable from "../utils/undoable";
 import Sidebar from "./Sidebar";
 import { EditMode } from "./state";
 
-import { Drag, raycasterUvOffset, useSimpleDrag } from "../utils";
+import { Drag, raycasterUv, raycasterUvOffset, useSimpleDrag } from "../utils";
 
 // Raytracing planes
 
@@ -64,6 +64,8 @@ const Cubes: React.FC<{
     height: threeContext.gl.domElement.clientHeight,
   };
 
+  const raycaster = React.useMemo(() => new three.Raycaster(), []);
+
   // Persist hover state info frequently (every mouse move) without re-rendering
   const hoveredInfo = React.useRef<
     | {
@@ -81,8 +83,6 @@ const Cubes: React.FC<{
       }
     | undefined
   >(undefined);
-
-  const raycaster = React.useMemo(() => new three.Raycaster(), []);
 
   const updateCube = (prevCube: Cube, faceIndex: number): Cube => {
     const offset = raycasterUvOffset(
@@ -163,7 +163,7 @@ const Cubes: React.FC<{
         rotateSpeed={0.7}
       />
       {props.cubes.map((cube, cubeIndex) => (
-        <>
+        <React.Fragment key={cubeIndex}>
           {[0, 1, 2, 3].map((faceIndex) => {
             const cube_ =
               drag.dragging && hovered && hovered.cubeIndex === cubeIndex
@@ -244,7 +244,7 @@ const Cubes: React.FC<{
               />
             );
           })}
-        </>
+        </React.Fragment>
       ))}
     </>
   );
@@ -256,6 +256,8 @@ const Container: React.FunctionComponent<{}> = () => {
   // Application state
 
   const [editMode, setEditMode] = React.useState<EditMode>("Move");
+
+  console.log(editMode);
 
   const [cubes, setCubes] = React.useState<undoable.Undoable<Array<Cube>>>(
     undoable.create([
@@ -274,6 +276,8 @@ const Container: React.FunctionComponent<{}> = () => {
     ])
   );
 
+  const raycaster = React.useMemo(() => new three.Raycaster(), []);
+
   // Set up refs for raytracing planes
 
   const [horizontalPlane, setHorizontalPlane] = React.useState<
@@ -291,6 +295,55 @@ const Container: React.FunctionComponent<{}> = () => {
   const verticalPlaneRef = React.useCallback((plane) => {
     setVerticalPlane(plane);
   }, []);
+
+  // Click on plane
+
+  const [threeContext, setThreeContext] = React.useState<
+    CanvasContext | undefined
+  >();
+
+  React.useEffect(() => {
+    if (!threeContext) {
+      return;
+    }
+    const canvas = threeContext.gl.domElement;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    const handleCanvasClick = (ev: MouseEvent) => {
+      if (editMode !== "Insert") {
+        return;
+      }
+      if (horizontalPlane) {
+        const uv = raycasterUv(
+          {
+            width,
+            height,
+            plane: horizontalPlane,
+            camera: threeContext.camera,
+            raycaster,
+          },
+          [ev.offsetX, ev.offsetY]
+        );
+        if (uv) {
+          setCubes((prevCubes) => {
+            return undoable.setCurrent(prevCubes, [
+              ...undoable.current(prevCubes),
+              {
+                x: (uv.x - 0.5) * planeSize - 0.5,
+                y: -(uv.y - 0.5) * planeSize - 0.5,
+                wx: 1,
+                wy: 1,
+              },
+            ]);
+          });
+        }
+      }
+    };
+    canvas.addEventListener("click", handleCanvasClick);
+    return () => {
+      canvas.removeEventListener("click", handleCanvasClick);
+    };
+  }, [threeContext, editMode]);
 
   return (
     <div className="hangar-container">
@@ -315,6 +368,7 @@ const Container: React.FunctionComponent<{}> = () => {
       <Canvas
         gl={{ antialias: true, alpha: true }}
         onCreated={(threeContext) => {
+          setThreeContext(threeContext);
           threeContext.gl.toneMapping = three.Uncharted2ToneMapping;
           threeContext.camera.position.set(5, 10, 25);
           threeContext.camera.lookAt(0, 0, 0);

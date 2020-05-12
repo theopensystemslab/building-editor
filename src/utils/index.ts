@@ -55,7 +55,7 @@ export const raycasterUv = (
     camera: three.Camera;
   },
   [x, y]: [number, number]
-) => {
+): { x: number; y: number } | undefined => {
   if (!plane) {
     return undefined;
   }
@@ -89,7 +89,7 @@ export const raycasterUvOffset = (
     camera: three.Camera;
   },
   [x, y]: [number, number]
-) => {
+): { x: number; y: number } | undefined => {
   const uv1 = raycasterUv({ width, height, plane, raycaster, camera }, [
     width / 2,
     height / 2,
