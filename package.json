@@ -24,6 +24,7 @@
     "ramda": "^0.27.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-feather": "^2.0.8",
     "react-scripts": "3.4.1",
     "react-three-fiber": "^4.2.3",
     "react-use-gesture": "^7.0.15",

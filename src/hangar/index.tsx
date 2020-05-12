@@ -1,9 +1,12 @@
+import "./index.css";
 import React from "react";
 import * as three from "three";
 import { useThree, PointerEvent } from "react-three-fiber";
 import { Canvas } from "react-three-fiber";
 import { OrbitControls } from "drei";
 import * as undoable from "../utils/undoable";
+import Sidebar from "./Sidebar";
+import { EditMode } from "./state";
 
 import { Drag, raycasterUvOffset, useSimpleDrag } from "../utils";
 
@@ -162,14 +165,13 @@ const App: React.FC<{
 
   return (
     <>
-      {false && !hovered && (
-        <OrbitControls
-          target={new three.Vector3(0, 0, 0)}
-          enableDamping
-          dampingFactor={0.2}
-          rotateSpeed={0.7}
-        />
-      )}
+      <OrbitControls
+        enabled={!hovered}
+        target={new three.Vector3(0, 0, 0)}
+        enableDamping
+        dampingFactor={0.2}
+        rotateSpeed={0.7}
+      />
       <mesh
         ref={horizontalPlaneRef}
         geometry={plane}
@@ -246,6 +248,10 @@ const App: React.FC<{
 const Container: React.FunctionComponent<{}> = () => {
   const dragStuff = useSimpleDrag();
 
+  const [editMode, setEditMode] = React.useState<EditMode>("Move");
+
+  console.log(editMode);
+
   const [geo, setGeo] = React.useState<undoable.Undoable<Geo>>(
     undoable.create({
       x: -0.5,
@@ -256,21 +262,25 @@ const Container: React.FunctionComponent<{}> = () => {
   );
 
   return (
-    <div style={{ width: "100%", height: "100%" }}>
-      <button
-        style={{
-          position: "absolute",
-          top: 10,
-          right: 10,
-          zIndex: 10000,
-        }}
-        onClick={() => {
-          console.log("clicked");
-          setGeo(undoable.undo(geo));
-        }}
-      >
-        Undo
-      </button>
+    <div className="hangar-container">
+      <Sidebar
+        editMode={editMode}
+        onUndo={
+          undoable.canUndo(geo)
+            ? () => {
+                setGeo((prevGeo) => undoable.undo(prevGeo));
+              }
+            : undefined
+        }
+        onRedo={
+          undoable.canRedo(geo)
+            ? () => {
+                setGeo((prevGeo) => undoable.redo(prevGeo));
+              }
+            : undefined
+        }
+        onEditModeChange={setEditMode}
+      />
       <Canvas
         gl={{ antialias: true, alpha: true }}
         onCreated={({ gl }) => {
