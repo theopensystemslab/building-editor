@@ -1,6 +1,6 @@
 import React from "react";
+import { PointerEvent, useThree } from "react-three-fiber";
 import * as three from "three";
-import { useThree, PointerEvent } from "react-three-fiber";
 import { Drag, raycasterUvOffset } from "../../utils";
 import { gray, lightGray } from "./shared";
 
@@ -102,7 +102,7 @@ const Experiment1: React.FunctionComponent<{
         prevZ + (moveDirection === "z" ? 1 : 0) * positionOffsets.z,
       ]);
     }
-  }, [drag]);
+  }, [drag, moveDirection, positionOffsets]);
 
   React.useEffect(() => {
     threeContext.camera.position.set(5, 10, 25);

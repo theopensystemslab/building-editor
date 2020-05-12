@@ -1,6 +1,6 @@
 import React from "react";
-import * as three from "three";
 import { useThree } from "react-three-fiber";
+import * as three from "three";
 import { Drag, raycasterUvOffset } from "../../utils";
 import { gray } from "./shared";
 
@@ -118,7 +118,7 @@ const Experiment3: React.FunctionComponent<{
     if (hovered === "gap") {
       setK((prevK) => prevK + positionOffsets.z / size);
     }
-  }, [drag]);
+  }, [drag, hovered, positionOffsets]);
 
   const d1Work =
     d1 +
