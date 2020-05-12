@@ -257,8 +257,6 @@ const Container: React.FunctionComponent<{}> = () => {
 
   const [editMode, setEditMode] = React.useState<EditMode>("Move");
 
-  console.log(editMode);
-
   const [cubes, setCubes] = React.useState<undoable.Undoable<Array<Cube>>>(
     undoable.create([
       {
