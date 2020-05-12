@@ -42,12 +42,14 @@ export const useSimpleDrag = () => {
 
 export const raycasterUv = (
   {
-    size,
+    width,
+    height,
     plane,
     raycaster,
     camera,
   }: {
-    size: number;
+    width: number;
+    height: number;
     plane: three.Mesh | undefined;
     raycaster: three.Raycaster;
     camera: three.Camera;
@@ -58,8 +60,8 @@ export const raycasterUv = (
     return undefined;
   }
   const relPos = {
-    x: ((x - size / 2) * 2) / size,
-    y: ((y - size / 2) * 2) / size,
+    x: (2 * x) / width - 1,
+    y: -(2 * y) / height + 1,
   };
   raycaster.setFromCamera(relPos, camera);
   const [intersect] = raycaster.intersectObject(plane);
@@ -74,26 +76,28 @@ export const raycasterUv = (
 
 export const raycasterUvOffset = (
   {
-    size,
+    width,
+    height,
     plane,
     raycaster,
     camera,
   }: {
-    size: number;
+    width: number;
+    height: number;
     plane: three.Mesh | undefined;
     raycaster: three.Raycaster;
     camera: three.Camera;
   },
   [x, y]: [number, number]
 ) => {
-  const uv1 = raycasterUv({ size, plane, raycaster, camera }, [
-    size / 2,
-    size / 2,
+  const uv1 = raycasterUv({ width, height, plane, raycaster, camera }, [
+    width / 2,
+    height / 2,
   ]);
 
-  const uv2 = raycasterUv({ size, plane, raycaster, camera }, [
-    size / 2 + x,
-    size / 2 + y,
+  const uv2 = raycasterUv({ width, height, plane, raycaster, camera }, [
+    width / 2 + x,
+    height / 2 + y,
   ]);
 
   return (
