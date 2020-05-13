@@ -69,8 +69,14 @@ export const [useStore, api] = create(
 api.getState().set((state) => {
   state.grid.occupiedCells = {
     // [x, z]: { module: "A2_01", rotation: 180, etc... }
-    "0,-1": {},
-    "0,0": {},
-    "0,1": {},
+    "0,-1": {
+      module: "A2_01",
+    },
+    "0,0": {
+      module: "B2_01",
+    },
+    "0,1": {
+      module: "C2_01",
+    },
   };
 });

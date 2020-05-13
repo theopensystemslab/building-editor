@@ -1,7 +1,7 @@
 import { OrbitControls } from "drei";
 import React from "react";
 import { Canvas } from "react-three-fiber";
-import { DoubleSide } from "three";
+import { DoubleSide, PCFSoftShadowMap } from "three";
 import Building from "./building/Building";
 import RectangularGrid from "./shared/RectangularGrid";
 import { useStore } from "./shared/store";
@@ -26,7 +26,18 @@ const Editor: React.FC = () => (
   <Canvas
     camera={{ fov: 45, position: [-5, 20, -10] }}
     pixelRatio={window.devicePixelRatio}
+    shadowMap={{ enabled: true, type: PCFSoftShadowMap }}
+    gl={{ antialias: true }}
   >
+    <ambientLight />
+    <pointLight
+      position={[-40, 90, -45]}
+      castShadow
+      intensity={0.1}
+      shadowMapWidth={1024}
+      shadowMapHeight={1024}
+      shadowBias={-0.0008}
+    />
     <Grid />
     <group rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
       <mesh name="ground" receiveShadow>
@@ -39,9 +50,7 @@ const Editor: React.FC = () => (
         />
       </mesh>
     </group>
-
     <Building />
-
     <OrbitControls
       target={[0, 1, 0] as any}
       rotateSpeed={0.7}

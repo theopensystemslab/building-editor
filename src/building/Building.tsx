@@ -12,14 +12,17 @@ const Building: React.FC = () => {
 
   return (
     <>
-      {Object.keys(occupiedCells).map((gridPosition) => (
-        <Module
-          key={gridPosition}
-          gridPosition={gridPosition}
-          cellWidth={cellWidth}
-          cellLength={cellLength}
-        />
-      ))}
+      {Object.entries(occupiedCells).map(
+        ([gridPosition, data]: [string, any]) => (
+          <Module
+            key={gridPosition}
+            gridPosition={gridPosition}
+            cellWidth={cellWidth}
+            cellLength={cellLength}
+            type={data.module}
+          />
+        )
+      )}
     </>
   );
 };

@@ -143,6 +143,22 @@ export const createQuad = () => {
   return geometry;
 };
 
+// Three Helpers
+
+const makeThreeShapeFromPoints = (points) => {
+  const shape = new three.Shape();
+  const [first, ...rest] = points.map(([x, y]) => [x, y]);
+  shape.moveTo(first[0], first[1]);
+  rest.map((point) => shape.lineTo(point[0], point[1]));
+  return shape;
+};
+
+export const pointsToThreeShape = (points, holes = []) => {
+  const shape = makeThreeShapeFromPoints(points);
+  shape.holes = holes.map(makeThreeShapeFromPoints);
+  return shape;
+};
+
 // General Helpers
 
 export const nextOddInt = (x) => Math.ceil(x) | 1;

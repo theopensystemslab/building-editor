@@ -1,5 +1,7 @@
 import { bounds } from "@bentobots/vector2";
+import { ExtrudeBufferGeometry } from "three";
 import grid from "../shared/grid";
+import { pointsToThreeShape } from "../utils";
 import { offset, Point, union } from "../utils/clipper";
 import { pointsToSVGPath } from "../utils/svg";
 
@@ -51,6 +53,12 @@ const variants = {
   // C1: 5,
 };
 
+const extrudeSettings = {
+  depth: grid("m").z,
+  steps: 2,
+  bevelEnabled: false,
+};
+
 const crossSections = Object.entries(variants).reduce(
   (acc, [type, numVariants]) => {
     for (let i = 1; i <= numVariants; i++) {
@@ -61,12 +69,22 @@ const crossSections = Object.entries(variants).reduce(
       const width = Math.abs(maxX - minX);
       const height = Math.abs(maxY - minY);
 
+      const [gOutline, ...gHoles] = points.map((pts) =>
+        pts.map(([x, y]) => [x / 1000, y / 1000])
+      );
+
+      const gShape = pointsToThreeShape(gOutline, gHoles);
+      const geometry = new ExtrudeBufferGeometry(gShape, extrudeSettings);
+      const position = [-width / 2000, 0, -grid("m").z / 2];
+
       acc[`${type}_0${i}`] = {
         shape,
         holes,
         points,
         width,
         height,
+        geometry,
+        position,
         svgPath: pointsToSVGPath(points),
       };
     }
