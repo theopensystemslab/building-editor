@@ -7,6 +7,9 @@ import grid from "./grid";
 const GRID = grid("m");
 
 export interface State {
+  preferences: {
+    shadowsEnabled: boolean;
+  };
   grid: {
     properties: {
       color: string;
@@ -70,6 +73,9 @@ const selectorMiddleware = (config) => (set, get, api) =>
 
 export const [useStore, api] = create(
   selectorMiddleware((set) => ({
+    preferences: {
+      shadowsEnabled: true,
+    },
     grid: {
       properties: {
         color: "lightgray",

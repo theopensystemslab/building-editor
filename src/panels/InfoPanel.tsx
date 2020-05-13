@@ -2,7 +2,7 @@ import React from "react";
 import crossSections from "../building/crossSections";
 import { State, useStore } from "../shared/store";
 import chassisData from "./data/chassis.json";
-import styles from "./infoPanel.module.css";
+import styles from "./panels.module.css";
 
 // TODO: pre-calculate and store all module costs etc in main config file
 
