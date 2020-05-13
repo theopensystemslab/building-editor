@@ -139,6 +139,10 @@ const Cubes: React.FC<{
                 wy: canResize
                   ? snapToGrid(prevCube.wy - positionOffsets.y)
                   : prevCube.wy,
+                // When not resizing, move also according to perpendicular coordinate
+                x: canResize
+                  ? prevCube.x
+                  : snapToGrid(prevCube.x + positionOffsets.x),
               }
             : {}),
           ...(faceIndex === 1
@@ -149,6 +153,10 @@ const Cubes: React.FC<{
                 wx: canResize
                   ? snapToGrid(prevCube.wx + positionOffsets.x)
                   : prevCube.wx,
+                // When not resizing, move also according to perpendicular coordinate
+                y: canResize
+                  ? prevCube.y
+                  : snapToGrid(prevCube.y + positionOffsets.y),
               }
             : {}),
           ...(faceIndex === 2
@@ -159,6 +167,10 @@ const Cubes: React.FC<{
                 wy: canResize
                   ? snapToGrid(prevCube.wy + positionOffsets.y)
                   : prevCube.wy,
+                // When not resizing, move also according to perpendicular coordinate
+                x: canResize
+                  ? prevCube.x
+                  : snapToGrid(prevCube.x + positionOffsets.x),
               }
             : {}),
           ...(faceIndex === 3
@@ -167,6 +179,10 @@ const Cubes: React.FC<{
                 wx: canResize
                   ? snapToGrid(prevCube.wx - positionOffsets.x)
                   : prevCube.wx,
+                // When not resizing, move also according to perpendicular coordinate
+                y: canResize
+                  ? prevCube.y
+                  : snapToGrid(prevCube.y + positionOffsets.y),
               }
             : {}),
         }
