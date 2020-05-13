@@ -1,4 +1,4 @@
-import { OrbitControls } from "drei";
+import { OrbitControls, Stats } from "drei";
 import React from "react";
 import { Canvas } from "react-three-fiber";
 import { DoubleSide, PCFSoftShadowMap, Uncharted2ToneMapping } from "three";
@@ -65,6 +65,7 @@ const Editor: React.FC = () => (
         minDistance={5}
         maxDistance={30}
       />
+      {process.env.REACT_APP_DEBUG && <Stats />}
     </Canvas>
     <InfoPanel />
   </>

@@ -29,6 +29,7 @@ interface IModule {
   cellWidth: number;
   cellLength: number;
   type: string;
+  setHovering?;
 }
 
 const Module: React.FC<IModule> = ({
@@ -36,6 +37,7 @@ const Module: React.FC<IModule> = ({
   gridPosition,
   cellWidth,
   cellLength,
+  setHovering,
 }) => {
   const { geometry, edgesGeometry, position } = crossSections[type];
 
@@ -43,6 +45,16 @@ const Module: React.FC<IModule> = ({
     typeof gridPosition === "string"
       ? gridPosition.split(",").map(Number)
       : gridPosition;
+
+  const pointerEvents = process.env.REACT_APP_DEBUG && {
+    onPointerOut: () => {
+      setHovering(undefined);
+    },
+    onPointerMove: (e) => {
+      e.stopPropagation();
+      setHovering([e.face.normal, e.point]);
+    },
+  };
 
   return (
     <group
@@ -52,7 +64,13 @@ const Module: React.FC<IModule> = ({
         z * cellLength + position[2],
       ]}
     >
-      <mesh receiveShadow castShadow material={material} geometry={geometry} />
+      <mesh
+        receiveShadow
+        castShadow
+        material={material}
+        geometry={geometry}
+        {...pointerEvents}
+      />
       <lineSegments
         args={[edgesGeometry, linesMaterial]}
         ref={(e: LineSegments) => e?.computeLineDistances()}
