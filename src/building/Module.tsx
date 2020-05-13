@@ -1,12 +1,18 @@
 import React from "react";
-import { DoubleSide, MeshStandardMaterial } from "three";
+import { DoubleSide, LineBasicMaterial, MeshStandardMaterial } from "three";
 import crossSections from "./crossSections";
 
 // Placeholder mesh for the actual building modules
 
 const material = new MeshStandardMaterial({
-  color: "mediumspringgreen",
+  color: "#67DD52",
   side: DoubleSide,
+  polygonOffset: true,
+  polygonOffsetFactor: 1,
+});
+
+const linesMaterial = new LineBasicMaterial({
+  color: "#39803C",
 });
 
 interface IModule {
@@ -22,7 +28,7 @@ const Module: React.FC<IModule> = ({
   cellWidth,
   cellLength,
 }) => {
-  const { geometry, position } = crossSections[type];
+  const { geometry, edgesGeometry, position } = crossSections[type];
 
   const [x, z] =
     typeof gridPosition === "string"
@@ -30,17 +36,16 @@ const Module: React.FC<IModule> = ({
       : gridPosition;
 
   return (
-    <mesh
-      receiveShadow
-      castShadow
+    <group
       position={[
         x * cellWidth + position[0],
         0 + position[1],
         z * cellLength + position[2],
       ]}
-      material={material}
-      geometry={geometry}
-    />
+    >
+      <mesh receiveShadow castShadow material={material} geometry={geometry} />
+      <lineSegments args={[edgesGeometry, linesMaterial]} />
+    </group>
   );
 };
 

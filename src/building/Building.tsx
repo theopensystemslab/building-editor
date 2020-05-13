@@ -1,5 +1,5 @@
 import React from "react";
-import { useStore } from "../shared/store";
+import { State, useStore } from "../shared/store";
 import Module from "./Module";
 
 const Building: React.FC = () => {
@@ -11,9 +11,9 @@ const Building: React.FC = () => {
   } = useStore((store) => store.grid);
 
   return (
-    <>
-      {Object.entries(occupiedCells).map(
+    <group position={[0, 0.01, 0]}>
       {Object.entries(occupiedCells as State["grid"]["occupiedCells"]).map(
+        ([gridPosition, cellData]) => (
           <Module
             key={gridPosition}
             gridPosition={gridPosition}
@@ -23,7 +23,7 @@ const Building: React.FC = () => {
           />
         )
       )}
-    </>
+    </group>
   );
 };
 
