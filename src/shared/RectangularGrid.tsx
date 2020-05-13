@@ -1,5 +1,12 @@
+import { flatten } from "ramda";
 import React, { useMemo } from "react";
-import { Color, Geometry, LineBasicMaterial, LinePieces, Vector3 } from "three";
+import {
+  BufferAttribute,
+  BufferGeometry,
+  Color,
+  LineBasicMaterial,
+  LinePieces,
+} from "three";
 
 type IReactangularGrid = {
   rowWidth?: number;
@@ -17,21 +24,30 @@ const RectangularGrid: React.FC<IReactangularGrid> = ({
   color = "red",
 }) => {
   const gridGeometry = useMemo(() => {
-    const geometry = new Geometry();
+    const geometry = new BufferGeometry();
+
+    let vertices = [];
 
     const halfRowsTotal = (rowWidth * rows) / 2;
     const halfColumnsTotal = (columnHeight * columns) / 2;
 
     for (let i = 0; i <= rows; i += 1) {
       const position = rowWidth * i - halfRowsTotal;
-      geometry.vertices.push(new Vector3(-halfColumnsTotal, position, 0));
-      geometry.vertices.push(new Vector3(halfColumnsTotal, position, 0));
+      vertices.push([-halfColumnsTotal, position, 0]);
+      vertices.push([halfColumnsTotal, position, 0]);
     }
+
     for (let i = 0; i <= columns; i += 1) {
       const position = columnHeight * i - halfColumnsTotal;
-      geometry.vertices.push(new Vector3(position, -halfRowsTotal, 0));
-      geometry.vertices.push(new Vector3(position, halfRowsTotal, 0));
+      vertices.push([position, -halfRowsTotal, 0]);
+      vertices.push([position, halfRowsTotal, 0]);
     }
+
+    geometry.setAttribute(
+      "position",
+      new BufferAttribute(new Float32Array(flatten(vertices)), 3)
+    );
+
     return geometry;
   }, [rowWidth, columnHeight, rows, columns]);
 
