@@ -1,11 +1,11 @@
 import React from "react";
-import { useStore } from "../shared/state";
+import { useStore } from "../shared/store";
 import Module from "./Module";
 
 const Building: React.FC = () => {
   const {
     properties: {
-      dimensions: { cellWidth, cellHeight },
+      dimensions: { cellWidth, cellLength },
     },
     occupiedCells,
   } = useStore((store) => store.grid);
@@ -17,7 +17,7 @@ const Building: React.FC = () => {
           key={gridPosition}
           gridPosition={gridPosition}
           cellWidth={cellWidth}
-          cellHeight={cellHeight}
+          cellLength={cellLength}
         />
       ))}
     </>

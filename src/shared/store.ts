@@ -32,8 +32,11 @@ const selectorMiddleware = (config) => (set, get, api) =>
 
       if (JSON.stringify(previousState) !== JSON.stringify(currentState)) {
         set((state) => {
-          state.grid.properties.dimensions.numRows = calcSize(currentState, 0);
-          state.grid.properties.dimensions.numColumns = calcSize(
+          state.grid.properties.dimensions.numXCells = calcSize(
+            currentState,
+            0
+          );
+          state.grid.properties.dimensions.numZCells = calcSize(
             currentState,
             1
           );
@@ -51,7 +54,7 @@ export const [useStore, api] = create(
         color: "lightgray",
         dimensions: {
           cellWidth: GRID.x,
-          cellHeight: GRID.z,
+          cellLength: GRID.z,
         },
       },
       occupiedCells: {},

@@ -4,7 +4,7 @@ import { Canvas } from "react-three-fiber";
 import { DoubleSide } from "three";
 import Building from "./building/Building";
 import RectangularGrid from "./shared/RectangularGrid";
-import { useStore } from "./shared/state";
+import { useStore } from "./shared/store";
 
 const Grid: React.FC = () => {
   const {
@@ -13,10 +13,10 @@ const Grid: React.FC = () => {
 
   return (
     <RectangularGrid
-      rows={dimensions.numRows}
-      columns={dimensions.numColumns}
-      rowWidth={dimensions.cellWidth}
-      columnHeight={dimensions.cellHeight}
+      numXCells={dimensions.numXCells}
+      numZCells={dimensions.numZCells}
+      cellWidth={dimensions.cellWidth}
+      cellLength={dimensions.cellLength}
       color={color}
     />
   );
@@ -27,8 +27,8 @@ const Editor: React.FC = () => (
     camera={{ fov: 45, position: [-5, 20, -10] }}
     pixelRatio={window.devicePixelRatio}
   >
+    <Grid />
     <group rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
-      <Grid />
       <mesh name="ground" receiveShadow>
         <planeBufferGeometry attach="geometry" args={[30, 30, 1, 1]} />
         <shadowMaterial

@@ -1,14 +1,18 @@
-import "./index.css";
-import React from "react";
-import * as three from "three";
-import { useThree, CanvasContext, PointerEvent } from "react-three-fiber";
-import { Canvas } from "react-three-fiber";
 import { OrbitControls } from "drei";
+import React from "react";
+import {
+  Canvas,
+  CanvasContext,
+  PointerEvent,
+  useThree,
+} from "react-three-fiber";
+import * as three from "three";
+import RectangularGrid from "../shared/RectangularGrid";
+import { Drag, raycasterUv, raycasterUvOffset, useSimpleDrag } from "../utils";
 import * as undoable from "../utils/undoable";
+import "./index.css";
 import Sidebar from "./Sidebar";
 import { EditMode } from "./state";
-
-import { Drag, raycasterUv, raycasterUvOffset, useSimpleDrag } from "../utils";
 
 // Raytracing planes
 
@@ -498,14 +502,15 @@ const Container: React.FunctionComponent<{}> = () => {
         <pointLight position={[3, 9, 5]} intensity={0.3} />
         <directionalLight position={[0, 8, 10]} intensity={0.9} />
         <directionalLight position={[5, 6, 0]} intensity={0.6} />
-        <gridHelper
-          args={[
-            30,
-            60,
-            new three.Color("#F1F1F1"),
-            new three.Color("#F4F4F4"),
-          ]}
+
+        <RectangularGrid
+          numZCells={60}
+          numXCells={60}
+          cellLength={0.5}
+          cellWidth={0.5}
+          color="#F1F1F1"
         />
+
         <mesh
           ref={horizontalPlaneRef}
           geometry={plane}

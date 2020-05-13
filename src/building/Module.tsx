@@ -10,10 +10,10 @@ const box = new BoxGeometry(1, 1, 1).translate(0, 0.5, 0);
 interface IModule {
   gridPosition: string | [number, number];
   cellWidth: number;
-  cellHeight: number;
+  cellLength: number;
 }
 
-const Module: React.FC<IModule> = ({ gridPosition, cellWidth, cellHeight }) => {
+const Module: React.FC<IModule> = ({ gridPosition, cellWidth, cellLength }) => {
   const [x, z] =
     typeof gridPosition === "string"
       ? gridPosition.split(",").map(Number)
@@ -21,7 +21,7 @@ const Module: React.FC<IModule> = ({ gridPosition, cellWidth, cellHeight }) => {
 
   return (
     <mesh
-      position={[x * cellWidth, 0, z * cellHeight]}
+      position={[x * cellWidth, 0, z * cellLength]}
       material={material}
       geometry={box}
     />

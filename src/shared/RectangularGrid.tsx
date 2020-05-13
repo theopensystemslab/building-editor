@@ -9,18 +9,18 @@ import {
 } from "three";
 
 type IReactangularGrid = {
-  rowWidth?: number;
-  columnHeight?: number;
-  rows?: number;
-  columns?: number;
+  cellWidth?: number;
+  cellLength?: number;
+  numXCells?: number;
+  numZCells?: number;
   color?: number | string | Color;
 };
 
 const RectangularGrid: React.FC<IReactangularGrid> = ({
-  rowWidth = 10,
-  columnHeight = 10,
-  rows = 10,
-  columns = 10,
+  cellWidth = 10,
+  cellLength = 10,
+  numXCells = 10,
+  numZCells = 10,
   color = "red",
 }) => {
   const gridGeometry = useMemo(() => {
@@ -28,19 +28,19 @@ const RectangularGrid: React.FC<IReactangularGrid> = ({
 
     let vertices = [];
 
-    const halfRowsTotal = (rowWidth * rows) / 2;
-    const halfColumnsTotal = (columnHeight * columns) / 2;
+    const halfnumXCellsTotal = (cellWidth * numXCells) / 2;
+    const halfnumZCellsTotal = (cellLength * numZCells) / 2;
 
-    for (let i = 0; i <= rows; i += 1) {
-      const position = rowWidth * i - halfRowsTotal;
-      vertices.push([-halfColumnsTotal, position, 0]);
-      vertices.push([halfColumnsTotal, position, 0]);
+    for (let i = 0; i <= numXCells; i += 1) {
+      const position = cellWidth * i - halfnumXCellsTotal;
+      vertices.push([position, 0, -halfnumZCellsTotal]);
+      vertices.push([position, 0, halfnumZCellsTotal]);
     }
 
-    for (let i = 0; i <= columns; i += 1) {
-      const position = columnHeight * i - halfColumnsTotal;
-      vertices.push([position, -halfRowsTotal, 0]);
-      vertices.push([position, halfRowsTotal, 0]);
+    for (let i = 0; i <= numZCells; i += 1) {
+      const position = cellLength * i - halfnumZCellsTotal;
+      vertices.push([-halfnumXCellsTotal, 0, position]);
+      vertices.push([halfnumXCellsTotal, 0, position]);
     }
 
     geometry.setAttribute(
@@ -49,7 +49,7 @@ const RectangularGrid: React.FC<IReactangularGrid> = ({
     );
 
     return geometry;
-  }, [rowWidth, columnHeight, rows, columns]);
+  }, [cellWidth, cellLength, numXCells, numZCells]);
 
   const material = useMemo(() => new LineBasicMaterial({ color }), [color]);
 
