@@ -21,6 +21,7 @@
     "@bentobots/vector2": "^0.1.17",
     "clipper-fpoint": "^6.4.22",
     "drei": "^0.0.32",
+    "immer": "^6.0.5",
     "ramda": "^0.27.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
@@ -28,7 +29,8 @@
     "react-scripts": "3.4.1",
     "react-three-fiber": "^4.2.3",
     "react-use-gesture": "^7.0.15",
-    "three": "^0.116.1"
+    "three": "^0.116.1",
+    "zustand": "^2.2.3"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^4.2.4",

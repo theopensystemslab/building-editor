@@ -1,6 +1,6 @@
-import { useState } from "react";
-import map from "ramda/src/map";
 import flatten from "ramda/src/flatten";
+import map from "ramda/src/map";
+import { useState } from "react";
 import { useDrag } from "react-use-gesture";
 import * as three from "three";
 
@@ -142,3 +142,7 @@ export const createQuad = () => {
   geometry.setAttribute("uv", new three.BufferAttribute(uvs, 2));
   return geometry;
 };
+
+// General Helpers
+
+export const nextOddInt = (x) => Math.ceil(x) | 1;

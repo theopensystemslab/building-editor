@@ -2,25 +2,33 @@ import { OrbitControls } from "drei";
 import React from "react";
 import { Canvas } from "react-three-fiber";
 import { DoubleSide } from "three";
-import grid from "./shared/grid";
+import Building from "./building/Building";
 import RectangularGrid from "./shared/RectangularGrid";
+import { useStore } from "./shared/state";
 
-const GRID = grid("m");
+const Grid: React.FC = () => {
+  const {
+    properties: { dimensions, color },
+  } = useStore((store) => store.grid);
+
+  return (
+    <RectangularGrid
+      rows={dimensions.numRows}
+      columns={dimensions.numColumns}
+      rowWidth={dimensions.cellWidth}
+      columnHeight={dimensions.cellHeight}
+      color={color}
+    />
+  );
+};
 
 const Editor: React.FC = () => (
   <Canvas
-    camera={{ fov: 45, position: [8, 20, 8] }}
+    camera={{ fov: 45, position: [-5, 20, -10] }}
     pixelRatio={window.devicePixelRatio}
   >
-    <group rotation={[-Math.PI / 2, 0, 0]}>
-      <RectangularGrid
-        columns={3}
-        rows={11}
-        columnHeight={GRID.x}
-        rowWidth={GRID.z}
-        color={"lightgray"}
-      />
-
+    <group rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
+      <Grid />
       <mesh name="ground" receiveShadow>
         <planeBufferGeometry attach="geometry" args={[30, 30, 1, 1]} />
         <shadowMaterial
@@ -32,15 +40,7 @@ const Editor: React.FC = () => (
       </mesh>
     </group>
 
-    <mesh position={[0, 2.5, 0]}>
-      <boxBufferGeometry attach="geometry" args={[GRID.x, 5, GRID.z]} />
-      <meshBasicMaterial
-        color="blue"
-        attach="material"
-        opacity={0.5}
-        transparent
-      />
-    </mesh>
+    <Building />
 
     <OrbitControls
       target={[0, 1, 0] as any}
