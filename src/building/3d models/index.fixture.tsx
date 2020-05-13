@@ -1,6 +1,6 @@
 import React from "react";
 import { DoubleSide, Shape } from "three";
-import grid from "../../grid";
+import grid from "../../shared/grid";
 import crossSections, { ICrossSection } from "../crossSections";
 
 const extrudeSettings = {

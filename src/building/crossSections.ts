@@ -1,5 +1,5 @@
 import { bounds } from "@bentobots/vector2";
-import grid from "../grid";
+import grid from "../shared/grid";
 import { offset, Point, union } from "../utils/clipper";
 import { pointsToSVGPath } from "../utils/svg";
 

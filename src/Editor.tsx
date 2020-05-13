@@ -2,7 +2,7 @@ import { OrbitControls } from "drei";
 import React from "react";
 import { Canvas } from "react-three-fiber";
 import { DoubleSide } from "three";
-import grid from "./grid";
+import grid from "./shared/grid";
 import RectangularGrid from "./shared/RectangularGrid";
 
 const GRID = grid("m");
