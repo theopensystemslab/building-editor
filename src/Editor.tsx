@@ -3,6 +3,7 @@ import React from "react";
 import { Canvas } from "react-three-fiber";
 import { DoubleSide, PCFSoftShadowMap } from "three";
 import Building from "./building/Building";
+import InfoPanel from "./info/InfoPanel";
 import RectangularGrid from "./shared/RectangularGrid";
 import { useStore } from "./shared/store";
 
@@ -23,42 +24,45 @@ const Grid: React.FC = () => {
 };
 
 const Editor: React.FC = () => (
-  <Canvas
-    camera={{ fov: 45, position: [-5, 20, -10] }}
-    pixelRatio={window.devicePixelRatio}
-    shadowMap={{ enabled: true, type: PCFSoftShadowMap }}
-    gl={{ antialias: true }}
-  >
-    <ambientLight />
-    <pointLight
-      position={[-40, 90, -45]}
-      castShadow
-      intensity={0.1}
-      shadowMapWidth={1024}
-      shadowMapHeight={1024}
-      shadowBias={-0.0008}
-    />
-    <Grid />
-    <group rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
-      <mesh name="ground" receiveShadow>
-        <planeBufferGeometry attach="geometry" args={[30, 30, 1, 1]} />
-        <shadowMaterial
-          attach="material"
-          color={0}
-          opacity={0.1}
-          side={DoubleSide}
-        />
-      </mesh>
-    </group>
-    <Building />
-    <OrbitControls
-      target={[0, 1, 0] as any}
-      rotateSpeed={0.7}
-      maxPolarAngle={1.49}
-      minDistance={5}
-      maxDistance={30}
-    />
-  </Canvas>
+  <>
+    <Canvas
+      camera={{ fov: 45, position: [-5, 20, -10] }}
+      pixelRatio={window.devicePixelRatio}
+      shadowMap={{ enabled: true, type: PCFSoftShadowMap }}
+      gl={{ antialias: true }}
+    >
+      <ambientLight />
+      <pointLight
+        position={[-40, 90, -45]}
+        castShadow
+        intensity={0.1}
+        shadowMapWidth={1024}
+        shadowMapHeight={1024}
+        shadowBias={-0.0008}
+      />
+      <Grid />
+      <group rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
+        <mesh name="ground" receiveShadow>
+          <planeBufferGeometry attach="geometry" args={[30, 30, 1, 1]} />
+          <shadowMaterial
+            attach="material"
+            color={0}
+            opacity={0.1}
+            side={DoubleSide}
+          />
+        </mesh>
+      </group>
+      <Building />
+      <OrbitControls
+        target={[0, 1, 0] as any}
+        rotateSpeed={0.7}
+        maxPolarAngle={1.49}
+        minDistance={5}
+        maxDistance={30}
+      />
+    </Canvas>
+    <InfoPanel />
+  </>
 );
 
 export default Editor;
