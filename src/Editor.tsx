@@ -40,10 +40,10 @@ const Editor: React.FC = () => (
       {/* <hemisphereLight /> */}
       <ambientLight />
       <directionalLight
-        position={[-20, 95, -20]}
+        position={[-20, 85, -30]}
         castShadow
-        intensity={0.35}
-        // shadowBias={-0.0011}
+        intensity={0.2}
+        shadowBias={-0.0004}
       />
       <Grid />
       <group rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
