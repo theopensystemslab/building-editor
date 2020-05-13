@@ -19,7 +19,7 @@ const Sidebar: React.FC<Props> = (props) => {
         onClick={() => {
           props.onEditModeChange("Move");
         }}
-        title="Move Mode"
+        title="Move Mode (m)"
       >
         <rf.Move />
       </button>
@@ -30,6 +30,7 @@ const Sidebar: React.FC<Props> = (props) => {
         onClick={() => {
           props.onEditModeChange("Insert");
         }}
+        title="Insert Mode (i)"
       >
         <rf.Box />
       </button>
@@ -40,6 +41,7 @@ const Sidebar: React.FC<Props> = (props) => {
         onClick={() => {
           props.onEditModeChange("Resize");
         }}
+        title="Resize Mode (r)"
       >
         <rf.PenTool />
       </button>
@@ -50,20 +52,21 @@ const Sidebar: React.FC<Props> = (props) => {
         onClick={() => {
           props.onEditModeChange("Slice");
         }}
+        title="Slice Mode (s)"
       >
         <rf.Columns />
       </button>
       <button
         {...(props.onUndo ? { onClick: props.onUndo } : { disabled: true })}
         className="sidebar-icon"
-        title="Undo"
+        title="Undo (cmd+z)"
       >
         <rf.RotateCcw />
       </button>
       <button
         {...(props.onRedo ? { onClick: props.onRedo } : { disabled: true })}
         className="sidebar-icon"
-        title="Redo"
+        title="Redo (cmd+shift+z)"
       >
         <rf.RotateCw />
       </button>

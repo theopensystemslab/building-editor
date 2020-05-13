@@ -119,8 +119,6 @@ const Cubes: React.FC<{
       props.drag.movement
     );
 
-    console.log(offset, offsetVertical);
-
     const positionOffsets =
       offset || offsetVertical
         ? {
@@ -138,9 +136,9 @@ const Cubes: React.FC<{
           ...(faceIndex === 0
             ? {
                 y: snapToGrid(prevCube.y + positionOffsets.y),
-                wy: snapToGrid(
-                  prevCube.wy - (canResize ? 1 : 0) * positionOffsets.y
-                ),
+                wy: canResize
+                  ? snapToGrid(prevCube.wy - positionOffsets.y)
+                  : prevCube.wy,
               }
             : {}),
           ...(faceIndex === 1
@@ -148,9 +146,9 @@ const Cubes: React.FC<{
                 x: snapToGrid(
                   prevCube.x + (canResize ? 0 : 1) * positionOffsets.x
                 ),
-                wx: snapToGrid(
-                  prevCube.wx + (canResize ? 1 : 0) * positionOffsets.x
-                ),
+                wx: canResize
+                  ? snapToGrid(prevCube.wx + positionOffsets.x)
+                  : prevCube.wx,
               }
             : {}),
           ...(faceIndex === 2
@@ -158,17 +156,17 @@ const Cubes: React.FC<{
                 y: snapToGrid(
                   prevCube.y + (canResize ? 0 : 1) * positionOffsets.y
                 ),
-                wy: snapToGrid(
-                  prevCube.wy + (canResize ? 1 : 0) * positionOffsets.y
-                ),
+                wy: canResize
+                  ? snapToGrid(prevCube.wy + positionOffsets.y)
+                  : prevCube.wy,
               }
             : {}),
           ...(faceIndex === 3
             ? {
                 x: snapToGrid(prevCube.x + positionOffsets.x),
-                wx: snapToGrid(
-                  prevCube.wx - (canResize ? 1 : 0) * positionOffsets.x
-                ),
+                wx: canResize
+                  ? snapToGrid(prevCube.wx - positionOffsets.x)
+                  : prevCube.wx,
               }
             : {}),
         }
@@ -217,6 +215,8 @@ const Cubes: React.FC<{
     <>
       <OrbitControls
         enabled={!hovered}
+        minPolarAngle={Math.PI / 8}
+        maxPolarAngle={(Math.PI * 7) / 8}
         target={new three.Vector3(0, 0, 0)}
         enableDamping
         dampingFactor={0.2}
@@ -379,6 +379,26 @@ const Container: React.FunctionComponent<{}> = () => {
   >();
 
   React.useEffect(() => {
+    const handleKeyDown = (ev: KeyboardEvent) => {
+      if (ev.key === "i") {
+        setEditMode("Insert");
+      } else if (ev.key === "m") {
+        setEditMode("Move");
+      } else if (ev.key === "r") {
+        setEditMode("Resize");
+      } else if (ev.key === "z" && ev.metaKey && !ev.shiftKey) {
+        setCubes(undoable.undo);
+      } else if (ev.key === "z" && ev.metaKey && ev.shiftKey) {
+        setCubes(undoable.redo);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  React.useEffect(() => {
     if (!threeContext) {
       return;
     }
@@ -405,8 +425,8 @@ const Container: React.FunctionComponent<{}> = () => {
             return undoable.setCurrent(prevCubes, [
               ...undoable.current(prevCubes),
               {
-                x: (uv.x - 0.5) * planeSize - 0.5,
-                y: -(uv.y - 0.5) * planeSize - 0.5,
+                x: snapToGrid((uv.x - 0.5) * planeSize - 0.5),
+                y: snapToGrid(-(uv.y - 0.5) * planeSize - 0.5),
                 wx: 1,
                 wy: 1,
               },
@@ -462,6 +482,14 @@ const Container: React.FunctionComponent<{}> = () => {
         <pointLight position={[3, 9, 5]} intensity={0.3} />
         <directionalLight position={[0, 8, 10]} intensity={0.9} />
         <directionalLight position={[5, 6, 0]} intensity={0.6} />
+        <gridHelper
+          args={[
+            30,
+            60,
+            new three.Color("#F1F1F1"),
+            new three.Color("#F4F4F4"),
+          ]}
+        />
         <mesh
           ref={horizontalPlaneRef}
           geometry={plane}
