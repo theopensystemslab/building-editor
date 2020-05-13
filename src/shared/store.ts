@@ -88,8 +88,8 @@ export const [useStore, api] = create(
 // so that the data gets processed by the selector middleware
 
 api.getState().set((state: State) => {
-  state.grid.occupiedCells = {
-    // [x, z]: { module: "A2_01", rotation: 180, etc... }
+  // try to load existing state from localStorage, otherwise use object below
+  state.grid.occupiedCells = JSON?.parse(localStorage.getItem("cache")) || {
     "0,-1": {
       module: "A2_01",
     },
@@ -101,3 +101,12 @@ api.getState().set((state: State) => {
     },
   };
 });
+
+// rudimentarily save state to localStorage if grid.occupiedCells changes
+
+api.subscribe(
+  (occupiedCells: State) => {
+    localStorage.setItem("cache", JSON.stringify(occupiedCells));
+  },
+  (state) => state.grid.occupiedCells
+);
