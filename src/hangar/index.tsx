@@ -62,6 +62,7 @@ const snapToGrid = (val: number) => Math.round(val / 0.5) * 0.5;
 
 const Cubes: React.FC<{
   drag: Drag;
+  editMode: EditMode;
   cubes: Array<Cube>;
   onCubeChange: (newCube: Array<Cube>) => void;
   horizontalRaycastPlane: three.Mesh;
@@ -92,6 +93,7 @@ const Cubes: React.FC<{
     | {
         cubeIndex: number;
         faceIndex: number;
+        active: boolean;
       }
     | undefined
   >(undefined);
@@ -117,12 +119,18 @@ const Cubes: React.FC<{
       props.drag.movement
     );
 
-    const positionOffsets = offset &&
-      offsetVertical && {
-        x: -offset.x * planeSize,
-        y: offset.y * planeSize,
-        z: -offsetVertical.y * planeSize,
-      };
+    console.log(offset, offsetVertical);
+
+    const positionOffsets =
+      offset || offsetVertical
+        ? {
+            x: -(offset ? offset.x : 0) * planeSize,
+            y: (offset ? offset.y : 0) * planeSize,
+            z: -(offsetVertical ? offsetVertical.y : 0) * planeSize,
+          }
+        : undefined;
+
+    const canResize = props.editMode === "Resize";
 
     return positionOffsets
       ? {
@@ -130,25 +138,37 @@ const Cubes: React.FC<{
           ...(faceIndex === 0
             ? {
                 y: snapToGrid(prevCube.y + positionOffsets.y),
-                wy: snapToGrid(prevCube.wy - positionOffsets.y),
+                wy: snapToGrid(
+                  prevCube.wy - (canResize ? 1 : 0) * positionOffsets.y
+                ),
               }
             : {}),
           ...(faceIndex === 1
             ? {
-                x: prevCube.x,
-                wx: snapToGrid(prevCube.wx + positionOffsets.x),
+                x: snapToGrid(
+                  prevCube.x + (canResize ? 0 : 1) * positionOffsets.x
+                ),
+                wx: snapToGrid(
+                  prevCube.wx + (canResize ? 1 : 0) * positionOffsets.x
+                ),
               }
             : {}),
           ...(faceIndex === 2
             ? {
-                y: prevCube.y,
-                wy: snapToGrid(prevCube.wy + positionOffsets.y),
+                y: snapToGrid(
+                  prevCube.y + (canResize ? 0 : 1) * positionOffsets.y
+                ),
+                wy: snapToGrid(
+                  prevCube.wy + (canResize ? 1 : 0) * positionOffsets.y
+                ),
               }
             : {}),
           ...(faceIndex === 3
             ? {
                 x: snapToGrid(prevCube.x + positionOffsets.x),
-                wx: snapToGrid(prevCube.wx - positionOffsets.x),
+                wx: snapToGrid(
+                  prevCube.wx - (canResize ? 1 : 0) * positionOffsets.x
+                ),
               }
             : {}),
         }
@@ -162,11 +182,24 @@ const Cubes: React.FC<{
         setHovered(undefined);
       }, 50);
     };
+    const handleCanvasMouseDown = () => {
+      if (hovered) {
+        setHovered(
+          (prevHovered) =>
+            prevHovered && {
+              ...prevHovered,
+              active: true,
+            }
+        );
+      }
+    };
     canvas.addEventListener("mouseup", handleCanvasMouseUp);
+    canvas.addEventListener("mousedown", handleCanvasMouseDown);
     return () => {
       canvas.removeEventListener("mouseup", handleCanvasMouseUp);
+      canvas.removeEventListener("mousedown", handleCanvasMouseDown);
     };
-  }, [threeContext]);
+  }, [threeContext, hovered]);
 
   React.useEffect(() => {
     if (hovered && !drag.dragging && drag.prevDragging) {
@@ -223,57 +256,66 @@ const Cubes: React.FC<{
               <mesh
                 key={faceIndex}
                 geometry={new three.PlaneBufferGeometry(planeGeo.w, 1, 1, 1)}
-                onPointerOver={(ev: PointerEvent) => {
-                  if (
-                    drag.dragging &&
-                    hovered &&
-                    hoveredInfo.current &&
-                    matchingIndices(hoveredInfo.current, hovered) &&
-                    hoveredInfo.current.distance < ev.distance
-                  ) {
-                    return;
-                  }
-                  setHovered({ cubeIndex, faceIndex });
-                  hoveredInfo.current = {
-                    faceIndex,
-                    cubeIndex,
-                    distance: ev.distance,
-                  };
-                }}
-                onPointerMove={(ev: PointerEvent) => {
-                  const info = {
-                    faceIndex,
-                    cubeIndex,
-                    distance: ev.distance,
-                  };
+                {...((hovered && hovered.active) || (!hovered && drag.dragging)
+                  ? {}
+                  : {
+                      onPointerOver: (ev: PointerEvent) => {
+                        if (
+                          hovered &&
+                          hoveredInfo.current &&
+                          matchingIndices(hoveredInfo.current, hovered) &&
+                          hoveredInfo.current.distance < ev.distance
+                        ) {
+                          return;
+                        }
+                        setHovered({ cubeIndex, faceIndex, active: false });
+                        hoveredInfo.current = {
+                          faceIndex,
+                          cubeIndex,
+                          distance: ev.distance,
+                        };
+                      },
+                      onPointerMove: (ev: PointerEvent) => {
+                        const info = {
+                          faceIndex,
+                          cubeIndex,
+                          distance: ev.distance,
+                        };
 
-                  if (!hovered && !drag.dragging) {
-                    hoveredInfo.current = info;
-                    setHovered({ cubeIndex, faceIndex });
-                    return;
-                  }
+                        if (!hovered && !drag.dragging) {
+                          hoveredInfo.current = info;
+                          setHovered({ cubeIndex, faceIndex, active: false });
+                          return;
+                        }
 
-                  if (hovered && matchingIndices(hovered, currentIndices)) {
-                    hoveredInfo.current = info;
-                  }
-                }}
-                onPointerOut={() => {
-                  if (!drag.dragging) {
-                    setHovered((prevHovered) =>
-                      prevHovered &&
-                      prevHovered.cubeIndex === cubeIndex &&
-                      prevHovered.faceIndex === faceIndex
-                        ? undefined
-                        : prevHovered
-                    );
-                  }
-                }}
+                        if (
+                          hovered &&
+                          matchingIndices(hovered, currentIndices)
+                        ) {
+                          hoveredInfo.current = info;
+                        }
+                      },
+                      onPointerOut: () => {
+                        if (!drag.dragging) {
+                          setHovered((prevHovered) =>
+                            prevHovered &&
+                            prevHovered.cubeIndex === cubeIndex &&
+                            prevHovered.faceIndex === faceIndex
+                              ? undefined
+                              : prevHovered
+                          );
+                        }
+                      },
+                    })}
                 position={[planeGeo.x, 0.5, planeGeo.y]}
                 rotation={new three.Euler().setFromRotationMatrix(
                   new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
                 )}
                 material={
-                  hovered && matchingIndices(hovered, currentIndices)
+                  hovered &&
+                  (props.editMode === "Resize"
+                    ? matchingIndices(hovered, currentIndices)
+                    : hovered.cubeIndex === cubeIndex)
                     ? wallMaterialHover
                     : wallMaterial
                 }
@@ -435,6 +477,7 @@ const Container: React.FunctionComponent<{}> = () => {
           <Cubes
             drag={dragStuff.drag}
             cubes={undoable.current(cubes)}
+            editMode={editMode}
             horizontalRaycastPlane={horizontalPlane}
             verticalRaycastPlane={verticalPlane}
             onCubeChange={(newCubes) => {
