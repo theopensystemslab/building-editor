@@ -6,6 +6,27 @@ import grid from "./grid";
 
 const GRID = grid("m");
 
+export interface State {
+  grid: {
+    properties: {
+      color: string;
+      dimensions: {
+        cellWidth: number;
+        cellLength: number;
+        numXCells?: number;
+        numZCells?: number;
+      };
+    };
+    occupiedCells: Record<
+      string,
+      {
+        module?: string;
+        rotation?: number;
+      }
+    >;
+  };
+}
+
 /*
  * calculates size of grid so that there is always a 'padding'
  * of a single grid cell surrounding all of the occupied cells
@@ -31,7 +52,7 @@ const selectorMiddleware = (config) => (set, get, api) =>
       const currentState = get().grid.occupiedCells;
 
       if (JSON.stringify(previousState) !== JSON.stringify(currentState)) {
-        set((state) => {
+        set((state: State) => {
           state.grid.properties.dimensions.numXCells = calcSize(
             currentState,
             0
@@ -66,7 +87,7 @@ export const [useStore, api] = create(
 // set the grid initial grid value AFTER creating the store
 // so that the data gets processed by the selector middleware
 
-api.getState().set((state) => {
+api.getState().set((state: State) => {
   state.grid.occupiedCells = {
     // [x, z]: { module: "A2_01", rotation: 180, etc... }
     "0,-1": {
