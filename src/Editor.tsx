@@ -1,7 +1,7 @@
 import { OrbitControls } from "drei";
 import React from "react";
 import { Canvas } from "react-three-fiber";
-import { DoubleSide, PCFSoftShadowMap } from "three";
+import { DoubleSide, PCFSoftShadowMap, Uncharted2ToneMapping } from "three";
 import Building from "./building/Building";
 import InfoPanel from "./info/InfoPanel";
 import RectangularGrid from "./shared/RectangularGrid";
@@ -26,19 +26,24 @@ const Grid: React.FC = () => {
 const Editor: React.FC = () => (
   <>
     <Canvas
-      camera={{ fov: 45, position: [-5, 20, -10] }}
+      camera={{ fov: 45 }}
       pixelRatio={window.devicePixelRatio}
       shadowMap={{ enabled: true, type: PCFSoftShadowMap }}
       gl={{ antialias: true }}
+      onCreated={(threeContext) => {
+        threeContext.gl.toneMapping = Uncharted2ToneMapping;
+        threeContext.camera.position.set(-5, 20, -10);
+        threeContext.camera.lookAt(0, 4, 0);
+        threeContext.camera.updateProjectionMatrix();
+      }}
     >
+      {/* <hemisphereLight /> */}
       <ambientLight />
-      <pointLight
-        position={[-40, 90, -45]}
+      <directionalLight
+        position={[-20, 95, -20]}
         castShadow
-        intensity={0.1}
-        shadowMapWidth={1024}
-        shadowMapHeight={1024}
-        shadowBias={-0.0008}
+        intensity={0.35}
+        // shadowBias={-0.0011}
       />
       <Grid />
       <group rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
@@ -47,7 +52,7 @@ const Editor: React.FC = () => (
           <shadowMaterial
             attach="material"
             color={0}
-            opacity={0.1}
+            opacity={0.05}
             side={DoubleSide}
           />
         </mesh>

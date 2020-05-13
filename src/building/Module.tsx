@@ -1,18 +1,27 @@
 import React from "react";
-import { DoubleSide, LineBasicMaterial, MeshStandardMaterial } from "three";
+import {
+  DoubleSide,
+  LineDashedMaterial,
+  LineSegments,
+  MeshStandardMaterial,
+} from "three";
 import crossSections from "./crossSections";
 
 // Placeholder mesh for the actual building modules
 
 const material = new MeshStandardMaterial({
-  color: "#67DD52",
+  color: "#dfdfdf",
   side: DoubleSide,
   polygonOffset: true,
   polygonOffsetFactor: 1,
 });
 
-const linesMaterial = new LineBasicMaterial({
-  color: "#39803C",
+const linesMaterial = new LineDashedMaterial({
+  color: "#777777",
+  linewidth: 0.5,
+  scale: 10,
+  dashSize: 1,
+  gapSize: 1,
 });
 
 interface IModule {
@@ -44,7 +53,10 @@ const Module: React.FC<IModule> = ({
       ]}
     >
       <mesh receiveShadow castShadow material={material} geometry={geometry} />
-      <lineSegments args={[edgesGeometry, linesMaterial]} />
+      <lineSegments
+        args={[edgesGeometry, linesMaterial]}
+        ref={(e: LineSegments) => e?.computeLineDistances()}
+      />
     </group>
   );
 };
