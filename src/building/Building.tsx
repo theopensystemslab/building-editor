@@ -13,13 +13,13 @@ const Building: React.FC = () => {
   return (
     <>
       {Object.entries(occupiedCells).map(
-        ([gridPosition, data]: [string, any]) => (
+      {Object.entries(occupiedCells as State["grid"]["occupiedCells"]).map(
           <Module
             key={gridPosition}
             gridPosition={gridPosition}
             cellWidth={cellWidth}
             cellLength={cellLength}
-            type={data.module}
+            type={cellData.module}
           />
         )
       )}
