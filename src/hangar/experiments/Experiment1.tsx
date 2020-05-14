@@ -2,7 +2,8 @@ import React from "react";
 import * as three from "three";
 import { OrbitControls } from "drei";
 import { useThree, PointerEvent } from "react-three-fiber";
-import { Drag, raycasterUvOffset } from "../../utils";
+import { Drag } from "../../utils";
+import * as raycast from "../../utils/raycast";
 import { gray, lightGray } from "./shared";
 
 type MoveDirection = "x" | "y" | "z";
@@ -74,7 +75,7 @@ const Experiment1: React.FunctionComponent<{
 
   const raycaster = React.useMemo(() => new three.Raycaster(), []);
 
-  const offset = raycasterUvOffset(
+  const offset = raycast.calcUvOffset(
     {
       width: props.width,
       height: props.height,
@@ -85,7 +86,7 @@ const Experiment1: React.FunctionComponent<{
     props.drag.movement
   );
 
-  const offsetVertical = raycasterUvOffset(
+  const offsetVertical = raycast.calcUvOffset(
     {
       width: props.width,
       height: props.height,

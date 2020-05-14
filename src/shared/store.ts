@@ -6,6 +6,15 @@ import grid from "./grid";
 
 const GRID = grid("m");
 
+export interface Cube {
+  x: number;
+  y: number;
+  wx: number;
+  wy: number;
+}
+
+export type EditMode = "Move" | "Resize" | "Slice" | "Insert";
+
 export interface State {
   grid: {
     properties: {

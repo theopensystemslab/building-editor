@@ -1,7 +1,8 @@
 import React from "react";
 import { useThree } from "react-three-fiber";
 import * as three from "three";
-import { Drag, raycasterUvOffset } from "../../utils";
+import { Drag } from "../../utils";
+import * as raycast from "../../utils/raycast";
 import { gray } from "./shared";
 
 // Raytracing planes
@@ -68,7 +69,7 @@ const Experiment3: React.FunctionComponent<{
 
   const size = 4;
 
-  const offset = raycasterUvOffset(
+  const offset = raycast.calcUvOffset(
     {
       width: props.width,
       height: props.height,
@@ -79,7 +80,7 @@ const Experiment3: React.FunctionComponent<{
     props.drag.movement
   );
 
-  const offsetVertical = raycasterUvOffset(
+  const offsetVertical = raycast.calcUvOffset(
     {
       width: props.width,
       height: props.height,

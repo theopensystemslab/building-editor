@@ -8,32 +8,14 @@ import {
 } from "react-three-fiber";
 import * as three from "three";
 import RectangularGrid from "../shared/RectangularGrid";
-import { Drag, raycasterUv, raycasterUvOffset, useSimpleDrag } from "../utils";
+import { Drag, useSimpleDrag } from "../utils";
+import * as raycast from "../utils/raycast";
 import * as undoable from "../utils/undoable";
 import "./index.css";
 import Sidebar from "./Sidebar";
-import { EditMode } from "./state";
+import { EditMode, Cube } from "../shared/store";
 
 // Raytracing planes
-
-const planeSize = 100;
-
-const plane: three.BufferGeometry = new three.PlaneBufferGeometry(
-  planeSize,
-  planeSize,
-  1,
-  1
-);
-
-const invisiblePlaneMaterial: three.Material = new three.MeshBasicMaterial({
-  color: 0x248f24,
-  alphaTest: 0,
-  visible: false,
-});
-
-const horizontalPlaneRotation: three.Euler = new three.Euler().setFromRotationMatrix(
-  new three.Matrix4().makeRotationX(-Math.PI / 2)
-);
 
 const wallMaterial = new three.MeshPhongMaterial({
   color: "#444",
@@ -44,13 +26,6 @@ const wallMaterialHover = new three.MeshPhongMaterial({
   color: "#555",
   side: three.DoubleSide,
 });
-
-interface Cube {
-  x: number;
-  y: number;
-  wx: number;
-  wy: number;
-}
 
 const matchingIndices = (
   indices1: { cubeIndex: number; faceIndex: number },
@@ -107,7 +82,7 @@ const Cubes: React.FC<{
   >(undefined);
 
   const updateCube = (prevCube: Cube, faceIndex: number): Cube => {
-    const offset = raycasterUvOffset(
+    const offset = raycast.calcUvOffset(
       {
         ...dimensions,
         plane: props.horizontalRaycastPlane,
@@ -117,7 +92,7 @@ const Cubes: React.FC<{
       props.drag.movement
     );
 
-    const offsetVertical = raycasterUvOffset(
+    const offsetVertical = raycast.calcUvOffset(
       {
         ...dimensions,
         plane: props.verticalRaycastPlane,
@@ -130,9 +105,9 @@ const Cubes: React.FC<{
     const positionOffsets =
       offset || offsetVertical
         ? {
-            x: -(offset ? offset.x : 0) * planeSize,
-            y: (offset ? offset.y : 0) * planeSize,
-            z: -(offsetVertical ? offsetVertical.y : 0) * planeSize,
+            x: -(offset ? offset.x : 0) * raycast.planeSize,
+            y: (offset ? offset.y : 0) * raycast.planeSize,
+            z: -(offsetVertical ? offsetVertical.y : 0) * raycast.planeSize,
           }
         : undefined;
 
@@ -352,51 +327,31 @@ const Cubes: React.FC<{
   );
 };
 
+const initCubes = (): Array<Cube> => [
+  {
+    x: snapToGridX(-0.5),
+    y: snapToGridY(-0.5),
+    wx: snapToGridX(1.5),
+    wy: snapToGridY(6),
+  },
+  {
+    x: snapToGridX(-2.5),
+    y: snapToGridY(-2.5),
+    wx: snapToGridX(1.5),
+    wy: snapToGridY(6),
+  },
+];
+
 const Container: React.FunctionComponent<{}> = () => {
   const dragStuff = useSimpleDrag();
-
-  // Application state
 
   const [editMode, setEditMode] = React.useState<EditMode>("Move");
 
   const [cubes, setCubes] = React.useState<undoable.Undoable<Array<Cube>>>(
-    undoable.create([
-      {
-        x: snapToGridX(-0.5),
-        y: snapToGridY(-0.5),
-        wx: snapToGridX(1.5),
-        wy: snapToGridY(6),
-      },
-      {
-        x: snapToGridX(-2.5),
-        y: snapToGridY(-2.5),
-        wx: snapToGridX(1.5),
-        wy: snapToGridY(6),
-      },
-    ])
+    undoable.create(initCubes())
   );
 
-  const raycaster = React.useMemo(() => new three.Raycaster(), []);
-
-  // Set up refs for raytracing planes
-
-  const [horizontalPlane, setHorizontalPlane] = React.useState<
-    three.Mesh | undefined
-  >(undefined);
-
-  const horizontalPlaneRef = React.useCallback((plane) => {
-    setHorizontalPlane(plane);
-  }, []);
-
-  const [verticalPlane, setVerticalPlane] = React.useState<
-    three.Mesh | undefined
-  >(undefined);
-
-  const verticalPlaneRef = React.useCallback((plane) => {
-    setVerticalPlane(plane);
-  }, []);
-
-  // Click on plane
+  const raycasting = raycast.useRaycasting();
 
   const [threeContext, setThreeContext] = React.useState<
     CanvasContext | undefined
@@ -422,6 +377,7 @@ const Container: React.FunctionComponent<{}> = () => {
     };
   }, []);
 
+  // Handle canvas click
   React.useEffect(() => {
     if (!threeContext) {
       return;
@@ -433,14 +389,14 @@ const Container: React.FunctionComponent<{}> = () => {
       if (editMode !== "Insert") {
         return;
       }
-      if (horizontalPlane) {
-        const uv = raycasterUv(
+      if (raycasting.horizontalPlane) {
+        const uv = raycast.calcUv(
           {
             width,
             height,
-            plane: horizontalPlane,
+            plane: raycasting.horizontalPlane,
             camera: threeContext.camera,
-            raycaster,
+            raycaster: raycasting.raycaster,
           },
           [ev.offsetX, ev.offsetY]
         );
@@ -449,10 +405,10 @@ const Container: React.FunctionComponent<{}> = () => {
             return undoable.setCurrent(prevCubes, [
               ...undoable.current(prevCubes),
               {
-                x: snapToGridX((uv.x - 0.5) * planeSize - 0.5),
-                y: snapToGridY(-(uv.y - 0.5) * planeSize - 0.5),
-                wx: snapToGridX(1),
-                wy: snapToGridY(1),
+                x: snapToGridX((uv.x - 0.5) * raycast.planeSize - gridX / 2),
+                y: snapToGridY(-(uv.y - 0.5) * raycast.planeSize - gridY / 2),
+                wx: snapToGridX(gridX),
+                wy: snapToGridY(gridY),
               },
             ]);
           });
@@ -514,25 +470,14 @@ const Container: React.FunctionComponent<{}> = () => {
           cellWidth={gridX}
           color="#F1F1F1"
         />
-
-        <mesh
-          ref={horizontalPlaneRef}
-          geometry={plane}
-          rotation={horizontalPlaneRotation}
-          material={invisiblePlaneMaterial}
-        />
-        <mesh
-          ref={verticalPlaneRef}
-          geometry={plane}
-          material={invisiblePlaneMaterial}
-        />
-        {horizontalPlane && verticalPlane && (
+        <raycast.Planes refs={raycasting.refs} />
+        {raycasting.horizontalPlane && raycasting.verticalPlane && (
           <Cubes
             drag={dragStuff.drag}
             cubes={undoable.current(cubes)}
             editMode={editMode}
-            horizontalRaycastPlane={horizontalPlane}
-            verticalRaycastPlane={verticalPlane}
+            horizontalRaycastPlane={raycasting.horizontalPlane}
+            verticalRaycastPlane={raycasting.verticalPlane}
             onCubeChange={(newCubes) => {
               setCubes(undoable.setCurrent(cubes, newCubes));
             }}
