@@ -271,13 +271,6 @@ const Container: React.FunctionComponent<{}> = () => {
   }, [threeContext, hovered]);
 
   React.useEffect(() => {
-    if (!threeContext || editMode !== EditMode.Insert) {
-      return;
-    }
-    const canvas = threeContext.gl.domElement;
-  }, [threeContext, editMode]);
-
-  React.useEffect(() => {
     if (hovered && !drag.dragging && drag.prevDragging) {
       const currentCubes = undoable.current(cubes);
       setCubes(
