@@ -1,7 +1,9 @@
+import * as d3 from "d3";
 import { OrbitControls } from "drei";
 import React from "react";
 import { Canvas, CanvasContext, PointerEvent } from "react-three-fiber";
 import * as three from "three";
+import { OrthographicCamera } from "three";
 import { toggleClippingHeight } from "../building/ClipPlane";
 import NewBuilding from "../building/NewBuilding";
 import Panel from "../panels";
@@ -21,6 +23,8 @@ import * as undoable from "../utils/undoable";
 import HangarMesh from "./HangarMesh";
 import { boxFaceRotationMatrices, gridX, gridY, gridZ } from "./shared";
 import Sidebar from "./Sidebar";
+
+const DZOOM = 200;
 
 const matchingIndices = (
   indices1: { hangarIndex: number; faceIndex: number },
@@ -161,6 +165,7 @@ const updateHangar = ({
 };
 
 const Container: React.FunctionComponent<{}> = () => {
+  const containerEl = React.useRef(null);
   // Refer to global state
 
   const store = useStore();
@@ -378,7 +383,7 @@ const Container: React.FunctionComponent<{}> = () => {
   ]);
 
   return (
-    <div style={{ width: "100%", height: "100%" }}>
+    <div style={{ width: "100%", height: "100%" }} ref={containerEl}>
       <Sidebar
         editMode={editMode}
         onUndo={
@@ -410,6 +415,41 @@ const Container: React.FunctionComponent<{}> = () => {
           threeContext.camera.position.set(50, 50, 50);
           threeContext.camera.lookAt(0, 0, 0);
           threeContext.camera.updateProjectionMatrix();
+
+          const view = d3.select(containerEl.current);
+
+          const zoom = d3
+            .zoom()
+            .scaleExtent([0.25, 0.35])
+            .on("zoom", function () {
+              const event = d3.event;
+              if (event.sourceEvent) {
+                console.log(event.sourceEvent);
+                let x, y, z, _ref;
+
+                y = event.sourceEvent.y;
+                // z = zoom.scale();
+                z = event.transform.k;
+                // (_ref = zoom.translate()), (x = _ref[0]), (y = _ref[1]);
+
+                const camera = threeContext.camera as OrthographicCamera;
+                x = x - threeContext.size.width / 2;
+                y = y - threeContext.size.height / 2;
+
+                console.log(camera.top);
+                camera.top =
+                  DZOOM / z +
+                  (((y / threeContext.size.height) * DZOOM) / z) * 2;
+                console.log(camera.top);
+                console.log("---");
+
+                camera.updateProjectionMatrix();
+              } else {
+                // panning
+              }
+            });
+
+          view.call(zoom);
         }}
         camera={{
           near: 1,
@@ -467,6 +507,7 @@ const Container: React.FunctionComponent<{}> = () => {
           maxPolarAngle={(Math.PI * 7) / 8}
           target={new three.Vector3(0, 0, 0)}
           enableDamping
+          enableZoom={false}
           dampingFactor={0.2}
           rotateSpeed={0.7}
         />
