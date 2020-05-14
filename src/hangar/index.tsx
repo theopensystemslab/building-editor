@@ -7,7 +7,7 @@ import { useSimpleDrag } from "../utils";
 import * as raycast from "../utils/raycast";
 import * as undoable from "../utils/undoable";
 import Sidebar from "./Sidebar";
-import { EditMode, Cube } from "../shared/store";
+import { useStore, EditMode, Cube } from "../shared/store";
 
 // Raytracing planes
 
@@ -53,12 +53,39 @@ const initCubes = (): Array<Cube> => [
 ];
 
 const Container: React.FunctionComponent<{}> = () => {
-  // Global state
-  const [editMode, setEditMode] = React.useState<EditMode>("Move");
+  // Refer to global state
 
-  const [cubes, setCubes] = React.useState<undoable.Undoable<Array<Cube>>>(
-    undoable.create(initCubes())
-  );
+  const store = useStore();
+
+  // Create editMode, setEditMode, cubes and setCubes methods the way
+  // a local useState call would
+  const editMode = store.editMode;
+
+  const cubes: undoable.Undoable<Array<Cube>> = store.cubes;
+
+  const setCubes = (
+    valOrUpdater:
+      | undoable.Undoable<Array<Cube>>
+      | ((
+          prev: undoable.Undoable<Array<Cube>>
+        ) => undoable.Undoable<Array<Cube>>)
+  ) => {
+    if (typeof valOrUpdater === "function") {
+      store.set((draft) => {
+        draft.cubes = valOrUpdater(draft.cubes);
+      });
+    } else {
+      store.set((draft) => {
+        draft.cubes = valOrUpdater;
+      });
+    }
+  };
+
+  const setEditMode = (val: EditMode) => {
+    store.set((draft) => {
+      draft.editMode = val;
+    });
+  };
 
   // Local state and effects
 
