@@ -1,6 +1,6 @@
 import React from "react";
-import { EditMode } from "../shared/store";
 import * as rf from "react-feather";
+import { EditMode } from "../shared/store";
 import "./sidebar.css";
 
 interface Props {
@@ -15,10 +15,10 @@ const Sidebar: React.FC<Props> = (props) => {
     <div className="sidebar">
       <button
         className={`sidebar-icon ${
-          props.editMode === "Move" ? "sidebar-icon-active" : ""
+          props.editMode === EditMode.Move ? "sidebar-icon-active" : ""
         }`}
         onClick={() => {
-          props.onEditModeChange("Move");
+          props.onEditModeChange(EditMode.Move);
         }}
         title="Move Mode (m)"
       >
@@ -26,10 +26,10 @@ const Sidebar: React.FC<Props> = (props) => {
       </button>
       <button
         className={`sidebar-icon ${
-          props.editMode === "Insert" ? "sidebar-icon-active" : ""
+          props.editMode === EditMode.Insert ? "sidebar-icon-active" : ""
         }`}
         onClick={() => {
-          props.onEditModeChange("Insert");
+          props.onEditModeChange(EditMode.Insert);
         }}
         title="Insert Mode (i)"
       >
@@ -37,10 +37,10 @@ const Sidebar: React.FC<Props> = (props) => {
       </button>
       <button
         className={`sidebar-icon ${
-          props.editMode === "Resize" ? "sidebar-icon-active" : ""
+          props.editMode === EditMode.Resize ? "sidebar-icon-active" : ""
         }`}
         onClick={() => {
-          props.onEditModeChange("Resize");
+          props.onEditModeChange(EditMode.Resize);
         }}
         title="Resize Mode (r)"
       >
@@ -48,10 +48,10 @@ const Sidebar: React.FC<Props> = (props) => {
       </button>
       <button
         className={`sidebar-icon ${
-          props.editMode === "Slice" ? "sidebar-icon-active" : ""
+          props.editMode === EditMode.Slice ? "sidebar-icon-active" : ""
         }`}
         onClick={() => {
-          props.onEditModeChange("Slice");
+          props.onEditModeChange(EditMode.Slice);
         }}
         title="Slice Mode (s)"
       >

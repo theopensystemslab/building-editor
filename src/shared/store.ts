@@ -14,7 +14,12 @@ export interface Cube {
   wz: number;
 }
 
-export type EditMode = "Move" | "Resize" | "Slice" | "Insert";
+export enum EditMode {
+  "Move",
+  "Resize",
+  "Slice",
+  "Insert",
+}
 
 export interface State {
   editMode: EditMode;
@@ -92,7 +97,7 @@ export const [useStore, api] = create(
       },
       occupiedCells: {},
     },
-    editMode: "Move",
+    editMode: EditMode.Move,
     cubes: undoable.create([]),
     set: (fn) => set(produce(fn)),
   }))

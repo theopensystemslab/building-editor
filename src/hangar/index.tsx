@@ -137,7 +137,7 @@ const Container: React.FunctionComponent<{}> = () => {
           }
         : undefined;
 
-    const canResize = editMode === "Resize";
+    const canResize = editMode === EditMode.Resize;
 
     return positionOffsets
       ? {
@@ -246,11 +246,11 @@ const Container: React.FunctionComponent<{}> = () => {
   React.useEffect(() => {
     const handleKeyDown = (ev: KeyboardEvent) => {
       if (ev.key === "i") {
-        setEditMode("Insert");
+        setEditMode(EditMode.Insert);
       } else if (ev.key === "m") {
-        setEditMode("Move");
+        setEditMode(EditMode.Move);
       } else if (ev.key === "r") {
-        setEditMode("Resize");
+        setEditMode(EditMode.Resize);
       } else if (ev.key === "z" && ev.metaKey && !ev.shiftKey) {
         setCubes(undoable.undo);
       } else if (ev.key === "z" && ev.metaKey && ev.shiftKey) {
@@ -272,7 +272,7 @@ const Container: React.FunctionComponent<{}> = () => {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
     const handleCanvasClick = (ev: MouseEvent) => {
-      if (editMode !== "Insert") {
+      if (editMode !== EditMode.Insert) {
         return;
       }
       if (raycasting.horizontalPlane) {
@@ -458,7 +458,7 @@ const Container: React.FunctionComponent<{}> = () => {
                   )}
                   material={
                     hovered &&
-                    (editMode === "Resize"
+                    (editMode === EditMode.Resize
                       ? matchingIndices(hovered, currentIndices)
                       : hovered.cubeIndex === cubeIndex)
                       ? wallMaterialHover
