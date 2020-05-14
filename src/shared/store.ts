@@ -9,27 +9,27 @@ const GRID = grid("m");
 
 type Point = { x: number; z: number };
 
-export type Cube = Point[];
+export type Hangar = Point[];
 
-interface OldCube {
+interface Cube {
   x: number;
   z: number;
   wx: number;
   wz: number;
 }
 
-export const cubeToOldCube = (cube: Cube): OldCube => ({
-  x: cube[0].x,
-  z: cube[0].z,
-  wx: Math.abs(cube[2].x - cube[0].x),
-  wz: Math.abs(cube[2].z - cube[0].z),
+export const hangarToCube = (hangar: Hangar): Cube => ({
+  x: hangar[0].x,
+  z: hangar[0].z,
+  wx: Math.abs(hangar[2].x - hangar[0].x),
+  wz: Math.abs(hangar[2].z - hangar[0].z),
 });
 
-export const oldCubeToCube = (oldCube: OldCube): Cube => [
-  { x: oldCube.x, z: oldCube.z },
-  { x: oldCube.x + oldCube.wx, z: oldCube.z },
-  { x: oldCube.x + oldCube.wx, z: oldCube.z + oldCube.wz },
-  { x: oldCube.x, z: oldCube.z + oldCube.wz },
+export const cubeToHangar = (cube: Cube): Hangar => [
+  { x: cube.x, z: cube.z },
+  { x: cube.x + cube.wx, z: cube.z },
+  { x: cube.x + cube.wx, z: cube.z + cube.wz },
+  { x: cube.x, z: cube.z + cube.wz },
 ];
 
 export enum EditMode {
@@ -41,7 +41,7 @@ export enum EditMode {
 
 export interface State {
   editMode: EditMode;
-  cubes: undoable.Undoable<Array<Cube>>;
+  cubes: undoable.Undoable<Array<Hangar>>;
   grid: {
     properties: {
       color: string;

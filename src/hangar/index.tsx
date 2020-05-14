@@ -5,10 +5,10 @@ import * as three from "three";
 import grid from "../shared/grid";
 import RectangularGrid from "../shared/RectangularGrid";
 import {
-  Cube,
-  cubeToOldCube,
+  cubeToHangar,
   EditMode,
-  oldCubeToCube,
+  Hangar,
+  hangarToCube,
   useStore,
 } from "../shared/store";
 import { fastBasicEqualityCheck, useSimpleDrag } from "../utils";
@@ -48,62 +48,65 @@ const { x: gridX, z: gridZ } = grid("m");
 const snapToGridX = (val: number): number => Math.round(val / gridX) * gridX;
 const snapToGridZ = (val: number): number => Math.round(val / gridZ) * gridZ;
 
-const CubeMesh: React.FC<{ cube: Cube }> = React.memo(({ cube, ...rest }) => {
-  const _cube = cubeToOldCube(cube);
+const HangarMesh: React.FC<{ cube: Hangar }> = React.memo(
+  ({ cube, ...rest }) => {
+    const _cube = hangarToCube(cube);
 
-  return (
-    <React.Fragment {...rest}>
-      {[0, 1, 2, 3].map((faceIndex) => {
-        const planeGeo =
-          faceIndex === 0
-            ? { x: _cube.x + _cube.wx / 2, z: _cube.z, w: _cube.wx }
-            : faceIndex === 1
-            ? {
-                x: _cube.x + _cube.wx,
-                z: _cube.z + _cube.wz / 2,
-                w: _cube.wz,
-              }
-            : faceIndex === 2
-            ? {
-                x: _cube.x + _cube.wx / 2,
-                z: _cube.z + _cube.wz,
-                w: _cube.wx,
-              }
-            : { x: _cube.x, z: _cube.z + _cube.wz / 2, w: _cube.wz };
+    return (
+      <React.Fragment {...rest}>
+        {[0, 1, 2, 3].map((faceIndex) => {
+          const planeGeo =
+            faceIndex === 0
+              ? { x: _cube.x + _cube.wx / 2, z: _cube.z, w: _cube.wx }
+              : faceIndex === 1
+              ? {
+                  x: _cube.x + _cube.wx,
+                  z: _cube.z + _cube.wz / 2,
+                  w: _cube.wz,
+                }
+              : faceIndex === 2
+              ? {
+                  x: _cube.x + _cube.wx / 2,
+                  z: _cube.z + _cube.wz,
+                  w: _cube.wx,
+                }
+              : { x: _cube.x, z: _cube.z + _cube.wz / 2, w: _cube.wz };
 
-        return (
-          <mesh
-            key={faceIndex}
-            geometry={new three.PlaneBufferGeometry(planeGeo.w, 1, 1, 1)}
-            position={[planeGeo.x, 0.5, planeGeo.z]}
-            rotation={new three.Euler().setFromRotationMatrix(
-              new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
-            )}
-            material={wallGhostMaterial}
-          />
-        );
-      })}
-    </React.Fragment>
-  );
-}, fastBasicEqualityCheck);
+          return (
+            <mesh
+              key={faceIndex}
+              geometry={new three.PlaneBufferGeometry(planeGeo.w, 1, 1, 1)}
+              position={[planeGeo.x, 0.5, planeGeo.z]}
+              rotation={new three.Euler().setFromRotationMatrix(
+                new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
+              )}
+              material={wallGhostMaterial}
+            />
+          );
+        })}
+      </React.Fragment>
+    );
+  },
+  fastBasicEqualityCheck
+);
 
 const Container: React.FunctionComponent<{}> = () => {
   // Refer to global state
 
   const store = useStore();
 
-  // Create editMode, setEditMode, cubes and setCubes methods the way
+  // Create editMode, setEditMode, cubes and setHangars methods the way
   // a local useState call would
   const editMode = store.editMode;
 
-  const cubes: undoable.Undoable<Array<Cube>> = store.cubes;
+  const cubes: undoable.Undoable<Array<Hangar>> = store.cubes;
 
-  const setCubes = (
+  const setHangars = (
     valOrUpdater:
-      | undoable.Undoable<Array<Cube>>
+      | undoable.Undoable<Array<Hangar>>
       | ((
-          prev: undoable.Undoable<Array<Cube>>
-        ) => undoable.Undoable<Array<Cube>>)
+          prev: undoable.Undoable<Array<Hangar>>
+        ) => undoable.Undoable<Array<Hangar>>)
   ) => {
     if (typeof valOrUpdater === "function") {
       store.set((draft) => {
@@ -152,7 +155,7 @@ const Container: React.FunctionComponent<{}> = () => {
   >(undefined);
 
   // Update cube position utility - re-used between rendering the dragged shadow and the state update logic
-  const updateCube = (prevCube: Cube, faceIndex: number): Cube => {
+  const updateHangar = (prevHangar: Hangar, faceIndex: number): Hangar => {
     const dimensions = {
       width: threeContext.gl.domElement.clientWidth,
       height: threeContext.gl.domElement.clientHeight,
@@ -190,7 +193,7 @@ const Container: React.FunctionComponent<{}> = () => {
     const canResize = editMode === EditMode.Resize;
 
     if (positionOffsets) {
-      const clone = cubeToOldCube(prevCube);
+      const clone = hangarToCube(prevHangar);
 
       switch (faceIndex) {
         case 0:
@@ -238,9 +241,9 @@ const Container: React.FunctionComponent<{}> = () => {
           break;
       }
 
-      return oldCubeToCube(clone);
+      return cubeToHangar(clone);
     }
-    return prevCube;
+    return prevHangar;
   };
 
   React.useEffect(() => {
@@ -274,13 +277,16 @@ const Container: React.FunctionComponent<{}> = () => {
 
   React.useEffect(() => {
     if (hovered && !drag.dragging && drag.prevDragging) {
-      const currentCubes = undoable.current(cubes);
-      setCubes(
+      const currentHangars = undoable.current(cubes);
+      setHangars(
         undoable.setCurrent(
           cubes,
-          currentCubes.map((cube_, index) =>
+          currentHangars.map((cube_, index) =>
             index === hovered.cubeIndex
-              ? updateCube(currentCubes[hovered.cubeIndex], hovered.faceIndex)
+              ? updateHangar(
+                  currentHangars[hovered.cubeIndex],
+                  hovered.faceIndex
+                )
               : cube_
           )
         )
@@ -297,9 +303,9 @@ const Container: React.FunctionComponent<{}> = () => {
       } else if (ev.key === "r") {
         setEditMode(EditMode.Resize);
       } else if (ev.key === "z" && ev.metaKey && !ev.shiftKey) {
-        setCubes(undoable.undo);
+        setHangars(undoable.undo);
       } else if (ev.key === "z" && ev.metaKey && ev.shiftKey) {
-        setCubes(undoable.redo);
+        setHangars(undoable.redo);
       }
     };
     document.addEventListener("keydown", handleKeyDown);
@@ -308,7 +314,9 @@ const Container: React.FunctionComponent<{}> = () => {
     };
   }, []);
 
-  const [ghostCube, setGhostCube] = React.useState<Cube | undefined>(undefined);
+  const [ghostHangar, setGhostHangar] = React.useState<Hangar | undefined>(
+    undefined
+  );
 
   // Handle canvas events in insert mode (ghost box, box insertion)
   React.useEffect(() => {
@@ -334,10 +342,10 @@ const Container: React.FunctionComponent<{}> = () => {
           [ev.offsetX, ev.offsetY]
         );
         if (uv) {
-          setCubes((prevCubes) => {
-            return undoable.setCurrent(prevCubes, [
-              ...undoable.current(prevCubes),
-              oldCubeToCube({
+          setHangars((prevHangars) => {
+            return undoable.setCurrent(prevHangars, [
+              ...undoable.current(prevHangars),
+              cubeToHangar({
                 x: snapToGridX((uv.x - 0.5) * raycast.planeSize - gridX / 2),
                 z: snapToGridZ(-(uv.y - 0.5) * raycast.planeSize - gridZ / 2),
                 wx: snapToGridX(gridX),
@@ -360,8 +368,8 @@ const Container: React.FunctionComponent<{}> = () => {
         [ev.offsetX, ev.offsetY]
       );
       if (uv) {
-        setGhostCube(
-          oldCubeToCube({
+        setGhostHangar(
+          cubeToHangar({
             x: snapToGridX((uv.x - 0.5) * raycast.planeSize - gridX / 2),
             z: snapToGridZ(-(uv.y - 0.5) * raycast.planeSize - gridZ / 2),
             wx: snapToGridX(gridX),
@@ -385,14 +393,14 @@ const Container: React.FunctionComponent<{}> = () => {
         onUndo={
           undoable.canUndo(cubes)
             ? () => {
-                setCubes(undoable.undo);
+                setHangars(undoable.undo);
               }
             : undefined
         }
         onRedo={
           undoable.canRedo(cubes)
             ? () => {
-                setCubes(undoable.redo);
+                setHangars(undoable.redo);
               }
             : undefined
         }
@@ -437,8 +445,8 @@ const Container: React.FunctionComponent<{}> = () => {
           dampingFactor={0.2}
           rotateSpeed={0.7}
         />
-        {editMode === EditMode.Insert && ghostCube && (
-          <CubeMesh cube={ghostCube} />
+        {editMode === EditMode.Insert && ghostHangar && (
+          <HangarMesh cube={ghostHangar} />
         )}
         {undoable.current(cubes).map((cube, cubeIndex) => (
           <React.Fragment key={cubeIndex}>
@@ -448,9 +456,9 @@ const Container: React.FunctionComponent<{}> = () => {
                 faceIndex,
               };
 
-              const cube_ = cubeToOldCube(
+              const cube_ = hangarToCube(
                 drag.dragging && hovered && hovered.cubeIndex === cubeIndex
-                  ? updateCube(cube, hovered.faceIndex)
+                  ? updateHangar(cube, hovered.faceIndex)
                   : cube
               );
 
