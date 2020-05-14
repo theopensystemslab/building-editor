@@ -7,12 +7,16 @@ import grid from "./grid";
 
 const GRID = grid("m");
 
-export interface Cube {
-  x: number;
-  z: number;
-  wx: number;
-  wz: number;
-}
+type Point = { x: number; z: number };
+
+export type Cube = Point[];
+
+// export interface Cube {
+//   // x: number;
+//   // z: number;
+//   // wx: number;
+//   // wz: number;
+// }
 
 export enum EditMode {
   Move = "Move",
@@ -99,12 +103,18 @@ export const [useStore, api] = create(
     },
     editMode: EditMode.Move,
     cubes: undoable.create([
-      {
-        x: 0,
-        z: 0,
-        wx: GRID.x,
-        wz: GRID.z,
-      },
+      // {
+      //   x: 0,
+      //   z: 0,
+      //   wx: GRID.x,
+      //   wz: GRID.z,
+      // }
+      [
+        { x: 0, z: 0 },
+        { x: GRID.x, z: 0 },
+        { x: GRID.x, z: GRID.z },
+        { x: 0, z: GRID.z },
+      ],
     ]),
     set: (fn) => set(produce(fn)),
   }))
