@@ -3,7 +3,8 @@ import React from "react";
 import { Canvas } from "react-three-fiber";
 import { DoubleSide, PCFSoftShadowMap, Uncharted2ToneMapping } from "three";
 import Building from "./building/Building";
-import InfoPanel from "./info/InfoPanel";
+import InfoPanel from "./panels/InfoPanel";
+import ItemsPanel from "./panels/ItemsPanel";
 import RectangularGrid from "./shared/RectangularGrid";
 import { useStore } from "./shared/store";
 
@@ -40,7 +41,7 @@ const Editor: React.FC = () => (
       {/* <hemisphereLight /> */}
       <ambientLight />
       <directionalLight
-        position={[-20, 85, -30]}
+        position={[20, 85, 30]}
         castShadow
         intensity={0.2}
         shadowBias={-0.0004}
@@ -67,6 +68,7 @@ const Editor: React.FC = () => (
       />
       {process.env.REACT_APP_DEBUG && <Stats />}
     </Canvas>
+    <ItemsPanel />
     <InfoPanel />
   </>
 );
