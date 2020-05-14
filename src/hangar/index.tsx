@@ -2,6 +2,7 @@ import { OrbitControls } from "drei";
 import React from "react";
 import { Canvas, CanvasContext, PointerEvent } from "react-three-fiber";
 import * as three from "three";
+import Effects from "../shared/Effects";
 import grid from "../shared/grid";
 import RectangularGrid from "../shared/RectangularGrid";
 import { Cube, EditMode, useStore } from "../shared/store";
@@ -17,9 +18,14 @@ const wallGhostMaterial = new three.MeshPhongMaterial({
   side: three.DoubleSide,
 });
 
-const wallMaterial = new three.MeshPhongMaterial({
-  color: "#444",
+// const wallMaterial = new three.MeshPhongMaterial({
+//   color: "#444",
+//   side: three.DoubleSide,
+// });
+
+const wallMaterial = new three.MeshNormalMaterial({
   side: three.DoubleSide,
+  opacity: 0.3,
 });
 
 const wallMaterialHover = new three.MeshPhongMaterial({
@@ -66,6 +72,7 @@ const CubeMesh: React.FC<{
 
       return (
         <mesh
+          layers={1 as any}
           key={faceIndex}
           geometry={new three.PlaneBufferGeometry(planeGeo.w, 1, 1, 1)}
           position={[planeGeo.x, 0.5, planeGeo.z]}
@@ -405,6 +412,7 @@ const Container: React.FunctionComponent<{}> = () => {
         onCreated={(threeContext) => {
           setThreeContext(threeContext);
           threeContext.gl.toneMapping = three.Uncharted2ToneMapping;
+          // threeContext.gl.toneMapping = three.ReinhardToneMapping;
           threeContext.camera.position.set(5, 10, 25);
           threeContext.camera.lookAt(0, 0, 0);
           threeContext.camera.updateProjectionMatrix();
@@ -474,6 +482,7 @@ const Container: React.FunctionComponent<{}> = () => {
 
               return (
                 <mesh
+                  layers={1 as any}
                   key={faceIndex}
                   geometry={new three.PlaneBufferGeometry(planeGeo.w, 1, 1, 1)}
                   {...((hovered && hovered.active) ||
@@ -545,6 +554,7 @@ const Container: React.FunctionComponent<{}> = () => {
             })}
           </React.Fragment>
         ))}
+        <Effects />
       </Canvas>
     </div>
   );
