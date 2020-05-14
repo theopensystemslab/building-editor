@@ -2,20 +2,23 @@ import produce from "immer";
 import { uniq } from "ramda";
 import create from "zustand";
 import { nextOddInt } from "../utils";
+import * as undoable from "../utils/undoable";
 import grid from "./grid";
 
 const GRID = grid("m");
 
 export interface Cube {
   x: number;
-  y: number;
+  z: number;
   wx: number;
-  wy: number;
+  wz: number;
 }
 
 export type EditMode = "Move" | "Resize" | "Slice" | "Insert";
 
 export interface State {
+  editMode: EditMode;
+  cubes: undoable.Undoable<Array<Cube>>;
   grid: {
     properties: {
       color: string;
@@ -78,7 +81,7 @@ const selectorMiddleware = (config) => (set, get, api) =>
   );
 
 export const [useStore, api] = create(
-  selectorMiddleware((set) => ({
+  selectorMiddleware((set): State & { set: any } => ({
     grid: {
       properties: {
         color: "lightgray",
@@ -89,6 +92,8 @@ export const [useStore, api] = create(
       },
       occupiedCells: {},
     },
+    editMode: "Move",
+    cubes: undoable.create([]),
     set: (fn) => set(produce(fn)),
   }))
 );

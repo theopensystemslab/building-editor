@@ -2,12 +2,13 @@ import { OrbitControls } from "drei";
 import React from "react";
 import { Canvas, CanvasContext, PointerEvent } from "react-three-fiber";
 import * as three from "three";
+import grid from "../shared/grid";
 import RectangularGrid from "../shared/RectangularGrid";
+import { Cube, EditMode, useStore } from "../shared/store";
 import { useSimpleDrag } from "../utils";
 import * as raycast from "../utils/raycast";
 import * as undoable from "../utils/undoable";
 import Sidebar from "./Sidebar";
-import { EditMode, Cube } from "../shared/store";
 
 // Raytracing planes
 
@@ -31,34 +32,45 @@ const matchingIndices = (
   );
 };
 
-const gridX = 1.2;
-const gridY = 5.7;
+const { x: gridX, z: gridZ } = grid("m");
 
-const snapToGridX = (val: number) => Math.round(val / gridX) * gridX;
-const snapToGridY = (val: number) => Math.round(val / gridY) * gridY;
-
-const initCubes = (): Array<Cube> => [
-  {
-    x: snapToGridX(-0.5),
-    y: snapToGridY(-0.5),
-    wx: snapToGridX(1.5),
-    wy: snapToGridY(6),
-  },
-  {
-    x: snapToGridX(-2.5),
-    y: snapToGridY(-2.5),
-    wx: snapToGridX(1.5),
-    wy: snapToGridY(6),
-  },
-];
+const snapToGridX = (val: number): number => Math.round(val / gridX) * gridX;
+const snapToGridZ = (val: number): number => Math.round(val / gridZ) * gridZ;
 
 const Container: React.FunctionComponent<{}> = () => {
-  // Global state
-  const [editMode, setEditMode] = React.useState<EditMode>("Move");
+  // Refer to global state
 
-  const [cubes, setCubes] = React.useState<undoable.Undoable<Array<Cube>>>(
-    undoable.create(initCubes())
-  );
+  const store = useStore();
+
+  // Create editMode, setEditMode, cubes and setCubes methods the way
+  // a local useState call would
+  const editMode = store.editMode;
+
+  const cubes: undoable.Undoable<Array<Cube>> = store.cubes;
+
+  const setCubes = (
+    valOrUpdater:
+      | undoable.Undoable<Array<Cube>>
+      | ((
+          prev: undoable.Undoable<Array<Cube>>
+        ) => undoable.Undoable<Array<Cube>>)
+  ) => {
+    if (typeof valOrUpdater === "function") {
+      store.set((draft) => {
+        draft.cubes = valOrUpdater(draft.cubes);
+      });
+    } else {
+      store.set((draft) => {
+        draft.cubes = valOrUpdater;
+      });
+    }
+  };
+
+  const setEditMode = (val: EditMode) => {
+    store.set((draft) => {
+      draft.editMode = val;
+    });
+  };
 
   // Local state and effects
 
@@ -120,8 +132,8 @@ const Container: React.FunctionComponent<{}> = () => {
       offset || offsetVertical
         ? {
             x: -(offset ? offset.x : 0) * raycast.planeSize,
-            y: (offset ? offset.y : 0) * raycast.planeSize,
-            z: -(offsetVertical ? offsetVertical.y : 0) * raycast.planeSize,
+            z: (offset ? offset.y : 0) * raycast.planeSize,
+            y: (offsetVertical ? offsetVertical.y : 0) * raycast.planeSize,
           }
         : undefined;
 
@@ -132,10 +144,10 @@ const Container: React.FunctionComponent<{}> = () => {
           ...prevCube,
           ...(faceIndex === 0
             ? {
-                y: snapToGridY(prevCube.y + positionOffsets.y),
-                wy: canResize
-                  ? snapToGridY(prevCube.wy - positionOffsets.y)
-                  : prevCube.wy,
+                z: snapToGridZ(prevCube.z + positionOffsets.z),
+                wz: canResize
+                  ? snapToGridZ(prevCube.wz - positionOffsets.z)
+                  : prevCube.wz,
                 // When not resizing, move also according to perpendicular coordinate
                 x: canResize
                   ? prevCube.x
@@ -151,19 +163,19 @@ const Container: React.FunctionComponent<{}> = () => {
                   ? snapToGridX(prevCube.wx + positionOffsets.x)
                   : prevCube.wx,
                 // When not resizing, move also according to perpendicular coordinate
-                y: canResize
-                  ? prevCube.y
-                  : snapToGridY(prevCube.y + positionOffsets.y),
+                z: canResize
+                  ? prevCube.z
+                  : snapToGridZ(prevCube.z + positionOffsets.z),
               }
             : {}),
           ...(faceIndex === 2
             ? {
-                y: snapToGridY(
-                  prevCube.y + (canResize ? 0 : 1) * positionOffsets.y
+                z: snapToGridZ(
+                  prevCube.z + (canResize ? 0 : 1) * positionOffsets.z
                 ),
-                wy: canResize
-                  ? snapToGridY(prevCube.wy + positionOffsets.y)
-                  : prevCube.wy,
+                wz: canResize
+                  ? snapToGridZ(prevCube.wz + positionOffsets.z)
+                  : prevCube.wz,
                 // When not resizing, move also according to perpendicular coordinate
                 x: canResize
                   ? prevCube.x
@@ -177,9 +189,9 @@ const Container: React.FunctionComponent<{}> = () => {
                   ? snapToGridX(prevCube.wx - positionOffsets.x)
                   : prevCube.wx,
                 // When not resizing, move also according to perpendicular coordinate
-                y: canResize
-                  ? prevCube.y
-                  : snapToGridY(prevCube.y + positionOffsets.y),
+                z: canResize
+                  ? prevCube.z
+                  : snapToGridZ(prevCube.z + positionOffsets.z),
               }
             : {}),
         }
@@ -280,9 +292,9 @@ const Container: React.FunctionComponent<{}> = () => {
               ...undoable.current(prevCubes),
               {
                 x: snapToGridX((uv.x - 0.5) * raycast.planeSize - gridX / 2),
-                y: snapToGridY(-(uv.y - 0.5) * raycast.planeSize - gridY / 2),
+                z: snapToGridZ(-(uv.y - 0.5) * raycast.planeSize - gridZ / 2),
                 wx: snapToGridX(gridX),
-                wy: snapToGridY(gridY),
+                wz: snapToGridZ(gridZ),
               },
             ]);
           });
@@ -340,7 +352,7 @@ const Container: React.FunctionComponent<{}> = () => {
         <RectangularGrid
           numZCells={60}
           numXCells={60}
-          cellLength={gridY}
+          cellLength={gridZ}
           cellWidth={gridX}
           color="#F1F1F1"
         />
@@ -369,20 +381,20 @@ const Container: React.FunctionComponent<{}> = () => {
 
               const planeGeo =
                 faceIndex === 0
-                  ? { x: cube_.x + cube_.wx / 2, y: cube_.y, w: cube_.wx }
+                  ? { x: cube_.x + cube_.wx / 2, z: cube_.z, w: cube_.wx }
                   : faceIndex === 1
                   ? {
                       x: cube_.x + cube_.wx,
-                      y: cube_.y + cube_.wy / 2,
-                      w: cube_.wy,
+                      z: cube_.z + cube_.wz / 2,
+                      w: cube_.wz,
                     }
                   : faceIndex === 2
                   ? {
                       x: cube_.x + cube_.wx / 2,
-                      y: cube_.y + cube_.wy,
+                      z: cube_.z + cube_.wz,
                       w: cube_.wx,
                     }
-                  : { x: cube_.x, y: cube_.y + cube_.wy / 2, w: cube_.wy };
+                  : { x: cube_.x, z: cube_.z + cube_.wz / 2, w: cube_.wz };
 
               return (
                 <mesh
@@ -440,7 +452,7 @@ const Container: React.FunctionComponent<{}> = () => {
                           }
                         },
                       })}
-                  position={[planeGeo.x, 0.5, planeGeo.y]}
+                  position={[planeGeo.x, 0.5, planeGeo.z]}
                   rotation={new three.Euler().setFromRotationMatrix(
                     new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
                   )}
