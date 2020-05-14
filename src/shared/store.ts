@@ -152,6 +152,8 @@ api.getState().set((state: State) => {
   };
 });
 
+window["api"] = api;
+
 // rudimentarily save state to localStorage if grid.occupiedCells changes
 
 api.subscribe(
