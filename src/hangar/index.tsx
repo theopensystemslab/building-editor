@@ -11,7 +11,6 @@ import RectangularGrid from "../shared/RectangularGrid";
 import { Drag, useSimpleDrag } from "../utils";
 import * as raycast from "../utils/raycast";
 import * as undoable from "../utils/undoable";
-import "./index.css";
 import Sidebar from "./Sidebar";
 import { EditMode, Cube } from "../shared/store";
 
@@ -422,7 +421,7 @@ const Container: React.FunctionComponent<{}> = () => {
   }, [threeContext, editMode]);
 
   return (
-    <div className="hangar-container">
+    <div style={{ width: "100%", height: "100%" }}>
       <Sidebar
         editMode={editMode}
         onUndo={

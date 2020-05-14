@@ -1,6 +1,7 @@
 import React from "react";
-import { EditMode } from "./state";
+import { EditMode } from "../shared/store";
 import * as rf from "react-feather";
+import "./sidebar.css";
 
 interface Props {
   editMode: EditMode;

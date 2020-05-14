@@ -1,6 +1,6 @@
 import React from "react";
 import { Canvas } from "react-three-fiber";
-import { Drag, useSimpleDrag } from "../../utils";
+import { Drag, useSimpleDrag } from "../utils";
 import Experiment1 from "./Experiment1";
 import Experiment2 from "./Experiment2";
 import Experiment3 from "./Experiment3";

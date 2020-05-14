@@ -1,8 +1,8 @@
 import React from "react";
 import { useThree } from "react-three-fiber";
 import * as three from "three";
-import { Drag } from "../../utils";
-import * as raycast from "../../utils/raycast";
+import { Drag } from "../utils";
+import * as raycast from "../utils/raycast";
 import { gray } from "./shared";
 
 // Raytracing planes

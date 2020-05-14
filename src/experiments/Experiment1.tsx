@@ -2,8 +2,8 @@ import React from "react";
 import * as three from "three";
 import { OrbitControls } from "drei";
 import { useThree, PointerEvent } from "react-three-fiber";
-import { Drag } from "../../utils";
-import * as raycast from "../../utils/raycast";
+import { Drag } from "../utils";
+import * as raycast from "../utils/raycast";
 import { gray, lightGray } from "./shared";
 
 type MoveDirection = "x" | "y" | "z";
@@ -130,7 +130,7 @@ const Experiment1: React.FunctionComponent<{
     });
   };
 
-  const handlePointerUp = (ev: PointerEvent) => {
+  const handlePointerUp = () => {
     // Wait until drag updates clear
     setTimeout(() => {
       setHovered(undefined);
