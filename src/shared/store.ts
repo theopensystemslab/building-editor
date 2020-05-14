@@ -2,16 +2,16 @@ import produce from "immer";
 import { uniq } from "ramda";
 import create from "zustand";
 import { nextOddInt } from "../utils";
-import grid from "./grid";
 import * as undoable from "../utils/undoable";
+import grid from "./grid";
 
 const GRID = grid("m");
 
 export interface Cube {
   x: number;
-  y: number;
+  z: number;
   wx: number;
-  wy: number;
+  wz: number;
 }
 
 export type EditMode = "Move" | "Resize" | "Slice" | "Insert";
