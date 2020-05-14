@@ -12,6 +12,11 @@ import Sidebar from "./Sidebar";
 
 // Raytracing planes
 
+const wallGhostMaterial = new three.MeshPhongMaterial({
+  color: "#676767",
+  side: three.DoubleSide,
+});
+
 const wallMaterial = new three.MeshPhongMaterial({
   color: "#444",
   side: three.DoubleSide,
@@ -36,6 +41,43 @@ const { x: gridX, z: gridZ } = grid("m");
 
 const snapToGridX = (val: number): number => Math.round(val / gridX) * gridX;
 const snapToGridZ = (val: number): number => Math.round(val / gridZ) * gridZ;
+
+const CubeMesh: React.FC<{
+  cube: Cube;
+}> = ({ cube, ...rest }) => (
+  <React.Fragment {...rest}>
+    {[0, 1, 2, 3].map((faceIndex) => {
+      const planeGeo =
+        faceIndex === 0
+          ? { x: cube.x + cube.wx / 2, z: cube.z, w: cube.wx }
+          : faceIndex === 1
+          ? {
+              x: cube.x + cube.wx,
+              z: cube.z + cube.wz / 2,
+              w: cube.wz,
+            }
+          : faceIndex === 2
+          ? {
+              x: cube.x + cube.wx / 2,
+              z: cube.z + cube.wz,
+              w: cube.wx,
+            }
+          : { x: cube.x, z: cube.z + cube.wz / 2, w: cube.wz };
+
+      return (
+        <mesh
+          key={faceIndex}
+          geometry={new three.PlaneBufferGeometry(planeGeo.w, 1, 1, 1)}
+          position={[planeGeo.x, 0.5, planeGeo.z]}
+          rotation={new three.Euler().setFromRotationMatrix(
+            new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
+          )}
+          material={wallGhostMaterial}
+        />
+      );
+    })}
+  </React.Fragment>
+);
 
 const Container: React.FunctionComponent<{}> = () => {
   // Refer to global state
@@ -228,6 +270,13 @@ const Container: React.FunctionComponent<{}> = () => {
   }, [threeContext, hovered]);
 
   React.useEffect(() => {
+    if (!threeContext || editMode !== EditMode.Insert) {
+      return;
+    }
+    const canvas = threeContext.gl.domElement;
+  }, [threeContext, editMode]);
+
+  React.useEffect(() => {
     if (hovered && !drag.dragging && drag.prevDragging) {
       const currentCubes = undoable.current(cubes);
       setCubes(
@@ -263,18 +312,20 @@ const Container: React.FunctionComponent<{}> = () => {
     };
   }, []);
 
-  // Handle canvas click
+  const [ghostCube, setGhostCube] = React.useState<Cube | undefined>(undefined);
+
+  // Handle canvas events in insert mode (ghost box, box insertion)
   React.useEffect(() => {
-    if (!threeContext) {
+    if (!threeContext || editMode !== EditMode.Insert) {
+      return;
+    }
+    if (editMode !== EditMode.Insert) {
       return;
     }
     const canvas = threeContext.gl.domElement;
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
     const handleCanvasClick = (ev: MouseEvent) => {
-      if (editMode !== EditMode.Insert) {
-        return;
-      }
       if (raycasting.horizontalPlane) {
         const uv = raycast.calcUv(
           {
@@ -301,8 +352,30 @@ const Container: React.FunctionComponent<{}> = () => {
         }
       }
     };
+    const handleCanvasMouseMove = (ev: MouseEvent) => {
+      const uv = raycast.calcUv(
+        {
+          width,
+          height,
+          plane: raycasting.horizontalPlane,
+          camera: threeContext.camera,
+          raycaster: raycasting.raycaster,
+        },
+        [ev.offsetX, ev.offsetY]
+      );
+      if (uv) {
+        setGhostCube({
+          x: snapToGridX((uv.x - 0.5) * raycast.planeSize - gridX / 2),
+          z: snapToGridZ(-(uv.y - 0.5) * raycast.planeSize - gridZ / 2),
+          wx: snapToGridX(gridX),
+          wz: snapToGridZ(gridZ),
+        });
+      }
+    };
     canvas.addEventListener("click", handleCanvasClick);
+    canvas.addEventListener("mousemove", handleCanvasMouseMove);
     return () => {
+      canvas.removeEventListener("mousemove", handleCanvasMouseMove);
       canvas.removeEventListener("click", handleCanvasClick);
     };
   }, [threeContext, editMode]);
@@ -366,6 +439,9 @@ const Container: React.FunctionComponent<{}> = () => {
           dampingFactor={0.2}
           rotateSpeed={0.7}
         />
+        {editMode === EditMode.Insert && ghostCube && (
+          <CubeMesh cube={ghostCube} />
+        )}
         {undoable.current(cubes).map((cube, cubeIndex) => (
           <React.Fragment key={cubeIndex}>
             {[0, 1, 2, 3].map((faceIndex) => {

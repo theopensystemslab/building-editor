@@ -15,10 +15,10 @@ export interface Cube {
 }
 
 export enum EditMode {
-  "Move",
-  "Resize",
-  "Slice",
-  "Insert",
+  Move = "Move",
+  Resize = "Resize",
+  Slice = "Slice",
+  Insert = "Insert",
 }
 
 export interface State {
@@ -98,7 +98,14 @@ export const [useStore, api] = create(
       occupiedCells: {},
     },
     editMode: EditMode.Move,
-    cubes: undoable.create([]),
+    cubes: undoable.create([
+      {
+        x: 0,
+        z: 0,
+        wx: GRID.x,
+        wz: GRID.z,
+      },
+    ]),
     set: (fn) => set(produce(fn)),
   }))
 );
