@@ -42,26 +42,33 @@ const { x: gridX, z: gridZ } = grid("m");
 const snapToGridX = (val: number): number => Math.round(val / gridX) * gridX;
 const snapToGridZ = (val: number): number => Math.round(val / gridZ) * gridZ;
 
-const CubeMesh: React.FC<{ cube }> = React.memo(
-  ({ cube, ...rest }) => (
+const CubeMesh: React.FC<{ cube: Cube }> = React.memo(({ cube, ...rest }) => {
+  const _cube = {
+    x: cube[0].x,
+    z: cube[0].z,
+    wx: Math.abs(cube[2].x - cube[0].x),
+    wz: Math.abs(cube[2].z - cube[0].z),
+  };
+
+  return (
     <React.Fragment {...rest}>
       {[0, 1, 2, 3].map((faceIndex) => {
         const planeGeo =
           faceIndex === 0
-            ? { x: cube.x + cube.wx / 2, z: cube.z, w: cube.wx }
+            ? { x: _cube.x + _cube.wx / 2, z: _cube.z, w: _cube.wx }
             : faceIndex === 1
             ? {
-                x: cube.x + cube.wx,
-                z: cube.z + cube.wz / 2,
-                w: cube.wz,
+                x: _cube.x + _cube.wx,
+                z: _cube.z + _cube.wz / 2,
+                w: _cube.wz,
               }
             : faceIndex === 2
             ? {
-                x: cube.x + cube.wx / 2,
-                z: cube.z + cube.wz,
-                w: cube.wx,
+                x: _cube.x + _cube.wx / 2,
+                z: _cube.z + _cube.wz,
+                w: _cube.wx,
               }
-            : { x: cube.x, z: cube.z + cube.wz / 2, w: cube.wz };
+            : { x: _cube.x, z: _cube.z + _cube.wz / 2, w: _cube.wz };
 
         return (
           <mesh
@@ -76,9 +83,8 @@ const CubeMesh: React.FC<{ cube }> = React.memo(
         );
       })}
     </React.Fragment>
-  ),
-  fastBasicEqualityCheck
-);
+  );
+}, fastBasicEqualityCheck);
 
 const Container: React.FunctionComponent<{}> = () => {
   // Refer to global state
@@ -182,63 +188,45 @@ const Container: React.FunctionComponent<{}> = () => {
 
     const canResize = editMode === EditMode.Resize;
 
-    return positionOffsets
-      ? {
-          ...prevCube,
-          ...(faceIndex === 0
-            ? {
-                z: snapToGridZ(prevCube.z + positionOffsets.z),
-                wz: canResize
-                  ? snapToGridZ(prevCube.wz - positionOffsets.z)
-                  : prevCube.wz,
-                // When not resizing, move also according to perpendicular coordinate
-                x: canResize
-                  ? prevCube.x
-                  : snapToGridX(prevCube.x + positionOffsets.x),
-              }
-            : {}),
-          ...(faceIndex === 1
-            ? {
-                x: snapToGridX(
-                  prevCube.x + (canResize ? 0 : 1) * positionOffsets.x
-                ),
-                wx: canResize
-                  ? snapToGridX(prevCube.wx + positionOffsets.x)
-                  : prevCube.wx,
-                // When not resizing, move also according to perpendicular coordinate
-                z: canResize
-                  ? prevCube.z
-                  : snapToGridZ(prevCube.z + positionOffsets.z),
-              }
-            : {}),
-          ...(faceIndex === 2
-            ? {
-                z: snapToGridZ(
-                  prevCube.z + (canResize ? 0 : 1) * positionOffsets.z
-                ),
-                wz: canResize
-                  ? snapToGridZ(prevCube.wz + positionOffsets.z)
-                  : prevCube.wz,
-                // When not resizing, move also according to perpendicular coordinate
-                x: canResize
-                  ? prevCube.x
-                  : snapToGridX(prevCube.x + positionOffsets.x),
-              }
-            : {}),
-          ...(faceIndex === 3
-            ? {
-                x: snapToGridX(prevCube.x + positionOffsets.x),
-                wx: canResize
-                  ? snapToGridX(prevCube.wx - positionOffsets.x)
-                  : prevCube.wx,
-                // When not resizing, move also according to perpendicular coordinate
-                z: canResize
-                  ? prevCube.z
-                  : snapToGridZ(prevCube.z + positionOffsets.z),
-              }
-            : {}),
-        }
-      : prevCube;
+    if (positionOffsets) {
+      const clone = JSON.parse(JSON.stringify(prevCube));
+
+      let _x = prevCube[0].x;
+      let _z = prevCube[0].z;
+      let _wx = Math.abs(prevCube[2].x - prevCube[0].x);
+      let _wz = Math.abs(prevCube[2].z - prevCube[0].z);
+
+      switch (faceIndex) {
+        case 0:
+          _z = snapToGridZ(_z + positionOffsets.z);
+          _wz = canResize ? snapToGridZ(_wz - positionOffsets.z) : _wz;
+          _x = canResize ? _x : snapToGridX(_x + positionOffsets.x);
+          break;
+        case 1:
+          _x = snapToGridX(_x + (canResize ? 0 : 1) * positionOffsets.x);
+          _wx = canResize ? snapToGridX(_wx + positionOffsets.x) : _wx;
+          _z = canResize ? _z : snapToGridZ(_z + positionOffsets.z);
+          break;
+        case 2:
+          _z = snapToGridZ(_z + (canResize ? 0 : 1) * positionOffsets.z);
+          _wz = canResize ? snapToGridZ(_wz + positionOffsets.z) : _wz;
+          _x = canResize ? _x : snapToGridX(_x + positionOffsets.x);
+          break;
+        case 3:
+          _x = snapToGridX(_x + positionOffsets.x);
+          _wx = canResize ? snapToGridX(_wx - positionOffsets.x) : _wx;
+          _z = canResize ? _z : snapToGridZ(_z + positionOffsets.z);
+          break;
+      }
+
+      clone[0].x = clone[3].x = _x;
+      clone[0].z = clone[1].z = _z;
+      clone[1].x = clone[2].x = _x + _wx;
+      clone[2].z = clone[3].z = _z + _wz;
+
+      return clone;
+    }
+    return prevCube;
   };
 
   React.useEffect(() => {
@@ -332,15 +320,22 @@ const Container: React.FunctionComponent<{}> = () => {
           [ev.offsetX, ev.offsetY]
         );
         if (uv) {
+          const coords = {
+            x: snapToGridX((uv.x - 0.5) * raycast.planeSize - gridX / 2),
+            z: snapToGridZ(-(uv.y - 0.5) * raycast.planeSize - gridZ / 2),
+            wx: snapToGridX(gridX),
+            wz: snapToGridZ(gridZ),
+          };
+
           setCubes((prevCubes) => {
             return undoable.setCurrent(prevCubes, [
               ...undoable.current(prevCubes),
-              {
-                x: snapToGridX((uv.x - 0.5) * raycast.planeSize - gridX / 2),
-                z: snapToGridZ(-(uv.y - 0.5) * raycast.planeSize - gridZ / 2),
-                wx: snapToGridX(gridX),
-                wz: snapToGridZ(gridZ),
-              },
+              [
+                { x: coords.x, z: coords.z },
+                { x: coords.x + coords.wx, z: coords.z },
+                { x: coords.x + coords.wx, z: coords.z + coords.wz },
+                { x: coords.x, z: coords.z + coords.wz },
+              ],
             ]);
           });
         }
@@ -358,12 +353,19 @@ const Container: React.FunctionComponent<{}> = () => {
         [ev.offsetX, ev.offsetY]
       );
       if (uv) {
-        setGhostCube({
+        const coords = {
           x: snapToGridX((uv.x - 0.5) * raycast.planeSize - gridX / 2),
           z: snapToGridZ(-(uv.y - 0.5) * raycast.planeSize - gridZ / 2),
           wx: snapToGridX(gridX),
           wz: snapToGridZ(gridZ),
-        });
+        };
+
+        setGhostCube([
+          { x: coords.x, z: coords.z },
+          { x: coords.x + coords.wx, z: coords.z },
+          { x: coords.x + coords.wx, z: coords.z + coords.wz },
+          { x: coords.x, z: coords.z + coords.wz },
+        ]);
       }
     };
     canvas.addEventListener("click", handleCanvasClick);
@@ -444,10 +446,17 @@ const Container: React.FunctionComponent<{}> = () => {
                 faceIndex,
               };
 
-              const cube_ =
+              const cube__ =
                 drag.dragging && hovered && hovered.cubeIndex === cubeIndex
                   ? updateCube(cube, hovered.faceIndex)
                   : cube;
+
+              const cube_ = {
+                x: cube__[0].x,
+                z: cube__[0].z,
+                wx: Math.abs(cube__[2].x - cube__[0].x),
+                wz: Math.abs(cube__[2].z - cube__[0].z),
+              };
 
               const planeGeo =
                 faceIndex === 0
