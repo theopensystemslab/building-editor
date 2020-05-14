@@ -91,3 +91,6 @@ export const pointsToThreeShape = (points, holes = []) => {
 // General Helpers
 
 export const nextOddInt = (x) => Math.ceil(x) | 1;
+
+export const fastBasicEqualityCheck = (x, y) =>
+  JSON.stringify(x) === JSON.stringify(y);

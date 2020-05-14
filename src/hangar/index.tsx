@@ -5,7 +5,7 @@ import * as three from "three";
 import grid from "../shared/grid";
 import RectangularGrid from "../shared/RectangularGrid";
 import { Cube, EditMode, useStore } from "../shared/store";
-import { useSimpleDrag } from "../utils";
+import { fastBasicEqualityCheck, useSimpleDrag } from "../utils";
 import * as raycast from "../utils/raycast";
 import * as undoable from "../utils/undoable";
 import Sidebar from "./Sidebar";
@@ -42,41 +42,42 @@ const { x: gridX, z: gridZ } = grid("m");
 const snapToGridX = (val: number): number => Math.round(val / gridX) * gridX;
 const snapToGridZ = (val: number): number => Math.round(val / gridZ) * gridZ;
 
-const CubeMesh: React.FC<{
-  cube: Cube;
-}> = ({ cube, ...rest }) => (
-  <React.Fragment {...rest}>
-    {[0, 1, 2, 3].map((faceIndex) => {
-      const planeGeo =
-        faceIndex === 0
-          ? { x: cube.x + cube.wx / 2, z: cube.z, w: cube.wx }
-          : faceIndex === 1
-          ? {
-              x: cube.x + cube.wx,
-              z: cube.z + cube.wz / 2,
-              w: cube.wz,
-            }
-          : faceIndex === 2
-          ? {
-              x: cube.x + cube.wx / 2,
-              z: cube.z + cube.wz,
-              w: cube.wx,
-            }
-          : { x: cube.x, z: cube.z + cube.wz / 2, w: cube.wz };
+const CubeMesh: React.FC<{ cube }> = React.memo(
+  ({ cube, ...rest }) => (
+    <React.Fragment {...rest}>
+      {[0, 1, 2, 3].map((faceIndex) => {
+        const planeGeo =
+          faceIndex === 0
+            ? { x: cube.x + cube.wx / 2, z: cube.z, w: cube.wx }
+            : faceIndex === 1
+            ? {
+                x: cube.x + cube.wx,
+                z: cube.z + cube.wz / 2,
+                w: cube.wz,
+              }
+            : faceIndex === 2
+            ? {
+                x: cube.x + cube.wx / 2,
+                z: cube.z + cube.wz,
+                w: cube.wx,
+              }
+            : { x: cube.x, z: cube.z + cube.wz / 2, w: cube.wz };
 
-      return (
-        <mesh
-          key={faceIndex}
-          geometry={new three.PlaneBufferGeometry(planeGeo.w, 1, 1, 1)}
-          position={[planeGeo.x, 0.5, planeGeo.z]}
-          rotation={new three.Euler().setFromRotationMatrix(
-            new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
-          )}
-          material={wallGhostMaterial}
-        />
-      );
-    })}
-  </React.Fragment>
+        return (
+          <mesh
+            key={faceIndex}
+            geometry={new three.PlaneBufferGeometry(planeGeo.w, 1, 1, 1)}
+            position={[planeGeo.x, 0.5, planeGeo.z]}
+            rotation={new three.Euler().setFromRotationMatrix(
+              new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
+            )}
+            material={wallGhostMaterial}
+          />
+        );
+      })}
+    </React.Fragment>
+  ),
+  fastBasicEqualityCheck
 );
 
 const Container: React.FunctionComponent<{}> = () => {
