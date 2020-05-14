@@ -1,14 +1,9 @@
 import { OrbitControls } from "drei";
 import React from "react";
-import {
-  Canvas,
-  CanvasContext,
-  PointerEvent,
-  useThree,
-} from "react-three-fiber";
+import { Canvas, CanvasContext, PointerEvent } from "react-three-fiber";
 import * as three from "three";
 import RectangularGrid from "../shared/RectangularGrid";
-import { Drag, useSimpleDrag } from "../utils";
+import { useSimpleDrag } from "../utils";
 import * as raycast from "../utils/raycast";
 import * as undoable from "../utils/undoable";
 import Sidebar from "./Sidebar";
@@ -42,24 +37,38 @@ const gridY = 5.7;
 const snapToGridX = (val: number) => Math.round(val / gridX) * gridX;
 const snapToGridY = (val: number) => Math.round(val / gridY) * gridY;
 
-const Cubes: React.FC<{
-  drag: Drag;
-  editMode: EditMode;
-  cubes: Array<Cube>;
-  onCubeChange: (newCube: Array<Cube>) => void;
-  horizontalRaycastPlane: three.Mesh;
-  verticalRaycastPlane: three.Mesh;
-}> = (props) => {
-  const threeContext = useThree();
+const initCubes = (): Array<Cube> => [
+  {
+    x: snapToGridX(-0.5),
+    y: snapToGridY(-0.5),
+    wx: snapToGridX(1.5),
+    wy: snapToGridY(6),
+  },
+  {
+    x: snapToGridX(-2.5),
+    y: snapToGridY(-2.5),
+    wx: snapToGridX(1.5),
+    wy: snapToGridY(6),
+  },
+];
 
-  const { drag } = props;
+const Container: React.FunctionComponent<{}> = () => {
+  // Global state
+  const [editMode, setEditMode] = React.useState<EditMode>("Move");
 
-  const dimensions = {
-    width: threeContext.gl.domElement.clientWidth,
-    height: threeContext.gl.domElement.clientHeight,
-  };
+  const [cubes, setCubes] = React.useState<undoable.Undoable<Array<Cube>>>(
+    undoable.create(initCubes())
+  );
 
-  const raycaster = React.useMemo(() => new three.Raycaster(), []);
+  // Local state and effects
+
+  const raycasting = raycast.useRaycasting();
+
+  const [threeContext, setThreeContext] = React.useState<
+    CanvasContext | undefined
+  >();
+
+  const { drag, dragContainerAttrs } = useSimpleDrag();
 
   // Persist hover state info frequently (every mouse move) without re-rendering
   const hoveredInfo = React.useRef<
@@ -80,25 +89,31 @@ const Cubes: React.FC<{
     | undefined
   >(undefined);
 
+  // Update cube position utility - re-used between rendering the dragged shadow and the state update logic
   const updateCube = (prevCube: Cube, faceIndex: number): Cube => {
+    const dimensions = {
+      width: threeContext.gl.domElement.clientWidth,
+      height: threeContext.gl.domElement.clientHeight,
+    };
+
     const offset = raycast.calcUvOffset(
       {
         ...dimensions,
-        plane: props.horizontalRaycastPlane,
-        raycaster,
+        plane: raycasting.horizontalPlane,
+        raycaster: raycasting.raycaster,
         camera: threeContext.camera,
       },
-      props.drag.movement
+      drag.movement
     );
 
     const offsetVertical = raycast.calcUvOffset(
       {
         ...dimensions,
-        plane: props.verticalRaycastPlane,
-        raycaster,
+        plane: raycasting.verticalPlane,
+        raycaster: raycasting.raycaster,
         camera: threeContext.camera,
       },
-      props.drag.movement
+      drag.movement
     );
 
     const positionOffsets =
@@ -110,7 +125,7 @@ const Cubes: React.FC<{
           }
         : undefined;
 
-    const canResize = props.editMode === "Resize";
+    const canResize = editMode === "Resize";
 
     return positionOffsets
       ? {
@@ -172,6 +187,9 @@ const Cubes: React.FC<{
   };
 
   React.useEffect(() => {
+    if (!threeContext) {
+      return;
+    }
     const canvas = threeContext.gl.domElement;
     const handleCanvasMouseUp = () => {
       setTimeout(() => {
@@ -199,162 +217,19 @@ const Cubes: React.FC<{
 
   React.useEffect(() => {
     if (hovered && !drag.dragging && drag.prevDragging) {
-      props.onCubeChange(
-        props.cubes.map((cube_, index) =>
-          index === hovered.cubeIndex
-            ? updateCube(props.cubes[hovered.cubeIndex], hovered.faceIndex)
-            : cube_
+      const currentCubes = undoable.current(cubes);
+      setCubes(
+        undoable.setCurrent(
+          cubes,
+          currentCubes.map((cube_, index) =>
+            index === hovered.cubeIndex
+              ? updateCube(currentCubes[hovered.cubeIndex], hovered.faceIndex)
+              : cube_
+          )
         )
       );
     }
   }, [drag]);
-
-  return (
-    <>
-      <OrbitControls
-        enabled={!hovered}
-        minPolarAngle={Math.PI / 8}
-        maxPolarAngle={(Math.PI * 7) / 8}
-        target={new three.Vector3(0, 0, 0)}
-        enableDamping
-        dampingFactor={0.2}
-        rotateSpeed={0.7}
-      />
-      {props.cubes.map((cube, cubeIndex) => (
-        <React.Fragment key={cubeIndex}>
-          {[0, 1, 2, 3].map((faceIndex) => {
-            const currentIndices = {
-              cubeIndex,
-              faceIndex,
-            };
-
-            const cube_ =
-              drag.dragging && hovered && hovered.cubeIndex === cubeIndex
-                ? updateCube(cube, hovered.faceIndex)
-                : cube;
-
-            const planeGeo =
-              faceIndex === 0
-                ? { x: cube_.x + cube_.wx / 2, y: cube_.y, w: cube_.wx }
-                : faceIndex === 1
-                ? {
-                    x: cube_.x + cube_.wx,
-                    y: cube_.y + cube_.wy / 2,
-                    w: cube_.wy,
-                  }
-                : faceIndex === 2
-                ? {
-                    x: cube_.x + cube_.wx / 2,
-                    y: cube_.y + cube_.wy,
-                    w: cube_.wx,
-                  }
-                : { x: cube_.x, y: cube_.y + cube_.wy / 2, w: cube_.wy };
-
-            return (
-              <mesh
-                key={faceIndex}
-                geometry={new three.PlaneBufferGeometry(planeGeo.w, 1, 1, 1)}
-                {...((hovered && hovered.active) || (!hovered && drag.dragging)
-                  ? {}
-                  : {
-                      onPointerOver: (ev: PointerEvent) => {
-                        if (
-                          hovered &&
-                          hoveredInfo.current &&
-                          matchingIndices(hoveredInfo.current, hovered) &&
-                          hoveredInfo.current.distance < ev.distance
-                        ) {
-                          return;
-                        }
-                        setHovered({ cubeIndex, faceIndex, active: false });
-                        hoveredInfo.current = {
-                          faceIndex,
-                          cubeIndex,
-                          distance: ev.distance,
-                        };
-                      },
-                      onPointerMove: (ev: PointerEvent) => {
-                        const info = {
-                          faceIndex,
-                          cubeIndex,
-                          distance: ev.distance,
-                        };
-
-                        if (!hovered && !drag.dragging) {
-                          hoveredInfo.current = info;
-                          setHovered({ cubeIndex, faceIndex, active: false });
-                          return;
-                        }
-
-                        if (
-                          hovered &&
-                          matchingIndices(hovered, currentIndices)
-                        ) {
-                          hoveredInfo.current = info;
-                        }
-                      },
-                      onPointerOut: () => {
-                        if (!drag.dragging) {
-                          setHovered((prevHovered) =>
-                            prevHovered &&
-                            prevHovered.cubeIndex === cubeIndex &&
-                            prevHovered.faceIndex === faceIndex
-                              ? undefined
-                              : prevHovered
-                          );
-                        }
-                      },
-                    })}
-                position={[planeGeo.x, 0.5, planeGeo.y]}
-                rotation={new three.Euler().setFromRotationMatrix(
-                  new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
-                )}
-                material={
-                  hovered &&
-                  (props.editMode === "Resize"
-                    ? matchingIndices(hovered, currentIndices)
-                    : hovered.cubeIndex === cubeIndex)
-                    ? wallMaterialHover
-                    : wallMaterial
-                }
-              />
-            );
-          })}
-        </React.Fragment>
-      ))}
-    </>
-  );
-};
-
-const initCubes = (): Array<Cube> => [
-  {
-    x: snapToGridX(-0.5),
-    y: snapToGridY(-0.5),
-    wx: snapToGridX(1.5),
-    wy: snapToGridY(6),
-  },
-  {
-    x: snapToGridX(-2.5),
-    y: snapToGridY(-2.5),
-    wx: snapToGridX(1.5),
-    wy: snapToGridY(6),
-  },
-];
-
-const Container: React.FunctionComponent<{}> = () => {
-  const dragStuff = useSimpleDrag();
-
-  const [editMode, setEditMode] = React.useState<EditMode>("Move");
-
-  const [cubes, setCubes] = React.useState<undoable.Undoable<Array<Cube>>>(
-    undoable.create(initCubes())
-  );
-
-  const raycasting = raycast.useRaycasting();
-
-  const [threeContext, setThreeContext] = React.useState<
-    CanvasContext | undefined
-  >();
 
   React.useEffect(() => {
     const handleKeyDown = (ev: KeyboardEvent) => {
@@ -455,7 +330,7 @@ const Container: React.FunctionComponent<{}> = () => {
           zoom: 100,
         }}
         orthographic
-        {...dragStuff.dragContainerAttrs}
+        {...dragContainerAttrs}
       >
         <ambientLight intensity={0.8} />
         <pointLight position={[3, 9, 5]} intensity={0.3} />
@@ -470,18 +345,118 @@ const Container: React.FunctionComponent<{}> = () => {
           color="#F1F1F1"
         />
         <raycast.Planes refs={raycasting.refs} />
-        {raycasting.horizontalPlane && raycasting.verticalPlane && (
-          <Cubes
-            drag={dragStuff.drag}
-            cubes={undoable.current(cubes)}
-            editMode={editMode}
-            horizontalRaycastPlane={raycasting.horizontalPlane}
-            verticalRaycastPlane={raycasting.verticalPlane}
-            onCubeChange={(newCubes) => {
-              setCubes(undoable.setCurrent(cubes, newCubes));
-            }}
-          />
-        )}
+        <OrbitControls
+          enabled={!hovered}
+          minPolarAngle={Math.PI / 8}
+          maxPolarAngle={(Math.PI * 7) / 8}
+          target={new three.Vector3(0, 0, 0)}
+          enableDamping
+          dampingFactor={0.2}
+          rotateSpeed={0.7}
+        />
+        {undoable.current(cubes).map((cube, cubeIndex) => (
+          <React.Fragment key={cubeIndex}>
+            {[0, 1, 2, 3].map((faceIndex) => {
+              const currentIndices = {
+                cubeIndex,
+                faceIndex,
+              };
+
+              const cube_ =
+                drag.dragging && hovered && hovered.cubeIndex === cubeIndex
+                  ? updateCube(cube, hovered.faceIndex)
+                  : cube;
+
+              const planeGeo =
+                faceIndex === 0
+                  ? { x: cube_.x + cube_.wx / 2, y: cube_.y, w: cube_.wx }
+                  : faceIndex === 1
+                  ? {
+                      x: cube_.x + cube_.wx,
+                      y: cube_.y + cube_.wy / 2,
+                      w: cube_.wy,
+                    }
+                  : faceIndex === 2
+                  ? {
+                      x: cube_.x + cube_.wx / 2,
+                      y: cube_.y + cube_.wy,
+                      w: cube_.wx,
+                    }
+                  : { x: cube_.x, y: cube_.y + cube_.wy / 2, w: cube_.wy };
+
+              return (
+                <mesh
+                  key={faceIndex}
+                  geometry={new three.PlaneBufferGeometry(planeGeo.w, 1, 1, 1)}
+                  {...((hovered && hovered.active) ||
+                  (!hovered && drag.dragging)
+                    ? {}
+                    : {
+                        onPointerOver: (ev: PointerEvent) => {
+                          if (
+                            hovered &&
+                            hoveredInfo.current &&
+                            matchingIndices(hoveredInfo.current, hovered) &&
+                            hoveredInfo.current.distance < ev.distance
+                          ) {
+                            return;
+                          }
+                          setHovered({ cubeIndex, faceIndex, active: false });
+                          hoveredInfo.current = {
+                            faceIndex,
+                            cubeIndex,
+                            distance: ev.distance,
+                          };
+                        },
+                        onPointerMove: (ev: PointerEvent) => {
+                          const info = {
+                            faceIndex,
+                            cubeIndex,
+                            distance: ev.distance,
+                          };
+
+                          if (!hovered && !drag.dragging) {
+                            hoveredInfo.current = info;
+                            setHovered({ cubeIndex, faceIndex, active: false });
+                            return;
+                          }
+
+                          if (
+                            hovered &&
+                            matchingIndices(hovered, currentIndices)
+                          ) {
+                            hoveredInfo.current = info;
+                          }
+                        },
+                        onPointerOut: () => {
+                          if (!drag.dragging) {
+                            setHovered((prevHovered) =>
+                              prevHovered &&
+                              prevHovered.cubeIndex === cubeIndex &&
+                              prevHovered.faceIndex === faceIndex
+                                ? undefined
+                                : prevHovered
+                            );
+                          }
+                        },
+                      })}
+                  position={[planeGeo.x, 0.5, planeGeo.y]}
+                  rotation={new three.Euler().setFromRotationMatrix(
+                    new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
+                  )}
+                  material={
+                    hovered &&
+                    (editMode === "Resize"
+                      ? matchingIndices(hovered, currentIndices)
+                      : hovered.cubeIndex === cubeIndex)
+                      ? wallMaterialHover
+                      : wallMaterial
+                  }
+                />
+              );
+            })}
+          </React.Fragment>
+        ))}
       </Canvas>
     </div>
   );
