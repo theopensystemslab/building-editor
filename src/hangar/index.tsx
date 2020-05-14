@@ -62,7 +62,11 @@ const matchingIndices = (
   );
 };
 
-const snapToGrid = (val: number) => Math.round(val / 0.5) * 0.5;
+const gridX = 1.2;
+const gridY = 5.7;
+
+const snapToGridX = (val: number) => Math.round(val / gridX) * gridX;
+const snapToGridY = (val: number) => Math.round(val / gridY) * gridY;
 
 const Cubes: React.FC<{
   drag: Drag;
@@ -139,54 +143,54 @@ const Cubes: React.FC<{
           ...prevCube,
           ...(faceIndex === 0
             ? {
-                y: snapToGrid(prevCube.y + positionOffsets.y),
+                y: snapToGridY(prevCube.y + positionOffsets.y),
                 wy: canResize
-                  ? snapToGrid(prevCube.wy - positionOffsets.y)
+                  ? snapToGridY(prevCube.wy - positionOffsets.y)
                   : prevCube.wy,
                 // When not resizing, move also according to perpendicular coordinate
                 x: canResize
                   ? prevCube.x
-                  : snapToGrid(prevCube.x + positionOffsets.x),
+                  : snapToGridX(prevCube.x + positionOffsets.x),
               }
             : {}),
           ...(faceIndex === 1
             ? {
-                x: snapToGrid(
+                x: snapToGridX(
                   prevCube.x + (canResize ? 0 : 1) * positionOffsets.x
                 ),
                 wx: canResize
-                  ? snapToGrid(prevCube.wx + positionOffsets.x)
+                  ? snapToGridX(prevCube.wx + positionOffsets.x)
                   : prevCube.wx,
                 // When not resizing, move also according to perpendicular coordinate
                 y: canResize
                   ? prevCube.y
-                  : snapToGrid(prevCube.y + positionOffsets.y),
+                  : snapToGridY(prevCube.y + positionOffsets.y),
               }
             : {}),
           ...(faceIndex === 2
             ? {
-                y: snapToGrid(
+                y: snapToGridY(
                   prevCube.y + (canResize ? 0 : 1) * positionOffsets.y
                 ),
                 wy: canResize
-                  ? snapToGrid(prevCube.wy + positionOffsets.y)
+                  ? snapToGridY(prevCube.wy + positionOffsets.y)
                   : prevCube.wy,
                 // When not resizing, move also according to perpendicular coordinate
                 x: canResize
                   ? prevCube.x
-                  : snapToGrid(prevCube.x + positionOffsets.x),
+                  : snapToGridX(prevCube.x + positionOffsets.x),
               }
             : {}),
           ...(faceIndex === 3
             ? {
-                x: snapToGrid(prevCube.x + positionOffsets.x),
+                x: snapToGridX(prevCube.x + positionOffsets.x),
                 wx: canResize
-                  ? snapToGrid(prevCube.wx - positionOffsets.x)
+                  ? snapToGridX(prevCube.wx - positionOffsets.x)
                   : prevCube.wx,
                 // When not resizing, move also according to perpendicular coordinate
                 y: canResize
                   ? prevCube.y
-                  : snapToGrid(prevCube.y + positionOffsets.y),
+                  : snapToGridY(prevCube.y + positionOffsets.y),
               }
             : {}),
         }
@@ -358,16 +362,16 @@ const Container: React.FunctionComponent<{}> = () => {
   const [cubes, setCubes] = React.useState<undoable.Undoable<Array<Cube>>>(
     undoable.create([
       {
-        x: -0.5,
-        y: -0.5,
-        wx: 1,
-        wy: 1,
+        x: snapToGridX(-0.5),
+        y: snapToGridY(-0.5),
+        wx: snapToGridX(1.5),
+        wy: snapToGridY(6),
       },
       {
-        x: -2.5,
-        y: -2.5,
-        wx: 1,
-        wy: 1,
+        x: snapToGridX(-2.5),
+        y: snapToGridY(-2.5),
+        wx: snapToGridX(1.5),
+        wy: snapToGridY(6),
       },
     ])
   );
@@ -445,10 +449,10 @@ const Container: React.FunctionComponent<{}> = () => {
             return undoable.setCurrent(prevCubes, [
               ...undoable.current(prevCubes),
               {
-                x: snapToGrid((uv.x - 0.5) * planeSize - 0.5),
-                y: snapToGrid(-(uv.y - 0.5) * planeSize - 0.5),
-                wx: 1,
-                wy: 1,
+                x: snapToGridX((uv.x - 0.5) * planeSize - 0.5),
+                y: snapToGridY(-(uv.y - 0.5) * planeSize - 0.5),
+                wx: snapToGridX(1),
+                wy: snapToGridY(1),
               },
             ]);
           });
@@ -506,8 +510,8 @@ const Container: React.FunctionComponent<{}> = () => {
         <RectangularGrid
           numZCells={60}
           numXCells={60}
-          cellLength={0.5}
-          cellWidth={0.5}
+          cellLength={gridY}
+          cellWidth={gridX}
           color="#F1F1F1"
         />
 
