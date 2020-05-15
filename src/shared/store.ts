@@ -41,7 +41,7 @@ export enum EditMode {
 
 export interface State {
   editMode: EditMode;
-  cubes: undoable.Undoable<Array<Hangar>>;
+  hangars: undoable.Undoable<Array<Hangar>>;
   grid: {
     properties: {
       color: string;
@@ -116,7 +116,7 @@ export const [useStore, api] = create(
       occupiedCells: {},
     },
     editMode: EditMode.Move,
-    cubes: undoable.create([
+    hangars: undoable.create([
       [
         { x: 0, z: 0 },
         { x: GRID.x, z: 0 },

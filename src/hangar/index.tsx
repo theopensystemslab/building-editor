@@ -40,11 +40,11 @@ const wallMaterialHover = new three.MeshPhongMaterial({
 });
 
 const matchingIndices = (
-  indices1: { cubeIndex: number; faceIndex: number },
-  indices2: { cubeIndex: number; faceIndex: number }
+  indices1: { hangarIndex: number; faceIndex: number },
+  indices2: { hangarIndex: number; faceIndex: number }
 ): boolean => {
   return (
-    indices1.cubeIndex === indices2.cubeIndex &&
+    indices1.hangarIndex === indices2.hangarIndex &&
     indices1.faceIndex === indices2.faceIndex
   );
 };
@@ -118,11 +118,11 @@ const Container: React.FunctionComponent<{}> = () => {
 
   const store = useStore();
 
-  // Create editMode, setEditMode, cubes and setHangars methods the way
+  // Create editMode, setEditMode, hangars and setHangars methods the way
   // a local useState call would
   const editMode = store.editMode;
 
-  const cubes: undoable.Undoable<Array<Hangar>> = store.cubes;
+  const hangars: undoable.Undoable<Array<Hangar>> = store.hangars;
 
   const setHangars = (
     valOrUpdater:
@@ -133,11 +133,11 @@ const Container: React.FunctionComponent<{}> = () => {
   ) => {
     if (typeof valOrUpdater === "function") {
       store.set((draft) => {
-        draft.cubes = valOrUpdater(draft.cubes);
+        draft.hangars = valOrUpdater(draft.hangars);
       });
     } else {
       store.set((draft) => {
-        draft.cubes = valOrUpdater;
+        draft.hangars = valOrUpdater;
       });
     }
   };
@@ -162,7 +162,7 @@ const Container: React.FunctionComponent<{}> = () => {
   const hoveredInfo = React.useRef<
     | {
         faceIndex: number;
-        cubeIndex: number;
+        hangarIndex: number;
         distance: number;
       }
     | undefined
@@ -170,14 +170,14 @@ const Container: React.FunctionComponent<{}> = () => {
 
   const [hovered, setHovered] = React.useState<
     | {
-        cubeIndex: number;
+        hangarIndex: number;
         faceIndex: number;
         active: boolean;
       }
     | undefined
   >(undefined);
 
-  // Update cube position utility - re-used between rendering the dragged shadow and the state update logic
+  // Update hangar position utility - re-used between rendering the dragged shadow and the state update logic
   const updateHangar = (prevHangar: Hangar, faceIndex: number): Hangar => {
     const dimensions = {
       width: threeContext.gl.domElement.clientWidth,
@@ -300,17 +300,17 @@ const Container: React.FunctionComponent<{}> = () => {
 
   React.useEffect(() => {
     if (hovered && !drag.dragging && drag.prevDragging) {
-      const currentHangars = undoable.current(cubes);
+      const currentHangars = undoable.current(hangars);
       setHangars(
         undoable.setCurrent(
-          cubes,
-          currentHangars.map((cube_, index) =>
-            index === hovered.cubeIndex
+          hangars,
+          currentHangars.map((hangar_, index) =>
+            index === hovered.hangarIndex
               ? updateHangar(
-                  currentHangars[hovered.cubeIndex],
+                  currentHangars[hovered.hangarIndex],
                   hovered.faceIndex
                 )
-              : cube_
+              : hangar_
           )
         )
       );
@@ -416,14 +416,14 @@ const Container: React.FunctionComponent<{}> = () => {
       <Sidebar
         editMode={editMode}
         onUndo={
-          undoable.canUndo(cubes)
+          undoable.canUndo(hangars)
             ? () => {
                 setHangars(undoable.undo);
               }
             : undefined
         }
         onRedo={
-          undoable.canRedo(cubes)
+          undoable.canRedo(hangars)
             ? () => {
                 setHangars(undoable.redo);
               }
@@ -474,20 +474,20 @@ const Container: React.FunctionComponent<{}> = () => {
           <HangarMesh hangar={ghostHangar} />
         )}
 
-        {undoable.current(cubes).map((cube, cubeIndex) => {
+        {undoable.current(hangars).map((hangar, hangarIndex) => {
           const highlightHorizontalPlanes =
             hovered &&
-            hovered.cubeIndex === cubeIndex &&
+            hovered.hangarIndex === hangarIndex &&
             editMode !== EditMode.Resize;
 
           const cubeMod = hangarToCube(
-            drag.dragging && hovered && hovered.cubeIndex === cubeIndex
-              ? updateHangar(cube, hovered.faceIndex)
-              : cube
+            drag.dragging && hovered && hovered.hangarIndex === hangarIndex
+              ? updateHangar(hangar, hovered.faceIndex)
+              : hangar
           );
 
           return (
-            <React.Fragment key={cubeIndex}>
+            <React.Fragment key={hangarIndex}>
               <mesh
                 geometry={
                   new three.PlaneBufferGeometry(cubeMod.wx, cubeMod.wz, 1, 1)
@@ -522,7 +522,7 @@ const Container: React.FunctionComponent<{}> = () => {
               />
               {[0, 1, 2, 3].map((faceIndex) => {
                 const currentIndices = {
-                  cubeIndex,
+                  hangarIndex,
                   faceIndex,
                 };
 
@@ -570,24 +570,28 @@ const Container: React.FunctionComponent<{}> = () => {
                             ) {
                               return;
                             }
-                            setHovered({ cubeIndex, faceIndex, active: false });
+                            setHovered({
+                              hangarIndex,
+                              faceIndex,
+                              active: false,
+                            });
                             hoveredInfo.current = {
                               faceIndex,
-                              cubeIndex,
+                              hangarIndex,
                               distance: ev.distance,
                             };
                           },
                           onPointerMove: (ev: PointerEvent) => {
                             const info = {
                               faceIndex,
-                              cubeIndex,
+                              hangarIndex,
                               distance: ev.distance,
                             };
 
                             if (!hovered && !drag.dragging) {
                               hoveredInfo.current = info;
                               setHovered({
-                                cubeIndex,
+                                hangarIndex,
                                 faceIndex,
                                 active: false,
                               });
@@ -605,7 +609,7 @@ const Container: React.FunctionComponent<{}> = () => {
                             if (!drag.dragging) {
                               setHovered((prevHovered) =>
                                 prevHovered &&
-                                prevHovered.cubeIndex === cubeIndex &&
+                                prevHovered.hangarIndex === hangarIndex &&
                                 prevHovered.faceIndex === faceIndex
                                   ? undefined
                                   : prevHovered
@@ -623,7 +627,7 @@ const Container: React.FunctionComponent<{}> = () => {
                       hovered &&
                       (editMode === EditMode.Resize
                         ? matchingIndices(hovered, currentIndices)
-                        : hovered.cubeIndex === cubeIndex)
+                        : hovered.hangarIndex === hangarIndex)
                         ? wallMaterialHover
                         : wallMaterial
                     }
