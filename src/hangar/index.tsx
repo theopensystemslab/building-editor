@@ -431,18 +431,18 @@ const Container: React.FunctionComponent<{}> = () => {
         onEditModeChange={setEditMode}
       />
       <Canvas
-        gl={{ antialias: true, alpha: true }}
+        gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
         onCreated={(threeContext) => {
           setThreeContext(threeContext);
           threeContext.gl.toneMapping = three.Uncharted2ToneMapping;
-          threeContext.camera.position.set(50, 70, -24);
+          threeContext.camera.position.set(50000, 70000, -24000);
           threeContext.camera.lookAt(0, 0, 0);
           threeContext.camera.updateProjectionMatrix();
         }}
         camera={{
           near: 1,
-          far: 120,
-          zoom: 40,
+          far: 12e5,
+          zoom: 0.035,
         }}
         orthographic
         {...dragContainerAttrs}
@@ -457,17 +457,23 @@ const Container: React.FunctionComponent<{}> = () => {
           cellLength={gridZ}
           cellWidth={gridX}
         />
+
         <raycast.Planes refs={raycasting.refs} />
+
         <OrbitControls
           enableRotate={!hovered}
-          enablePan={!hovered}
+          enablePan={false}
           minPolarAngle={Math.PI / 8}
           maxPolarAngle={(Math.PI * 7) / 8}
           target={new three.Vector3(0, 0, 0)}
           enableDamping
           dampingFactor={0.2}
           rotateSpeed={0.7}
+          zoomSpeed={10}
+          minZoom={0.025}
+          maxZoom={0.1}
         />
+
         {editMode === EditMode.Insert && ghostHangar && (
           <HangarMesh hangar={ghostHangar} />
         )}
