@@ -1,3 +1,4 @@
+import { Howl } from "howler";
 import produce from "immer";
 import { uniq } from "ramda";
 import create from "zustand";
@@ -150,9 +151,14 @@ window["api"] = api;
 
 // rudimentarily save state to localStorage if grid.occupiedCells changes
 
+const popSoundEffect = new Howl({
+  src: ["sounds/260614__kwahmah-02__pop.wav"],
+});
+
 api.subscribe(
   (occupiedCells: State) => {
     localStorage.setItem("cache", JSON.stringify(occupiedCells));
+    popSoundEffect.play();
   },
   (state) => state.grid.occupiedCells
 );
