@@ -10,6 +10,10 @@ interface Props {
   onRedo?: () => void;
 }
 
+const svgProps = {
+  size: 20,
+};
+
 const Sidebar: React.FC<Props> = (props) => {
   return (
     <div className="sidebar">
@@ -22,7 +26,7 @@ const Sidebar: React.FC<Props> = (props) => {
         }}
         title="Move Mode (m)"
       >
-        <rf.Move />
+        <rf.Move {...svgProps} />
       </button>
       <button
         className={`sidebar-icon ${
@@ -33,7 +37,7 @@ const Sidebar: React.FC<Props> = (props) => {
         }}
         title="Insert Mode (i)"
       >
-        <rf.Box />
+        <rf.Box {...svgProps} />
       </button>
       <button
         className={`sidebar-icon ${
@@ -44,7 +48,7 @@ const Sidebar: React.FC<Props> = (props) => {
         }}
         title="Resize Mode (r)"
       >
-        <rf.PenTool />
+        <rf.PenTool {...svgProps} />
       </button>
       <button
         className={`sidebar-icon ${
@@ -55,21 +59,21 @@ const Sidebar: React.FC<Props> = (props) => {
         }}
         title="Slice Mode (s)"
       >
-        <rf.Columns />
+        <rf.Columns {...svgProps} />
       </button>
       <button
         {...(props.onUndo ? { onClick: props.onUndo } : { disabled: true })}
         className="sidebar-icon"
         title="Undo (cmd+z)"
       >
-        <rf.RotateCcw />
+        <rf.RotateCcw {...svgProps} />
       </button>
       <button
         {...(props.onRedo ? { onClick: props.onRedo } : { disabled: true })}
         className="sidebar-icon"
         title="Redo (cmd+shift+z)"
       >
-        <rf.RotateCw />
+        <rf.RotateCw {...svgProps} />
       </button>
     </div>
   );

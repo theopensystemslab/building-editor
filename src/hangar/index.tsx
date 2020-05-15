@@ -13,17 +13,23 @@ import Sidebar from "./Sidebar";
 // Raytracing planes
 
 const wallGhostMaterial = new three.MeshPhongMaterial({
-  color: "#676767",
+  color: "#666",
+  opacity: 0.4,
+  transparent: true,
   side: three.DoubleSide,
 });
 
 const wallMaterial = new three.MeshPhongMaterial({
-  color: "#444",
+  color: "#666",
+  opacity: 0.8,
+  transparent: true,
   side: three.DoubleSide,
 });
 
 const wallMaterialHover = new three.MeshPhongMaterial({
-  color: "#555",
+  color: "#F2BB05",
+  opacity: 0.8,
+  transparent: true,
   side: three.DoubleSide,
 });
 
@@ -39,12 +45,30 @@ const matchingIndices = (
 
 const { x: gridX, z: gridZ } = grid("m");
 
+const gridY = 4;
+
 const snapToGridX = (val: number): number => Math.round(val / gridX) * gridX;
 const snapToGridZ = (val: number): number => Math.round(val / gridZ) * gridZ;
 
-const CubeMesh: React.FC<{ cube }> = React.memo(
-  ({ cube, ...rest }) => (
+const CubeMesh: React.FC<{ cube: Cube }> = React.memo(({ cube, ...rest }) => {
+  return (
     <React.Fragment {...rest}>
+      <mesh
+        geometry={new three.PlaneBufferGeometry(cube.wx, cube.wz, 1, 1)}
+        position={[cube.x + cube.wx / 2, 0, cube.z + cube.wz / 2]}
+        rotation={new three.Euler().setFromRotationMatrix(
+          new three.Matrix4().makeRotationX(Math.PI / 2)
+        )}
+        material={wallGhostMaterial}
+      />
+      <mesh
+        geometry={new three.PlaneBufferGeometry(cube.wx, cube.wz, 1, 1)}
+        position={[cube.x + cube.wx / 2, gridY, cube.z + cube.wz / 2]}
+        rotation={new three.Euler().setFromRotationMatrix(
+          new three.Matrix4().makeRotationX(Math.PI / 2)
+        )}
+        material={wallGhostMaterial}
+      />
       {[0, 1, 2, 3].map((faceIndex) => {
         const planeGeo =
           faceIndex === 0
@@ -66,8 +90,8 @@ const CubeMesh: React.FC<{ cube }> = React.memo(
         return (
           <mesh
             key={faceIndex}
-            geometry={new three.PlaneBufferGeometry(planeGeo.w, 1, 1, 1)}
-            position={[planeGeo.x, 0.5, planeGeo.z]}
+            geometry={new three.PlaneBufferGeometry(planeGeo.w, gridY, 1, 1)}
+            position={[planeGeo.x, gridY / 2, planeGeo.z]}
             rotation={new three.Euler().setFromRotationMatrix(
               new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
             )}
@@ -76,9 +100,8 @@ const CubeMesh: React.FC<{ cube }> = React.memo(
         );
       })}
     </React.Fragment>
-  ),
-  fastBasicEqualityCheck
-);
+  );
+}, fastBasicEqualityCheck);
 
 const Container: React.FunctionComponent<{}> = () => {
   // Refer to global state
@@ -290,10 +313,12 @@ const Container: React.FunctionComponent<{}> = () => {
     const handleKeyDown = (ev: KeyboardEvent) => {
       if (ev.key === "i") {
         setEditMode(EditMode.Insert);
-      } else if (ev.key === "m") {
+      } else if (ev.key === "m" || ev.key === "Escape") {
         setEditMode(EditMode.Move);
       } else if (ev.key === "r") {
         setEditMode(EditMode.Resize);
+      } else if (ev.key === "s") {
+        setEditMode(EditMode.Slice);
       } else if (ev.key === "z" && ev.metaKey && !ev.shiftKey) {
         setCubes(undoable.undo);
       } else if (ev.key === "z" && ev.metaKey && ev.shiftKey) {
@@ -399,33 +424,33 @@ const Container: React.FunctionComponent<{}> = () => {
         onCreated={(threeContext) => {
           setThreeContext(threeContext);
           threeContext.gl.toneMapping = three.Uncharted2ToneMapping;
-          threeContext.camera.position.set(5, 10, 25);
+          threeContext.camera.position.set(50, 70, -24);
           threeContext.camera.lookAt(0, 0, 0);
           threeContext.camera.updateProjectionMatrix();
         }}
         camera={{
           near: 1,
           far: 120,
-          zoom: 100,
+          zoom: 40,
         }}
         orthographic
         {...dragContainerAttrs}
       >
-        <ambientLight intensity={0.8} />
-        <pointLight position={[3, 9, 5]} intensity={0.3} />
-        <directionalLight position={[0, 8, 10]} intensity={0.9} />
-        <directionalLight position={[5, 6, 0]} intensity={0.6} />
+        <ambientLight intensity={0.9} />
+        <directionalLight position={[0, 8, 3]} intensity={0.6} />
+        <directionalLight position={[5, 12, 3]} intensity={0.8} />
 
         <RectangularGrid
           numZCells={60}
           numXCells={60}
           cellLength={gridZ}
           cellWidth={gridX}
-          color="#F1F1F1"
+          color="#F3F3F3"
         />
         <raycast.Planes refs={raycasting.refs} />
         <OrbitControls
-          enabled={!hovered}
+          enableRotate={!hovered}
+          enablePan={!hovered}
           minPolarAngle={Math.PI / 8}
           maxPolarAngle={(Math.PI * 7) / 8}
           target={new three.Vector3(0, 0, 0)}
@@ -436,109 +461,164 @@ const Container: React.FunctionComponent<{}> = () => {
         {editMode === EditMode.Insert && ghostCube && (
           <CubeMesh cube={ghostCube} />
         )}
-        {undoable.current(cubes).map((cube, cubeIndex) => (
-          <React.Fragment key={cubeIndex}>
-            {[0, 1, 2, 3].map((faceIndex) => {
-              const currentIndices = {
-                cubeIndex,
-                faceIndex,
-              };
+        {undoable.current(cubes).map((cube, cubeIndex) => {
+          const highlightHorizontalPlanes =
+            hovered &&
+            hovered.cubeIndex === cubeIndex &&
+            editMode !== EditMode.Resize;
 
-              const cube_ =
-                drag.dragging && hovered && hovered.cubeIndex === cubeIndex
-                  ? updateCube(cube, hovered.faceIndex)
-                  : cube;
+          const cubeMod =
+            drag.dragging && hovered && hovered.cubeIndex === cubeIndex
+              ? updateCube(cube, hovered.faceIndex)
+              : cube;
 
-              const planeGeo =
-                faceIndex === 0
-                  ? { x: cube_.x + cube_.wx / 2, z: cube_.z, w: cube_.wx }
-                  : faceIndex === 1
-                  ? {
-                      x: cube_.x + cube_.wx,
-                      z: cube_.z + cube_.wz / 2,
-                      w: cube_.wz,
-                    }
-                  : faceIndex === 2
-                  ? {
-                      x: cube_.x + cube_.wx / 2,
-                      z: cube_.z + cube_.wz,
-                      w: cube_.wx,
-                    }
-                  : { x: cube_.x, z: cube_.z + cube_.wz / 2, w: cube_.wz };
+          return (
+            <React.Fragment key={cubeIndex}>
+              <mesh
+                geometry={
+                  new three.PlaneBufferGeometry(cubeMod.wx, cubeMod.wz, 1, 1)
+                }
+                position={[
+                  cubeMod.x + cubeMod.wx / 2,
+                  0,
+                  cubeMod.z + cubeMod.wz / 2,
+                ]}
+                rotation={new three.Euler().setFromRotationMatrix(
+                  new three.Matrix4().makeRotationX(Math.PI / 2)
+                )}
+                material={
+                  highlightHorizontalPlanes ? wallMaterialHover : wallMaterial
+                }
+              />
+              <mesh
+                geometry={
+                  new three.PlaneBufferGeometry(cubeMod.wx, cubeMod.wz, 1, 1)
+                }
+                position={[
+                  cubeMod.x + cubeMod.wx / 2,
+                  gridY,
+                  cubeMod.z + cubeMod.wz / 2,
+                ]}
+                rotation={new three.Euler().setFromRotationMatrix(
+                  new three.Matrix4().makeRotationX(Math.PI / 2)
+                )}
+                material={
+                  highlightHorizontalPlanes ? wallMaterialHover : wallMaterial
+                }
+              />
+              {[0, 1, 2, 3].map((faceIndex) => {
+                const currentIndices = {
+                  cubeIndex,
+                  faceIndex,
+                };
 
-              return (
-                <mesh
-                  key={faceIndex}
-                  geometry={new three.PlaneBufferGeometry(planeGeo.w, 1, 1, 1)}
-                  {...((hovered && hovered.active) ||
-                  (!hovered && drag.dragging)
-                    ? {}
+                const planeGeo =
+                  faceIndex === 0
+                    ? {
+                        x: cubeMod.x + cubeMod.wx / 2,
+                        z: cubeMod.z,
+                        w: cubeMod.wx,
+                      }
+                    : faceIndex === 1
+                    ? {
+                        x: cubeMod.x + cubeMod.wx,
+                        z: cubeMod.z + cubeMod.wz / 2,
+                        w: cubeMod.wz,
+                      }
+                    : faceIndex === 2
+                    ? {
+                        x: cubeMod.x + cubeMod.wx / 2,
+                        z: cubeMod.z + cubeMod.wz,
+                        w: cubeMod.wx,
+                      }
                     : {
-                        onPointerOver: (ev: PointerEvent) => {
-                          if (
-                            hovered &&
-                            hoveredInfo.current &&
-                            matchingIndices(hoveredInfo.current, hovered) &&
-                            hoveredInfo.current.distance < ev.distance
-                          ) {
-                            return;
-                          }
-                          setHovered({ cubeIndex, faceIndex, active: false });
-                          hoveredInfo.current = {
-                            faceIndex,
-                            cubeIndex,
-                            distance: ev.distance,
-                          };
-                        },
-                        onPointerMove: (ev: PointerEvent) => {
-                          const info = {
-                            faceIndex,
-                            cubeIndex,
-                            distance: ev.distance,
-                          };
+                        x: cubeMod.x,
+                        z: cubeMod.z + cubeMod.wz / 2,
+                        w: cubeMod.wz,
+                      };
 
-                          if (!hovered && !drag.dragging) {
-                            hoveredInfo.current = info;
+                return (
+                  <mesh
+                    key={faceIndex}
+                    geometry={
+                      new three.PlaneBufferGeometry(planeGeo.w, gridY, 1, 1)
+                    }
+                    {...((hovered && hovered.active) ||
+                    (!hovered && drag.dragging)
+                      ? {}
+                      : {
+                          onPointerOver: (ev: PointerEvent) => {
+                            if (
+                              hovered &&
+                              hoveredInfo.current &&
+                              matchingIndices(hoveredInfo.current, hovered) &&
+                              hoveredInfo.current.distance < ev.distance
+                            ) {
+                              return;
+                            }
                             setHovered({ cubeIndex, faceIndex, active: false });
-                            return;
-                          }
+                            hoveredInfo.current = {
+                              faceIndex,
+                              cubeIndex,
+                              distance: ev.distance,
+                            };
+                          },
+                          onPointerMove: (ev: PointerEvent) => {
+                            const info = {
+                              faceIndex,
+                              cubeIndex,
+                              distance: ev.distance,
+                            };
 
-                          if (
-                            hovered &&
-                            matchingIndices(hovered, currentIndices)
-                          ) {
-                            hoveredInfo.current = info;
-                          }
-                        },
-                        onPointerOut: () => {
-                          if (!drag.dragging) {
-                            setHovered((prevHovered) =>
-                              prevHovered &&
-                              prevHovered.cubeIndex === cubeIndex &&
-                              prevHovered.faceIndex === faceIndex
-                                ? undefined
-                                : prevHovered
-                            );
-                          }
-                        },
-                      })}
-                  position={[planeGeo.x, 0.5, planeGeo.z]}
-                  rotation={new three.Euler().setFromRotationMatrix(
-                    new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
-                  )}
-                  material={
-                    hovered &&
-                    (editMode === EditMode.Resize
-                      ? matchingIndices(hovered, currentIndices)
-                      : hovered.cubeIndex === cubeIndex)
-                      ? wallMaterialHover
-                      : wallMaterial
-                  }
-                />
-              );
-            })}
-          </React.Fragment>
-        ))}
+                            if (!hovered && !drag.dragging) {
+                              hoveredInfo.current = info;
+                              setHovered({
+                                cubeIndex,
+                                faceIndex,
+                                active: false,
+                              });
+                              return;
+                            }
+
+                            if (
+                              hovered &&
+                              matchingIndices(hovered, currentIndices)
+                            ) {
+                              hoveredInfo.current = info;
+                            }
+                          },
+                          onPointerOut: () => {
+                            if (!drag.dragging) {
+                              setHovered((prevHovered) =>
+                                prevHovered &&
+                                prevHovered.cubeIndex === cubeIndex &&
+                                prevHovered.faceIndex === faceIndex
+                                  ? undefined
+                                  : prevHovered
+                              );
+                            }
+                          },
+                        })}
+                    position={[planeGeo.x, gridY / 2, planeGeo.z]}
+                    rotation={new three.Euler().setFromRotationMatrix(
+                      new three.Matrix4().makeRotationY(
+                        (faceIndex * Math.PI) / 2
+                      )
+                    )}
+                    material={
+                      hovered &&
+                      (editMode === EditMode.Resize
+                        ? matchingIndices(hovered, currentIndices)
+                        : hovered.cubeIndex === cubeIndex)
+                        ? wallMaterialHover
+                        : wallMaterial
+                    }
+                  />
+                );
+              })}
+            </React.Fragment>
+          );
+        })}
       </Canvas>
     </div>
   );

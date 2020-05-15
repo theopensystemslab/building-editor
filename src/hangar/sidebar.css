@@ -10,7 +10,7 @@
   align-content: flex-start;
   top: 0;
   left: 0;
-  width: 82px;
+  width: 81px;
   height: 100%;
   background-color: #fff;
   border-right: 1px solid #dedede;
@@ -18,20 +18,23 @@
 }
 
 .sidebar-icon {
-  flex: 0 1 40px;
+  flex: 0 0 40px;
+  cursor: pointer;
   height: 40px;
   border: 0;
+  padding: 4px;
   background: none;
   color: #565656;
 }
 
 .sidebar-icon:focus {
   outline: none;
-  box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 0 0 3px rgba(49, 90, 165, 0.1);
 }
 
 .sidebar-icon-active {
-  color: #315aa5;
+  color: rgb(49, 90, 165);
+  background-color: rgba(49, 90, 165, 0.05);
 }
 
 .sidebar-icon[active] {
@@ -39,9 +42,9 @@
 }
 
 .sidebar-icon[disabled] {
-  opacity: 0.6;
+  opacity: 0.3;
 }
 
 .sidebar-icon:not([disabled]):hover {
-  background-color: #f5f5f5;
+  color: rgb(49, 90, 165);
 }
