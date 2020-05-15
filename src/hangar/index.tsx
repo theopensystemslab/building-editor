@@ -7,9 +7,9 @@ import RectangularGrid from "../shared/RectangularGrid";
 import {
   cubeToHangar,
   EditMode,
+  FnOrValue,
   Hangar,
   hangarToCube,
-  FnOrValue,
   useStore,
 } from "../shared/store";
 import { fastBasicEqualityCheck, useSimpleDrag } from "../utils";
@@ -444,7 +444,7 @@ const Container: React.FunctionComponent<{}> = () => {
           numXCells={60}
           cellLength={gridZ}
           cellWidth={gridX}
-          color="#F3F3F3"
+          color="#ddd"
         />
         <raycast.Planes refs={raycasting.refs} />
         <OrbitControls
