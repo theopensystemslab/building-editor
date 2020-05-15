@@ -432,6 +432,7 @@ const Container: React.FunctionComponent<{}> = () => {
         onEditModeChange={setEditMode}
       />
       <Canvas
+        className={editMode}
         gl={{ antialias: true, alpha: true }}
         onCreated={(threeContext) => {
           setThreeContext(threeContext);
