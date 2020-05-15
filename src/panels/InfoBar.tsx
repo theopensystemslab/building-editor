@@ -76,7 +76,7 @@ const Content = () => {
   );
 };
 
-const SideBar = () => {
+const InfoBar = () => {
   return (
     <Drawer open onClose={console.log} anchor="right" variant="permanent">
       <Content />
@@ -84,4 +84,4 @@ const SideBar = () => {
   );
 };
 
-export default <SideBar />;
+export default <InfoBar />;
