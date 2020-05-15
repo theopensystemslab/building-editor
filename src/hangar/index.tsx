@@ -2,6 +2,7 @@ import { OrbitControls } from "drei";
 import React from "react";
 import { Canvas, CanvasContext, PointerEvent } from "react-three-fiber";
 import * as three from "three";
+import Building from "../building/Building";
 import grid from "../shared/grid";
 import RectangularGrid from "../shared/RectangularGrid";
 import {
@@ -488,6 +489,8 @@ const Container: React.FunctionComponent<{}> = () => {
 
           return (
             <React.Fragment key={hangarIndex}>
+              <Building index={hangarIndex} />
+
               <mesh
                 geometry={
                   new three.PlaneBufferGeometry(cubeMod.wx, cubeMod.wz, 1, 1)
