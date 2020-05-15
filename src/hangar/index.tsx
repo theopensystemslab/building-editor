@@ -50,9 +50,7 @@ const matchingIndices = (
   );
 };
 
-const { x: gridX, z: gridZ } = grid("m");
-
-const gridY = 4;
+const { x: gridX, z: gridZ, y: gridY } = grid("mm");
 
 const snapToGridX = (val: number): number => Math.round(val / gridX) * gridX;
 const snapToGridZ = (val: number): number => Math.round(val / gridZ) * gridZ;
@@ -458,7 +456,6 @@ const Container: React.FunctionComponent<{}> = () => {
           numXCells={60}
           cellLength={gridZ}
           cellWidth={gridX}
-          color="#F3F3F3"
         />
         <raycast.Planes refs={raycasting.refs} />
         <OrbitControls
