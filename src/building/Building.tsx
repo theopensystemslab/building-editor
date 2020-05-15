@@ -7,9 +7,9 @@ const Building: React.FC<{ index: number }> = ({ index }) => {
   const { x, z } = useStore((store) => current(store.hangars)[index][0]);
 
   return (
-    <group position={[x, 0, z]}>
+    <group position={[1000, 500, z]}>
       <mesh>
-        <boxBufferGeometry args={[1, 1, 1]} attach="geometry" />
+        <boxBufferGeometry args={[1000, 1000, 1000]} attach="geometry" />
         <meshBasicMaterial color="red" attach="material" />
       </mesh>
     </group>

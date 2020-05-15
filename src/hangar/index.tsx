@@ -435,9 +435,10 @@ const Container: React.FunctionComponent<{}> = () => {
         onCreated={(threeContext) => {
           setThreeContext(threeContext);
           threeContext.gl.toneMapping = three.Uncharted2ToneMapping;
-          threeContext.camera.position.set(50000, 70000, -24000);
+          threeContext.camera.position.set(-13000, 20000, -15000);
           threeContext.camera.lookAt(0, 0, 0);
           threeContext.camera.updateProjectionMatrix();
+          window["camera"] = threeContext.camera;
         }}
         camera={{
           near: 1,
@@ -456,6 +457,7 @@ const Container: React.FunctionComponent<{}> = () => {
           numXCells={60}
           cellLength={gridZ}
           cellWidth={gridX}
+          color={0xcccccc}
         />
 
         <raycast.Planes refs={raycasting.refs} />
@@ -463,9 +465,8 @@ const Container: React.FunctionComponent<{}> = () => {
         <OrbitControls
           enableRotate={!hovered}
           enablePan={false}
-          minPolarAngle={Math.PI / 8}
-          maxPolarAngle={(Math.PI * 7) / 8}
-          target={new three.Vector3(0, 0, 0)}
+          // minPolarAngle={Math.PI / 8}
+          // maxPolarAngle={(Math.PI * 7) / 8}
           enableDamping
           dampingFactor={0.2}
           rotateSpeed={0.7}
@@ -643,6 +644,7 @@ const Container: React.FunctionComponent<{}> = () => {
             </React.Fragment>
           );
         })}
+        <axesHelper args={[10000]} />
       </Canvas>
     </div>
   );
