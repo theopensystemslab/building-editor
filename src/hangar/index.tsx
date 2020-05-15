@@ -9,6 +9,7 @@ import {
   EditMode,
   Hangar,
   hangarToCube,
+  FnOrValue,
   useStore,
 } from "../shared/store";
 import { fastBasicEqualityCheck, useSimpleDrag } from "../utils";
@@ -114,11 +115,16 @@ const HangarMesh: React.FC<{ hangar: Hangar }> = React.memo(
 );
 
 const Container: React.FunctionComponent<{}> = () => {
-  // Refer to global state
-
   const store = useStore();
 
-  const { cubes, setCubes, editMode, setEditMode } = store;
+  // TODO: these store fields are currently inferred as `unknown` and need to be typed explicitly
+  // once we figure out how to type zustand middleware properly this should go away.
+  const editMode: EditMode = store.editMode;
+  const setEditMode: (newEditMode: EditMode) => void = store.setEditMode;
+  const hangars: undoable.Undoable<Array<Hangar>> = store.hangars;
+  const setHangars: (
+    fnOrValue: FnOrValue<undoable.Undoable<Array<Hangar>>>
+  ) => void = store.setHangars;
 
   // Local state and effects
 
@@ -339,7 +345,7 @@ const Container: React.FunctionComponent<{}> = () => {
           [ev.offsetX, ev.offsetY]
         );
         if (uv) {
-          setHangars((prevHangars) => {
+          setHangars((prevHangars: undoable.Undoable<Array<Hangar>>) => {
             return undoable.setCurrent(prevHangars, [
               ...undoable.current(prevHangars),
               cubeToHangar({

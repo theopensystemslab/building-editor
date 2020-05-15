@@ -104,6 +104,10 @@ const selectorMiddleware = (config) => (set, get, api) =>
     api
   );
 
+// Helper to type `setState`-style methods that contain either a new value
+// or a function to go from old value to new value.
+export type FnOrValue<T> = T | ((prevCubes: T) => T);
+
 export const [useStore, api] = create(
   selectorMiddleware((set) => ({
     grid: {
@@ -126,11 +130,13 @@ export const [useStore, api] = create(
       ],
     ]),
     setEditMode: (newEditMode) => set((state) => ({ editMode: newEditMode })),
-    setCubes: (
-      updateCubes: (
-        prevCubes: undoable.Undoable<Array<Cube>>
-      ) => undoable.Undoable<Array<Cube>>
-    ) => set((state) => ({ cubes: updateCubes(state.cubes) })),
+    setHangars: (fnOrValue: FnOrValue<undoable.Undoable<Array<Cube>>>) =>
+      set((state) => ({
+        hangars:
+          typeof fnOrValue === "function"
+            ? fnOrValue(state.hangars)
+            : fnOrValue,
+      })),
     set: (fn) => set(produce(fn)),
   }))
 );
