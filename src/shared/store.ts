@@ -125,8 +125,8 @@ export const [useStore, api] = create(
       [
         { x: 0, z: 0 },
         { x: GRID.x, z: 0 },
-        { x: GRID.x, z: GRID.z },
-        { x: 0, z: GRID.z },
+        { x: GRID.x, z: GRID.z * 4 },
+        { x: 0, z: GRID.z * 4 },
       ],
     ]),
     setEditMode: (newEditMode) => set((state) => ({ editMode: newEditMode })),
