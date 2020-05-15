@@ -1,4 +1,3 @@
-import { Howl } from "howler";
 import produce from "immer";
 import create from "zustand";
 import * as undoable from "../utils/undoable";
@@ -77,9 +76,3 @@ export const [useStore, api] = create((set): State & { set: any } => ({
 }));
 
 window["api"] = api;
-
-// rudimentarily save state to localStorage if grid.occupiedCells changes
-
-const popSoundEffect = new Howl({
-  src: ["sounds/260614__kwahmah-02__pop.wav"],
-});
