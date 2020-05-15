@@ -1,6 +1,6 @@
 import flatten from "ramda/src/flatten";
 import map from "ramda/src/map";
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useDrag } from "react-use-gesture";
 import * as three from "three";
 
@@ -100,3 +100,5 @@ export const nextOddInt = (x) => Math.ceil(x) | 1;
 
 export const fastBasicEqualityCheck = (x, y) =>
   JSON.stringify(x) === JSON.stringify(y);
+
+export const sample = (arr) => arr[Math.floor(Math.random() * arr.length)];

@@ -2,6 +2,7 @@ import { OrbitControls } from "drei";
 import React from "react";
 import { Canvas, CanvasContext, PointerEvent } from "react-three-fiber";
 import * as three from "three";
+import NewBuilding from "../building/NewBuilding";
 import grid from "../shared/grid";
 import RectangularGrid from "../shared/RectangularGrid";
 import {
@@ -446,6 +447,7 @@ const Container: React.FunctionComponent<{}> = () => {
           cellWidth={gridX}
           color="#ddd"
         />
+
         <raycast.Planes refs={raycasting.refs} />
         <OrbitControls
           enableRotate={!hovered}
@@ -475,6 +477,8 @@ const Container: React.FunctionComponent<{}> = () => {
 
           return (
             <React.Fragment key={hangarIndex}>
+              <NewBuilding hangar={hangar} />
+
               <mesh
                 position={[
                   cubeMod.x + cubeMod.wx / 2,
