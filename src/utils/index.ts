@@ -1,6 +1,6 @@
 import flatten from "ramda/src/flatten";
 import map from "ramda/src/map";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useDrag } from "react-use-gesture";
 import * as three from "three";
 
@@ -21,16 +21,22 @@ export const useSimpleDrag = () => {
     movement: [0, 0],
   });
 
-  const bind = useDrag((state) => {
-    setDrag({
-      dragging: state.dragging,
-      prevDragging: state.memo,
-      movement: state.movement,
-    });
-    // This value is available in `state.memo` in the next call.
-    // See https://use-gesture.netlify.app/docs/state#xy-gestures-state-attributes.
-    return state.dragging;
-  });
+  // Avoid re-creating this function for every mouse move event
+  const handleDrag = useCallback(
+    (state) => {
+      setDrag({
+        dragging: state.dragging,
+        prevDragging: state.memo,
+        movement: state.movement,
+      });
+      // This value is available in `state.memo` in the next call.
+      // See https://use-gesture.netlify.app/docs/state#xy-gestures-state-attributes.
+      return state.dragging;
+    },
+    [setDrag]
+  );
+
+  const bind = useDrag(handleDrag);
 
   return {
     dragContainerAttrs: bind(),

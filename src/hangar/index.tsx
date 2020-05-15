@@ -9,6 +9,7 @@ import {
   EditMode,
   Hangar,
   hangarToCube,
+  FnOrValue,
   useStore,
 } from "../shared/store";
 import { fastBasicEqualityCheck, useSimpleDrag } from "../utils";
@@ -56,6 +57,13 @@ const gridY = 4;
 const snapToGridX = (val: number): number => Math.round(val / gridX) * gridX;
 const snapToGridZ = (val: number): number => Math.round(val / gridZ) * gridZ;
 
+// Pre-calculate the rotation Eulers for box faces
+const boxFaceRotationMatrices = [0, 1, 2, 3].map((faceIndex) =>
+  new three.Euler().setFromRotationMatrix(
+    new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
+  )
+);
+
 const HangarMesh: React.FC<{ hangar: Hangar }> = React.memo(
   ({ hangar, ...rest }) => {
     const cube = hangarToCube(hangar);
@@ -98,13 +106,15 @@ const HangarMesh: React.FC<{ hangar: Hangar }> = React.memo(
           return (
             <mesh
               key={faceIndex}
-              geometry={new three.PlaneBufferGeometry(planeGeo.w, gridY, 1, 1)}
               position={[planeGeo.x, gridY / 2, planeGeo.z]}
-              rotation={new three.Euler().setFromRotationMatrix(
-                new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
-              )}
+              rotation={boxFaceRotationMatrices[faceIndex]}
               material={wallGhostMaterial}
-            />
+            >
+              <planeBufferGeometry
+                args={[planeGeo.w, gridY, 1, 1]}
+                attach="geometry"
+              />
+            </mesh>
           );
         })}
       </React.Fragment>
@@ -114,39 +124,16 @@ const HangarMesh: React.FC<{ hangar: Hangar }> = React.memo(
 );
 
 const Container: React.FunctionComponent<{}> = () => {
-  // Refer to global state
-
   const store = useStore();
 
-  // Create editMode, setEditMode, hangars and setHangars methods the way
-  // a local useState call would
-  const editMode = store.editMode;
-
+  // TODO: these store fields are currently inferred as `unknown` and need to be typed explicitly
+  // once we figure out how to type zustand middleware properly this should go away.
+  const editMode: EditMode = store.editMode;
+  const setEditMode: (newEditMode: EditMode) => void = store.setEditMode;
   const hangars: undoable.Undoable<Array<Hangar>> = store.hangars;
-
-  const setHangars = (
-    valOrUpdater:
-      | undoable.Undoable<Array<Hangar>>
-      | ((
-          prev: undoable.Undoable<Array<Hangar>>
-        ) => undoable.Undoable<Array<Hangar>>)
-  ) => {
-    if (typeof valOrUpdater === "function") {
-      store.set((draft) => {
-        draft.hangars = valOrUpdater(draft.hangars);
-      });
-    } else {
-      store.set((draft) => {
-        draft.hangars = valOrUpdater;
-      });
-    }
-  };
-
-  const setEditMode = (val: EditMode) => {
-    store.set((draft) => {
-      draft.editMode = val;
-    });
-  };
+  const setHangars: (
+    fnOrValue: FnOrValue<undoable.Undoable<Array<Hangar>>>
+  ) => void = store.setHangars;
 
   // Local state and effects
 
@@ -367,7 +354,7 @@ const Container: React.FunctionComponent<{}> = () => {
           [ev.offsetX, ev.offsetY]
         );
         if (uv) {
-          setHangars((prevHangars) => {
+          setHangars((prevHangars: undoable.Undoable<Array<Hangar>>) => {
             return undoable.setCurrent(prevHangars, [
               ...undoable.current(prevHangars),
               cubeToHangar({
@@ -489,9 +476,6 @@ const Container: React.FunctionComponent<{}> = () => {
           return (
             <React.Fragment key={hangarIndex}>
               <mesh
-                geometry={
-                  new three.PlaneBufferGeometry(cubeMod.wx, cubeMod.wz, 1, 1)
-                }
                 position={[
                   cubeMod.x + cubeMod.wx / 2,
                   0,
@@ -503,11 +487,13 @@ const Container: React.FunctionComponent<{}> = () => {
                 material={
                   highlightHorizontalPlanes ? wallMaterialHover : wallMaterial
                 }
-              />
+              >
+                <planeBufferGeometry
+                  args={[cubeMod.wx, cubeMod.wz, 1, 1]}
+                  attach="geometry"
+                />
+              </mesh>
               <mesh
-                geometry={
-                  new three.PlaneBufferGeometry(cubeMod.wx, cubeMod.wz, 1, 1)
-                }
                 position={[
                   cubeMod.x + cubeMod.wx / 2,
                   gridY,
@@ -519,7 +505,12 @@ const Container: React.FunctionComponent<{}> = () => {
                 material={
                   highlightHorizontalPlanes ? wallMaterialHover : wallMaterial
                 }
-              />
+              >
+                <planeBufferGeometry
+                  args={[cubeMod.wx, cubeMod.wz, 1, 1]}
+                  attach="geometry"
+                />
+              </mesh>
               {[0, 1, 2, 3].map((faceIndex) => {
                 const currentIndices = {
                   hangarIndex,
@@ -554,9 +545,6 @@ const Container: React.FunctionComponent<{}> = () => {
                 return (
                   <mesh
                     key={faceIndex}
-                    geometry={
-                      new three.PlaneBufferGeometry(planeGeo.w, gridY, 1, 1)
-                    }
                     {...((hovered && hovered.active) ||
                     (!hovered && drag.dragging)
                       ? {}
@@ -618,11 +606,7 @@ const Container: React.FunctionComponent<{}> = () => {
                           },
                         })}
                     position={[planeGeo.x, gridY / 2, planeGeo.z]}
-                    rotation={new three.Euler().setFromRotationMatrix(
-                      new three.Matrix4().makeRotationY(
-                        (faceIndex * Math.PI) / 2
-                      )
-                    )}
+                    rotation={boxFaceRotationMatrices[faceIndex]}
                     material={
                       hovered &&
                       (editMode === EditMode.Resize
@@ -631,7 +615,12 @@ const Container: React.FunctionComponent<{}> = () => {
                         ? wallMaterialHover
                         : wallMaterial
                     }
-                  />
+                  >
+                    <planeBufferGeometry
+                      args={[planeGeo.w, gridY, 1, 1]}
+                      attach="geometry"
+                    />
+                  </mesh>
                 );
               })}
             </React.Fragment>
