@@ -1,37 +1,18 @@
-import React, { useState } from "react";
-import { State, useStore } from "../shared/store";
-import Module from "./Module";
+import React from "react";
+import { useStore } from "../shared/store";
+import { current } from "../utils/undoable";
 
-const Building: React.FC = () => {
-  const [hovering, setHovering] = useState(undefined);
-
-  const {
-    properties: {
-      dimensions: { cellWidth, cellLength },
-    },
-    occupiedCells,
-  } = useStore((store) => store.grid);
+const Building: React.FC<{ index: number }> = ({ index }) => {
+  // get the first coordinate of the hangar to determine the building's position
+  const { x, z } = useStore((store) => current(store.hangars)[index][0]);
 
   return (
-    <>
-      <group position={[0, 0.01, 0]}>
-        {Object.entries(occupiedCells as State["grid"]["occupiedCells"]).map(
-          ([gridPosition, cellData]) => (
-            <Module
-              key={gridPosition}
-              gridPosition={gridPosition}
-              cellWidth={cellWidth}
-              cellLength={cellLength}
-              type={cellData.module}
-              setHovering={setHovering}
-            />
-          )
-        )}
-      </group>
-      {hovering && (
-        <arrowHelper args={[hovering[0], hovering[1], 2, 0x00ff00]} />
-      )}
-    </>
+    <group position={[x, 0, z]}>
+      <mesh>
+        <boxBufferGeometry args={[1, 1, 1]} attach="geometry" />
+        <meshBasicMaterial color="red" attach="material" />
+      </mesh>
+    </group>
   );
 };
 
