@@ -118,35 +118,7 @@ const Container: React.FunctionComponent<{}> = () => {
 
   const store = useStore();
 
-  // Create editMode, setEditMode, hangars and setHangars methods the way
-  // a local useState call would
-  const editMode = store.editMode;
-
-  const hangars: undoable.Undoable<Array<Hangar>> = store.hangars;
-
-  const setHangars = (
-    valOrUpdater:
-      | undoable.Undoable<Array<Hangar>>
-      | ((
-          prev: undoable.Undoable<Array<Hangar>>
-        ) => undoable.Undoable<Array<Hangar>>)
-  ) => {
-    if (typeof valOrUpdater === "function") {
-      store.set((draft) => {
-        draft.hangars = valOrUpdater(draft.hangars);
-      });
-    } else {
-      store.set((draft) => {
-        draft.hangars = valOrUpdater;
-      });
-    }
-  };
-
-  const setEditMode = (val: EditMode) => {
-    store.set((draft) => {
-      draft.editMode = val;
-    });
-  };
+  const { cubes, setCubes, editMode, setEditMode } = store;
 
   // Local state and effects
 

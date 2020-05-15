@@ -105,7 +105,7 @@ const selectorMiddleware = (config) => (set, get, api) =>
   );
 
 export const [useStore, api] = create(
-  selectorMiddleware((set): State & { set: any } => ({
+  selectorMiddleware((set) => ({
     grid: {
       properties: {
         color: "lightgray",
@@ -125,6 +125,12 @@ export const [useStore, api] = create(
         { x: 0, z: GRID.z },
       ],
     ]),
+    setEditMode: (newEditMode) => set((state) => ({ editMode: newEditMode })),
+    setCubes: (
+      updateCubes: (
+        prevCubes: undoable.Undoable<Array<Cube>>
+      ) => undoable.Undoable<Array<Cube>>
+    ) => set((state) => ({ cubes: updateCubes(state.cubes) })),
     set: (fn) => set(produce(fn)),
   }))
 );
