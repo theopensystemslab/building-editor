@@ -4,6 +4,7 @@ import { Canvas, CanvasContext, PointerEvent } from "react-three-fiber";
 import * as three from "three";
 import NewBuilding from "../building/NewBuilding";
 import grid from "../shared/grid";
+import { wallMaterial, wallMaterialHover } from "../shared/materials";
 import RectangularGrid from "../shared/RectangularGrid";
 import {
   cubeToHangar,
@@ -13,33 +14,13 @@ import {
   hangarToCube,
   useStore,
 } from "../shared/store";
-import { fastBasicEqualityCheck, useSimpleDrag } from "../utils";
+import { useSimpleDrag } from "../utils";
 import * as raycast from "../utils/raycast";
 import * as undoable from "../utils/undoable";
+import HangarMesh from "./HangarMesh";
 import Sidebar from "./Sidebar";
 
 // Raytracing planes
-
-const wallGhostMaterial = new three.MeshPhongMaterial({
-  color: "#666",
-  opacity: 0.4,
-  transparent: true,
-  side: three.DoubleSide,
-});
-
-const wallMaterial = new three.MeshPhongMaterial({
-  color: "#666",
-  opacity: 0.8,
-  transparent: true,
-  side: three.DoubleSide,
-});
-
-const wallMaterialHover = new three.MeshPhongMaterial({
-  color: "#F2BB05",
-  opacity: 0.8,
-  transparent: true,
-  side: three.DoubleSide,
-});
 
 const matchingIndices = (
   indices1: { hangarIndex: number; faceIndex: number },
@@ -59,69 +40,10 @@ const snapToGridX = (val: number): number => Math.round(val / gridX) * gridX;
 const snapToGridZ = (val: number): number => Math.round(val / gridZ) * gridZ;
 
 // Pre-calculate the rotation Eulers for box faces
-const boxFaceRotationMatrices = [0, 1, 2, 3].map((faceIndex) =>
+export const boxFaceRotationMatrices = [0, 1, 2, 3].map((faceIndex) =>
   new three.Euler().setFromRotationMatrix(
     new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
   )
-);
-
-const HangarMesh: React.FC<{ hangar: Hangar }> = React.memo(
-  ({ hangar, ...rest }) => {
-    const cube = hangarToCube(hangar);
-    return (
-      <React.Fragment {...rest}>
-        <mesh
-          geometry={new three.PlaneBufferGeometry(cube.wx, cube.wz, 1, 1)}
-          position={[cube.x + cube.wx / 2, 0, cube.z + cube.wz / 2]}
-          rotation={new three.Euler().setFromRotationMatrix(
-            new three.Matrix4().makeRotationX(Math.PI / 2)
-          )}
-          material={wallGhostMaterial}
-        />
-        <mesh
-          geometry={new three.PlaneBufferGeometry(cube.wx, cube.wz, 1, 1)}
-          position={[cube.x + cube.wx / 2, gridY, cube.z + cube.wz / 2]}
-          rotation={new three.Euler().setFromRotationMatrix(
-            new three.Matrix4().makeRotationX(Math.PI / 2)
-          )}
-          material={wallGhostMaterial}
-        />
-        {[0, 1, 2, 3].map((faceIndex) => {
-          const planeGeo =
-            faceIndex === 0
-              ? { x: cube.x + cube.wx / 2, z: cube.z, w: cube.wx }
-              : faceIndex === 1
-              ? {
-                  x: cube.x + cube.wx,
-                  z: cube.z + cube.wz / 2,
-                  w: cube.wz,
-                }
-              : faceIndex === 2
-              ? {
-                  x: cube.x + cube.wx / 2,
-                  z: cube.z + cube.wz,
-                  w: cube.wx,
-                }
-              : { x: cube.x, z: cube.z + cube.wz / 2, w: cube.wz };
-
-          return (
-            <mesh
-              key={faceIndex}
-              position={[planeGeo.x, gridY / 2, planeGeo.z]}
-              rotation={boxFaceRotationMatrices[faceIndex]}
-              material={wallGhostMaterial}
-            >
-              <planeBufferGeometry
-                args={[planeGeo.w, gridY, 1, 1]}
-                attach="geometry"
-              />
-            </mesh>
-          );
-        })}
-      </React.Fragment>
-    );
-  },
-  fastBasicEqualityCheck
 );
 
 const Container: React.FunctionComponent<{}> = () => {
