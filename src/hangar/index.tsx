@@ -53,7 +53,7 @@ const matchingIndices = (
 
 const { x: gridX, z: gridZ } = grid("m");
 
-const gridY = 4;
+const gridY = 2.5;
 
 const snapToGridX = (val: number): number => Math.round(val / gridX) * gridX;
 const snapToGridZ = (val: number): number => Math.round(val / gridZ) * gridZ;
@@ -433,12 +433,30 @@ const Container: React.FunctionComponent<{}> = () => {
           far: 120,
           zoom: 40,
         }}
+        shadowMap={{ enabled: true }}
         orthographic
         {...dragContainerAttrs}
       >
-        <ambientLight intensity={0.9} />
-        <directionalLight position={[0, 8, 3]} intensity={0.6} />
-        <directionalLight position={[5, 12, 3]} intensity={0.8} />
+        <ambientLight castShadow />
+
+        <directionalLight
+          position={[20, 100, -20]}
+          castShadow
+          intensity={0.7}
+          shadowBias={-0.00004}
+        />
+
+        <group rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
+          <mesh name="ground" receiveShadow>
+            <planeBufferGeometry attach="geometry" args={[100, 100, 10, 10]} />
+            <shadowMaterial
+              attach="material"
+              color={0}
+              opacity={0.1}
+              side={three.DoubleSide}
+            />
+          </mesh>
+        </group>
 
         <RectangularGrid
           numZCells={60}
