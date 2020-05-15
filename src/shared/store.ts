@@ -1,8 +1,6 @@
 import { Howl } from "howler";
 import produce from "immer";
-import { uniq } from "ramda";
 import create from "zustand";
-import { nextOddInt } from "../utils";
 import * as undoable from "../utils/undoable";
 import grid from "./grid";
 
@@ -55,17 +53,6 @@ export interface State {
     };
   };
 }
-
-/*
- * calculates size of grid so that there is always a 'padding'
- * of a single grid cell surrounding all of the occupied cells
- */
-const calcSize = (x, i) => {
-  const numbers = uniq(Object.keys(x).map((k) => Number(k.split(",")[i])));
-  const largestAbsoluteNumber = Math.max.apply(null, numbers.map(Math.abs));
-
-  return nextOddInt(Math.max(numbers.length, largestAbsoluteNumber * 2) + 2);
-};
 
 export const [useStore, api] = create((set): State & { set: any } => ({
   grid: {
