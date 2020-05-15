@@ -41,6 +41,7 @@ export enum EditMode {
 }
 
 export interface State {
+  flyoutVisible: boolean;
   editMode: EditMode;
   hangars: undoable.Undoable<Array<Hangar>>;
   grid: {
@@ -110,6 +111,7 @@ export type FnOrValue<T> = T | ((prevCubes: T) => T);
 
 export const [useStore, api] = create(
   selectorMiddleware((set) => ({
+    flyoutVisible: true,
     grid: {
       properties: {
         color: "lightgray",
