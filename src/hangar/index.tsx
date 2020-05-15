@@ -3,7 +3,7 @@ import React from "react";
 import { Canvas, CanvasContext, PointerEvent } from "react-three-fiber";
 import * as three from "three";
 import NewBuilding from "../building/NewBuilding";
-import grid from "../shared/grid";
+import Flyout from "../panels/Flyout";
 import { wallMaterial, wallMaterialHover } from "../shared/materials";
 import RectangularGrid from "../shared/RectangularGrid";
 import {
@@ -18,9 +18,8 @@ import { useSimpleDrag } from "../utils";
 import * as raycast from "../utils/raycast";
 import * as undoable from "../utils/undoable";
 import HangarMesh from "./HangarMesh";
+import { boxFaceRotationMatrices, gridX, gridY, gridZ } from "./shared";
 import Sidebar from "./Sidebar";
-
-// Raytracing planes
 
 const matchingIndices = (
   indices1: { hangarIndex: number; faceIndex: number },
@@ -32,19 +31,8 @@ const matchingIndices = (
   );
 };
 
-const { x: gridX, z: gridZ } = grid("m");
-
-const gridY = 2.5;
-
 const snapToGridX = (val: number): number => Math.round(val / gridX) * gridX;
 const snapToGridZ = (val: number): number => Math.round(val / gridZ) * gridZ;
-
-// Pre-calculate the rotation Eulers for box faces
-export const boxFaceRotationMatrices = [0, 1, 2, 3].map((faceIndex) =>
-  new three.Euler().setFromRotationMatrix(
-    new three.Matrix4().makeRotationY((faceIndex * Math.PI) / 2)
-  )
-);
 
 const Container: React.FunctionComponent<{}> = () => {
   const store = useStore();
@@ -359,7 +347,7 @@ const Container: React.FunctionComponent<{}> = () => {
         orthographic
         {...dragContainerAttrs}
       >
-        <ambientLight castShadow />
+        <ambientLight />
 
         <directionalLight
           position={[20, 100, -20]}
@@ -571,6 +559,8 @@ const Container: React.FunctionComponent<{}> = () => {
           );
         })}
       </Canvas>
+
+      {store.flyoutVisible && <Flyout />}
     </div>
   );
 };

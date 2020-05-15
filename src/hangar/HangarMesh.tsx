@@ -1,11 +1,9 @@
 import React from "react";
 import * as three from "three";
-import { boxFaceRotationMatrices } from ".";
 import { wallGhostMaterial } from "../shared/materials";
 import { Hangar, hangarToCube } from "../shared/store";
 import { fastBasicEqualityCheck } from "../utils";
-
-const gridY = 2.5;
+import { boxFaceRotationMatrices, gridY } from "./shared";
 
 const HangarMesh: React.FC<{ hangar: Hangar }> = React.memo(
   ({ hangar, ...rest }) => {
