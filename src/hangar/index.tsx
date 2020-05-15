@@ -3,7 +3,6 @@ import React from "react";
 import { Canvas, CanvasContext, PointerEvent } from "react-three-fiber";
 import * as three from "three";
 import NewBuilding from "../building/NewBuilding";
-import Flyout from "../panels/Flyout";
 import { wallMaterial, wallMaterialHover } from "../shared/materials";
 import RectangularGrid from "../shared/RectangularGrid";
 import {
@@ -559,8 +558,6 @@ const Container: React.FunctionComponent<{}> = () => {
           );
         })}
       </Canvas>
-
-      {store.flyoutVisible && <Flyout />}
     </div>
   );
 };

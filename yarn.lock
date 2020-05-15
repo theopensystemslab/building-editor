@@ -4818,6 +4818,11 @@ expect@^24.9.0:
     jest-message-util "^24.9.0"
     jest-regex-util "^24.9.0"
 
+expr-eval@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/expr-eval/-/expr-eval-2.0.2.tgz#fa6f044a7b0c93fde830954eb9c5b0f7fbc7e201"
+  integrity sha512-4EMSHGOPSwAfBiibw3ndnP0AvjDWLsMvGOvWEZ2F96IGk0bIVdjQisOHxReSkE13mHcfbuCiXw+G4y0zv6N8Eg==
+
 express@^4.17.1:
   version "4.17.1"
   resolved "https://registry.yarnpkg.com/express/-/express-4.17.1.tgz#4491fc38605cf51f8629d39c2b5d026f98a4c134"
@@ -9670,6 +9675,14 @@ react-focus-lock@^1.17.7:
     focus-lock "^0.6.3"
     prop-types "^15.6.2"
     react-clientside-effect "^1.2.0"
+
+react-google-login@^5.1.19:
+  version "5.1.19"
+  resolved "https://registry.yarnpkg.com/react-google-login/-/react-google-login-5.1.19.tgz#db9c37f458f05a1e1855f2c7fb964f0186178e9b"
+  integrity sha512-ghd6/a0o+Gh6/4AdQkDkM2gw0G0jjarSi+npqY3PtKvnGSLEmO6MseHcqhmVSfl9hyebL8QVbt8bRVrvV9ZQwA==
+  dependencies:
+    "@types/react" "*"
+    prop-types "^15.6.0"
 
 react-input-autosize@^2.2.2:
   version "2.2.2"

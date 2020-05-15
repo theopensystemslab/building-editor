@@ -3,5 +3,6 @@
   "watchDirs": ["src"],
   "webpack": {
     "configPath": "react-scripts/config/webpack.config"
-  }
+  },
+  "port": 3000
 }
