@@ -47,6 +47,13 @@ const NewBuilding: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
   const rows = Math.round(wx / 5.7);
   const cols = Math.round(wz / 1.2);
 
+  const type = sample(["A2", "B2", "C2"]);
+  const types = Object.keys(crossSections).filter(
+    (k) => k.startsWith(type) || k.startsWith("D1") || k.startsWith("E1")
+  );
+
+  console.log(JSON.stringify(types, null, 2));
+
   return (
     <group position={[x, 0.001, z]}>
       {times(identity, rows).map((_r) =>
@@ -54,15 +61,7 @@ const NewBuilding: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
           <Module
             key={[_r, _z]}
             position={[_r * 5.7, 0, _z * 1.2]}
-            type={sample([
-              "B2_01",
-              "B2_02",
-              "B2_03",
-              "B2_04",
-              "B2_05",
-              "B2_06",
-              "B2_07",
-            ])}
+            type={sample(types)}
           />
         ))
       )}

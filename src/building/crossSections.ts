@@ -7,7 +7,7 @@ import { pointsToSVGPath } from "../utils/svg";
 
 const TOTAL_WIDTH = grid("mm").x;
 const EAVES_HEIGHT = 6000;
-const CEILING_HEIGHT = 3500;
+const CEILING_HEIGHT = 3064;
 const FRAME_WIDTH = 500;
 
 export interface ICrossSection {
@@ -30,6 +30,9 @@ const shapes = {
   A: shape([TOTAL_WIDTH / 2, 8850]),
   B: shape([TOTAL_WIDTH / 4, 8468]),
   C: shape([TOTAL_WIDTH / 2, 7645]),
+  // roof shape doesn't matter for D & E
+  D: shape([TOTAL_WIDTH / 2, 7645]),
+  E: shape([TOTAL_WIDTH / 2, 7645]),
 };
 
 const floorShape = (height = 0): Point[] => [
@@ -43,6 +46,8 @@ const variants = {
   A2: 5,
   B2: 7,
   C2: 5,
+  D1: 1,
+  E1: 1,
   // D1: 4,
   // E1: 4,
   // A1: 5,
@@ -69,18 +74,20 @@ const boxCoords = {
 const crossSections = Object.entries(variants).reduce(
   (acc, [type, numVariants]) => {
     for (let i = 1; i <= numVariants; i++) {
-      console.log([type, i]);
-
       let shape = shapes[type[0]];
+
+      let h = 9000;
+      if (type.startsWith("D")) h = 4600;
+      else if (type.startsWith("E")) h = 3600;
 
       const box: Point[] = [
         [boxCoords[i][0], 0],
-        [boxCoords[i][0], 9000],
-        [boxCoords[i][1], 9000],
+        [boxCoords[i][0], h],
+        [boxCoords[i][1], h],
         [boxCoords[i][1], 0],
       ];
 
-      shape = intersection([shape], [box])[0];
+      if (h === 9000) shape = intersection([shape], [box])[0];
 
       const holes = offset(-FRAME_WIDTH)([shape]);
 
