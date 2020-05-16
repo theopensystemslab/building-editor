@@ -12,12 +12,10 @@ const Decorator: React.FC<React.ReactNode> = ({ children }) => (
     pixelRatio={window.devicePixelRatio}
   >
     <ambientLight />
-    <pointLight
+    <directionalLight
       position={[40, 90, 45]}
       castShadow
       intensity={0.1}
-      shadowMapWidth={1024}
-      shadowMapHeight={1024}
       shadowBias={-0.0008}
     />
     {children}
