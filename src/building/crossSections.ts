@@ -2,7 +2,7 @@ import { bounds } from "@bentobots/vector2";
 import { EdgesGeometry, ExtrudeBufferGeometry } from "three";
 import grid from "../shared/grid";
 import { pointsToThreeShape } from "../utils";
-import { offset, Point, union } from "../utils/clipper";
+import { intersection, offset, Point, union } from "../utils/clipper";
 import { pointsToSVGPath } from "../utils/svg";
 
 const TOTAL_WIDTH = grid("mm").x;
@@ -40,12 +40,9 @@ const floorShape = (height = 0): Point[] => [
 ];
 
 const variants = {
-  A2: 1,
-  B2: 1,
-  C2: 1,
-  // A2: 5,
-  // B2: 7,
-  // C2: 5,
+  A2: 5,
+  B2: 7,
+  C2: 5,
   // D1: 4,
   // E1: 4,
   // A1: 5,
@@ -59,12 +56,39 @@ const extrudeSettings = {
   bevelEnabled: false,
 };
 
+const boxCoords = {
+  4: [0, 2100],
+  3: [0, 3300],
+  2: [0, 4500],
+  1: [0, 5700],
+  5: [1200, 3300],
+  6: [1200, 4500],
+  7: [2400, 3300],
+};
+
 const crossSections = Object.entries(variants).reduce(
   (acc, [type, numVariants]) => {
     for (let i = 1; i <= numVariants; i++) {
-      const shape = shapes[type[0]];
+      console.log([type, i]);
+
+      let shape = shapes[type[0]];
+
+      const box: Point[] = [
+        [boxCoords[i][0], 0],
+        [boxCoords[i][0], 9000],
+        [boxCoords[i][1], 9000],
+        [boxCoords[i][1], 0],
+      ];
+
+      shape = intersection([shape], [box])[0];
+
       const holes = offset(-FRAME_WIDTH)([shape]);
-      const points = union([shape, ...holes], [floorShape(CEILING_HEIGHT)]);
+
+      const points = intersection(
+        union([shape, ...holes], [floorShape(CEILING_HEIGHT)]),
+        [box]
+      );
+
       const { minX, maxX, minY, maxY } = bounds(shape);
       const width = Math.abs(maxX - minX);
       const height = Math.abs(maxY - minY);

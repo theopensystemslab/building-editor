@@ -54,7 +54,15 @@ const NewBuilding: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
           <Module
             key={[_r, _z]}
             position={[_r * 5.7, 0, _z * 1.2]}
-            type={sample(["A2_01", "B2_01", "C2_01"])}
+            type={sample([
+              "B2_01",
+              "B2_02",
+              "B2_03",
+              "B2_04",
+              "B2_05",
+              "B2_06",
+              "B2_07",
+            ])}
           />
         ))
       )}
