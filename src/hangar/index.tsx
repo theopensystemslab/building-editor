@@ -14,7 +14,7 @@ import {
   hangarToCube,
   useStore,
 } from "../shared/store";
-import { useSimpleDrag } from "../utils";
+import { useSimpleDrag, Drag } from "../utils";
 import * as raycast from "../utils/raycast";
 import * as undoable from "../utils/undoable";
 import HangarMesh from "./HangarMesh";
@@ -34,7 +34,115 @@ const matchingIndices = (
 const snapToGridX = (val: number): number => Math.round(val / gridX) * gridX;
 const snapToGridZ = (val: number): number => Math.round(val / gridZ) * gridZ;
 
+// Update hangar position utility - re-used between rendering the dragged shadow and the state update logic
+const updateHangar = ({
+  drag,
+  threeContext,
+  editMode,
+  raycasting,
+}: {
+  drag: Drag;
+  threeContext: CanvasContext | undefined;
+  editMode: EditMode;
+  raycasting: raycast.Raycasting;
+}) => (prevHangar: Hangar, faceIndex: number): Hangar => {
+  if (!threeContext) {
+    return prevHangar;
+  }
+
+  const dimensions = {
+    width: threeContext.gl.domElement.clientWidth,
+    height: threeContext.gl.domElement.clientHeight,
+  };
+
+  const offset = raycast.calcUvOffset(
+    {
+      ...dimensions,
+      plane: raycasting.horizontalPlane,
+      raycaster: raycasting.raycaster,
+      camera: threeContext.camera,
+    },
+    drag.movement
+  );
+
+  const offsetVertical = raycast.calcUvOffset(
+    {
+      ...dimensions,
+      plane: raycasting.verticalPlane,
+      raycaster: raycasting.raycaster,
+      camera: threeContext.camera,
+    },
+    drag.movement
+  );
+
+  const positionOffsets =
+    offset || offsetVertical
+      ? {
+          x: -(offset ? offset.x : 0) * raycast.planeSize,
+          z: (offset ? offset.y : 0) * raycast.planeSize,
+          y: (offsetVertical ? offsetVertical.y : 0) * raycast.planeSize,
+        }
+      : undefined;
+
+  const canResize = editMode === EditMode.Resize;
+
+  if (positionOffsets) {
+    const clone = hangarToCube(prevHangar);
+
+    switch (faceIndex) {
+      case 0:
+        clone.z = snapToGridZ(clone.z + positionOffsets.z);
+        clone.wz = canResize
+          ? snapToGridZ(clone.wz - positionOffsets.z)
+          : clone.wz;
+        clone.x = canResize
+          ? clone.x
+          : snapToGridX(clone.x + positionOffsets.x);
+        break;
+
+      case 1:
+        clone.x = snapToGridX(
+          clone.x + (canResize ? 0 : 1) * positionOffsets.x
+        );
+        clone.wx = canResize
+          ? snapToGridX(clone.wx + positionOffsets.x)
+          : clone.wx;
+        clone.z = canResize
+          ? clone.z
+          : snapToGridZ(clone.z + positionOffsets.z);
+        break;
+
+      case 2:
+        clone.z = snapToGridZ(
+          clone.z + (canResize ? 0 : 1) * positionOffsets.z
+        );
+        clone.wz = canResize
+          ? snapToGridZ(clone.wz + positionOffsets.z)
+          : clone.wz;
+        clone.x = canResize
+          ? clone.x
+          : snapToGridX(clone.x + positionOffsets.x);
+        break;
+
+      case 3:
+        clone.x = snapToGridX(clone.x + positionOffsets.x);
+        clone.wx = canResize
+          ? snapToGridX(clone.wx - positionOffsets.x)
+          : clone.wx;
+        clone.z = canResize
+          ? clone.z
+          : snapToGridZ(clone.z + positionOffsets.z);
+        break;
+    }
+
+    return cubeToHangar(clone);
+  }
+  return prevHangar;
+};
+
 const Container: React.FunctionComponent<{}> = () => {
+  // Refer to global state
+
   const store = useStore();
 
   // TODO: these store fields are currently inferred as `unknown` and need to be typed explicitly
@@ -42,7 +150,6 @@ const Container: React.FunctionComponent<{}> = () => {
   const editMode: EditMode = store.editMode;
   const setEditMode: (newEditMode: EditMode) => void = store.setEditMode;
   const toggleInfoPanel: () => void = store.toggleInfoPanel;
-
   const hangars: undoable.Undoable<Array<Hangar>> = store.hangars;
   const setHangars: (
     fnOrValue: FnOrValue<undoable.Undoable<Array<Hangar>>>
@@ -58,16 +165,7 @@ const Container: React.FunctionComponent<{}> = () => {
 
   const { drag, dragContainerAttrs } = useSimpleDrag();
 
-  // Persist hover state info frequently (every mouse move) without re-rendering
-  const hoveredInfo = React.useRef<
-    | {
-        faceIndex: number;
-        hangarIndex: number;
-        distance: number;
-      }
-    | undefined
-  >(undefined);
-
+  // Keep track of the hovered hangar
   const [hovered, setHovered] = React.useState<
     | {
         hangarIndex: number;
@@ -77,104 +175,36 @@ const Container: React.FunctionComponent<{}> = () => {
     | undefined
   >(undefined);
 
-  // Update hangar position utility - re-used between rendering the dragged shadow and the state update logic
-  const updateHangar = (prevHangar: Hangar, faceIndex: number): Hangar => {
-    const dimensions = {
-      width: threeContext.gl.domElement.clientWidth,
-      height: threeContext.gl.domElement.clientHeight,
-    };
-
-    const offset = raycast.calcUvOffset(
-      {
-        ...dimensions,
-        plane: raycasting.horizontalPlane,
-        raycaster: raycasting.raycaster,
-        camera: threeContext.camera,
-      },
-      drag.movement
-    );
-
-    const offsetVertical = raycast.calcUvOffset(
-      {
-        ...dimensions,
-        plane: raycasting.verticalPlane,
-        raycaster: raycasting.raycaster,
-        camera: threeContext.camera,
-      },
-      drag.movement
-    );
-
-    const positionOffsets =
-      offset || offsetVertical
-        ? {
-            x: -(offset ? offset.x : 0) * raycast.planeSize,
-            z: (offset ? offset.y : 0) * raycast.planeSize,
-            y: (offsetVertical ? offsetVertical.y : 0) * raycast.planeSize,
-          }
-        : undefined;
-
-    const canResize = editMode === EditMode.Resize;
-
-    if (positionOffsets) {
-      const clone = hangarToCube(prevHangar);
-
-      switch (faceIndex) {
-        case 0:
-          clone.z = snapToGridZ(clone.z + positionOffsets.z);
-          clone.wz = canResize
-            ? snapToGridZ(clone.wz - positionOffsets.z)
-            : clone.wz;
-          clone.x = canResize
-            ? clone.x
-            : snapToGridX(clone.x + positionOffsets.x);
-          break;
-
-        case 1:
-          clone.x = snapToGridX(
-            clone.x + (canResize ? 0 : 1) * positionOffsets.x
-          );
-          clone.wx = canResize
-            ? snapToGridX(clone.wx + positionOffsets.x)
-            : clone.wx;
-          clone.z = canResize
-            ? clone.z
-            : snapToGridZ(clone.z + positionOffsets.z);
-          break;
-
-        case 2:
-          clone.z = snapToGridZ(
-            clone.z + (canResize ? 0 : 1) * positionOffsets.z
-          );
-          clone.wz = canResize
-            ? snapToGridZ(clone.wz + positionOffsets.z)
-            : clone.wz;
-          clone.x = canResize
-            ? clone.x
-            : snapToGridX(clone.x + positionOffsets.x);
-          break;
-
-        case 3:
-          clone.x = snapToGridX(clone.x + positionOffsets.x);
-          clone.wx = canResize
-            ? snapToGridX(clone.wx - positionOffsets.x)
-            : clone.wx;
-          clone.z = canResize
-            ? clone.z
-            : snapToGridZ(clone.z + positionOffsets.z);
-          break;
+  // Some hover information is tracked in a ref so as not to cause re-renders
+  // on every mouse move event.
+  const hoveredInfo = React.useRef<
+    | {
+        faceIndex: number;
+        hangarIndex: number;
+        distance: number;
       }
+    | undefined
+  >(undefined);
 
-      return cubeToHangar(clone);
-    }
-    return prevHangar;
-  };
+  // Provide context to the hangar update logic so it can transform hangar objects
+  // directly.
+  const updateHangar_ = updateHangar({
+    drag,
+    threeContext,
+    editMode,
+    raycasting,
+  });
 
+  // General mouseup and mousedown event handling on the canvas
   React.useEffect(() => {
     if (!threeContext) {
       return;
     }
     const canvas = threeContext.gl.domElement;
     const handleCanvasMouseUp = () => {
+      // Make sure the hovered hangar is deactivated when the mouse is released.
+      // This is necessary because it can happen that a face is dragged but the pointer
+      // leaves its surface, at which point no mouse leave event will fire to do this.
       setTimeout(() => {
         setHovered(undefined);
       }, 50);
@@ -198,6 +228,7 @@ const Container: React.FunctionComponent<{}> = () => {
     };
   }, [threeContext, hovered]);
 
+  // Handle updating the hanger when dragging is finished
   React.useEffect(() => {
     if (hovered && !drag.dragging && drag.prevDragging) {
       const currentHangars = undoable.current(hangars);
@@ -206,7 +237,7 @@ const Container: React.FunctionComponent<{}> = () => {
           hangars,
           currentHangars.map((hangar_, index) =>
             index === hovered.hangarIndex
-              ? updateHangar(
+              ? updateHangar_(
                   currentHangars[hovered.hangarIndex],
                   hovered.faceIndex
                 )
@@ -215,8 +246,13 @@ const Container: React.FunctionComponent<{}> = () => {
         )
       );
     }
+    // Disable eslint for the hook dependencies line, because exhaustive hook dependencies
+    // (`hovered` in particular) break the event logic.
+    /* eslint-disable */
   }, [drag]);
+  /* eslint-enable */
 
+  // Handle keyboard shortcuts
   React.useEffect(() => {
     const handleKeyDown = (ev: KeyboardEvent) => {
       if (ev.key === "i") {
@@ -239,7 +275,7 @@ const Container: React.FunctionComponent<{}> = () => {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [setEditMode, setHangars, toggleInfoPanel]);
 
   const [ghostHangar, setGhostHangar] = React.useState<Hangar | undefined>(
     undefined
@@ -311,7 +347,13 @@ const Container: React.FunctionComponent<{}> = () => {
       canvas.removeEventListener("mousemove", handleCanvasMouseMove);
       canvas.removeEventListener("click", handleCanvasClick);
     };
-  }, [threeContext, editMode]);
+  }, [
+    threeContext,
+    editMode,
+    raycasting.horizontalPlane,
+    raycasting.raycaster,
+    setHangars,
+  ]);
 
   return (
     <div style={{ width: "100%", height: "100%" }}>
@@ -404,7 +446,7 @@ const Container: React.FunctionComponent<{}> = () => {
 
           const cubeMod = hangarToCube(
             drag.dragging && hovered && hovered.hangarIndex === hangarIndex
-              ? updateHangar(hangar, hovered.faceIndex)
+              ? updateHangar_(hangar, hovered.faceIndex)
               : hangar
           );
 
@@ -479,79 +521,82 @@ const Container: React.FunctionComponent<{}> = () => {
                         w: cubeMod.wz,
                       };
 
-                return (
-                  <mesh
-                    key={faceIndex}
-                    {...((hovered && hovered.active) ||
-                    (!hovered && drag.dragging)
-                      ? {}
-                      : {
-                          onPointerOver: (ev: PointerEvent) => {
-                            if (
-                              hovered &&
-                              hoveredInfo.current &&
-                              matchingIndices(hoveredInfo.current, hovered) &&
-                              hoveredInfo.current.distance < ev.distance
-                            ) {
-                              return;
-                            }
+                const eventHandlers =
+                  (hovered && hovered.active) || (!hovered && drag.dragging)
+                    ? {}
+                    : {
+                        onPointerOver: (ev: PointerEvent) => {
+                          if (
+                            hovered &&
+                            hoveredInfo.current &&
+                            matchingIndices(hoveredInfo.current, hovered) &&
+                            hoveredInfo.current.distance < ev.distance
+                          ) {
+                            return;
+                          }
+                          setHovered({
+                            hangarIndex,
+                            faceIndex,
+                            active: false,
+                          });
+                          hoveredInfo.current = {
+                            faceIndex,
+                            hangarIndex,
+                            distance: ev.distance,
+                          };
+                        },
+                        onPointerMove: (ev: PointerEvent) => {
+                          const info = {
+                            faceIndex,
+                            hangarIndex,
+                            distance: ev.distance,
+                          };
+
+                          if (!hovered && !drag.dragging) {
+                            hoveredInfo.current = info;
                             setHovered({
                               hangarIndex,
                               faceIndex,
                               active: false,
                             });
-                            hoveredInfo.current = {
-                              faceIndex,
-                              hangarIndex,
-                              distance: ev.distance,
-                            };
-                          },
-                          onPointerMove: (ev: PointerEvent) => {
-                            const info = {
-                              faceIndex,
-                              hangarIndex,
-                              distance: ev.distance,
-                            };
+                            return;
+                          }
 
-                            if (!hovered && !drag.dragging) {
-                              hoveredInfo.current = info;
-                              setHovered({
-                                hangarIndex,
-                                faceIndex,
-                                active: false,
-                              });
-                              return;
-                            }
+                          if (
+                            hovered &&
+                            matchingIndices(hovered, currentIndices)
+                          ) {
+                            hoveredInfo.current = info;
+                          }
+                        },
+                        onPointerOut: () => {
+                          if (!drag.dragging) {
+                            setHovered((prevHovered) =>
+                              prevHovered &&
+                              prevHovered.hangarIndex === hangarIndex &&
+                              prevHovered.faceIndex === faceIndex
+                                ? undefined
+                                : prevHovered
+                            );
+                          }
+                        },
+                      };
 
-                            if (
-                              hovered &&
-                              matchingIndices(hovered, currentIndices)
-                            ) {
-                              hoveredInfo.current = info;
-                            }
-                          },
-                          onPointerOut: () => {
-                            if (!drag.dragging) {
-                              setHovered((prevHovered) =>
-                                prevHovered &&
-                                prevHovered.hangarIndex === hangarIndex &&
-                                prevHovered.faceIndex === faceIndex
-                                  ? undefined
-                                  : prevHovered
-                              );
-                            }
-                          },
-                        })}
+                const material =
+                  hovered &&
+                  (editMode === EditMode.Resize
+                    ? matchingIndices(hovered, currentIndices)
+                    : hovered.hangarIndex === hangarIndex)
+                    ? wallMaterialHover
+                    : wallMaterial;
+
+                return (
+                  <mesh
+                    key={faceIndex}
+                    {...eventHandlers}
                     position={[planeGeo.x, gridY / 2, planeGeo.z]}
                     rotation={boxFaceRotationMatrices[faceIndex]}
-                    material={
-                      hovered &&
-                      (editMode === EditMode.Resize
-                        ? matchingIndices(hovered, currentIndices)
-                        : hovered.hangarIndex === hangarIndex)
-                        ? wallMaterialHover
-                        : wallMaterial
-                    }
+                    material={material}
                   >
                     <planeBufferGeometry
                       args={[planeGeo.w, gridY, 1, 1]}

@@ -9,7 +9,7 @@ export const calculateEnergyFigures = (values, floorArea: number) => {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
   const ob = values.reduce((acc, curr, i) => {
-    curr.map((col, j) => {
+    curr.forEach((col, j) => {
       acc[`${alphabet[j]}${i + 1}`] = col;
     });
     return acc;

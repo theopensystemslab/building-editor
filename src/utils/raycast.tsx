@@ -89,7 +89,14 @@ export const calcUvOffset = (
   );
 };
 
-export const useRaycasting = () => {
+export interface Raycasting {
+  raycaster: three.Raycaster;
+  horizontalPlane: three.Mesh | undefined;
+  verticalPlane: three.Mesh | undefined;
+  refs: { horizontal: React.Ref<three.Mesh>; vertical: React.Ref<three.Mesh> };
+}
+
+export const useRaycasting = (): Raycasting => {
   const raycaster = React.useMemo(() => new three.Raycaster(), []);
 
   // Set up refs for raytracing planes
