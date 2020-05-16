@@ -27,14 +27,24 @@ const linesMaterial = new LineDashedMaterial({
   gapSize: 1,
 });
 
-const Module: React.FC<any> = ({ type, position }) => {
-  const { geometry, edgesGeometry } = crossSections[type];
+const Module: React.FC<any> = ({ type, position, end = false }) => {
+  const {
+    geometry,
+    edgesGeometry,
+    endEdgesGeometry,
+    endGeometry,
+  } = crossSections[type];
 
   return (
     <group position={position}>
-      <mesh receiveShadow castShadow material={material} geometry={geometry} />
+      <mesh
+        receiveShadow
+        castShadow
+        material={material}
+        geometry={end ? endGeometry : geometry}
+      />
       <lineSegments
-        args={[edgesGeometry, linesMaterial]}
+        args={[end ? endEdgesGeometry : edgesGeometry, linesMaterial]}
         ref={(e: LineSegments) => e?.computeLineDistances()}
       />
     </group>
@@ -48,23 +58,60 @@ const NewBuilding: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
   const cols = Math.round(wz / 1.2);
 
   const type = sample(["A2", "B2", "C2"]);
-  const types = Object.keys(crossSections).filter(
-    (k) => k.startsWith(type) || k.startsWith("D1") || k.startsWith("E1")
-  );
 
-  console.log(JSON.stringify(types, null, 2));
+  // console.log(Object.entries(crossSections));
+
+  // console.log(Math.round(wx * 1000));
+
+  const types = Object.entries(crossSections)
+    .filter(([k, v]: [string, any]) => {
+      // console.log({
+      //   c: v.clipWidth,
+      //   r: Math.round(wx * 1000),
+      // });
+
+      return (
+        (k.startsWith(type) || k.startsWith("D1") || k.startsWith("E1")) &&
+        v.width === Math.round(wx * 1000)
+      );
+    })
+    .map(([k]) => k);
+
+  if (types.length === 0) return null;
+
+  const allTypes = times(() => sample(types), cols * rows);
+  let count = -1;
 
   return (
     <group position={[x, 0.001, z]}>
-      {times(identity, rows).map((_r) =>
-        times(identity, cols).map((_z) => (
-          <Module
-            key={[_r, _z]}
-            position={[_r * 5.7, 0, _z * 1.2]}
-            type={sample(types)}
-          />
-        ))
-      )}
+      {times(identity, rows).map((_r) => {
+        return (
+          <>
+            <Module
+              key={`${_r}front`}
+              position={[_r * 5.7, 0, -0.189]}
+              type={allTypes[0]}
+              end
+            />
+            {times(identity, cols).map((_z) => {
+              count += 1;
+              return (
+                <Module
+                  key={[_r, _z]}
+                  position={[_r * 5.7, 0, _z * 1.2]}
+                  type={allTypes[count]}
+                />
+              );
+            })}
+            <Module
+              key={`${_r}back`}
+              position={[_r * 5.7, 0, cols * 1.2]}
+              type={allTypes[allTypes.length - 1]}
+              end
+            />
+          </>
+        );
+      })}
     </group>
   );
 }, fastBasicEqualityCheck);

@@ -105,12 +105,22 @@ const crossSections = Object.entries(variants).reduce(
       );
 
       const gShape = pointsToThreeShape(gOutline, gHoles);
-      const geometry = new ExtrudeBufferGeometry(gShape, extrudeSettings);
       const position = [-width / 2000, 0, -grid("m").z / 2];
 
+      const geometry = new ExtrudeBufferGeometry(gShape, extrudeSettings);
       const edgesGeometry = new EdgesGeometry(geometry);
 
+      const endGeometry = new ExtrudeBufferGeometry(
+        pointsToThreeShape(gOutline),
+        {
+          ...extrudeSettings,
+          depth: 0.189,
+        }
+      );
+      const endEdgesGeometry = new EdgesGeometry(endGeometry);
+
       acc[`${type}_0${i}`] = {
+        clipWidth: boxCoords[i][1] - boxCoords[i][0],
         shape,
         holes,
         points,
@@ -118,6 +128,8 @@ const crossSections = Object.entries(variants).reduce(
         height,
         geometry,
         edgesGeometry,
+        endGeometry,
+        endEdgesGeometry,
         position,
         svgPath: pointsToSVGPath(points),
       };
