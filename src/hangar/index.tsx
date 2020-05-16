@@ -32,20 +32,21 @@ const matchingIndices = (
 };
 
 const snapToGridX = (val: number, includeSubGrid: boolean = false): number => {
+  let modifier = 0;
+
   if (includeSubGrid) {
-    let vals = [0, 1.2, 1.8, 3.9, 4.5];
+    let vals = [0, 1.2, 1.8, 3.9, 4.5, gridX];
+
     let remainder = val % gridX;
 
-    let closest = vals.reduce((prev, curr) =>
+    modifier = vals.reduce((prev: number, curr: number) =>
       Math.abs(curr - remainder) < Math.abs(prev - remainder) ? curr : prev
     );
 
-    if (closest > 1.8) closest -= gridX;
-
-    return Math.round(val / gridX) * gridX + closest;
-  } else {
-    return Math.round(val / gridX) * gridX;
+    if (modifier > gridX / 2) modifier -= gridX;
   }
+
+  return Math.round(val / gridX) * gridX + modifier;
 };
 const snapToGridZ = (val: number): number => Math.round(val / gridZ) * gridZ;
 
@@ -103,7 +104,6 @@ const updateHangar = ({
 
   if (positionOffsets) {
     const clone = hangarToCube(prevHangar);
-
     switch (faceIndex) {
       case 0:
         clone.z = snapToGridZ(clone.z + positionOffsets.z);
@@ -112,10 +112,11 @@ const updateHangar = ({
           : clone.wz;
         clone.x = canResize
           ? clone.x
-          : snapToGridX(clone.x + positionOffsets.x, canResize);
+          : snapToGridX(clone.x + positionOffsets.x);
         break;
 
       case 1:
+        //works
         clone.x = snapToGridX(
           clone.x + (canResize ? 0 : 1) * positionOffsets.x,
           canResize
@@ -137,11 +138,13 @@ const updateHangar = ({
           : clone.wz;
         clone.x = canResize
           ? clone.x
-          : snapToGridX(clone.x + positionOffsets.x, canResize);
+          : snapToGridX(clone.x + positionOffsets.x);
         break;
 
       case 3:
-        clone.x = snapToGridX(clone.x + positionOffsets.x, canResize);
+        // does not work
+        clone.x = snapToGridX(positionOffsets.x - clone.x, canResize);
+
         clone.wx = canResize
           ? snapToGridX(clone.wx - positionOffsets.x, canResize)
           : clone.wx;
