@@ -23,7 +23,7 @@ const material = new MeshStandardMaterial({
 });
 
 const linesMaterial = new LineDashedMaterial({
-  color: "#777777",
+  color: "#666",
   linewidth: 0.5,
   scale: 10,
   dashSize: 1,
