@@ -31,6 +31,7 @@
     "moment": "^2.25.3",
     "ramda": "^0.27.0",
     "react": "^16.13.1",
+    "react-datasheet": "^1.4.4",
     "react-dom": "^16.13.1",
     "react-feather": "^2.0.8",
     "react-google-login": "^5.1.19",
