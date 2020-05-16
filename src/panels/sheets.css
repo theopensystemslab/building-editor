@@ -21,3 +21,10 @@
   border-color: #2185d0 transparent transparent transparent;
   z-index: 2;
 }
+
+.data-grid {
+  font-size: 12px;
+}
+.data-grid span {
+  padding: 2px;
+}

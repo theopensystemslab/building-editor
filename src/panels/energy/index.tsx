@@ -84,7 +84,10 @@ const EnergyPanel: React.FC = () => {
       const d = calculateEnergyFigures(data, floorArea);
 
       const headings = Object.keys(d[0])
-        .filter((s) => !s.startsWith("$"))
+        .filter(
+          (s) =>
+            !s.startsWith("$") && s !== "Identifier" && s !== "SWC Constants"
+        )
         .map((value) => ({ value, readOnly: true }));
 
       const gridData = [
