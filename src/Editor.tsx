@@ -13,11 +13,9 @@ const Grid: React.FC = () => {
 
   return (
     <RectangularGrid
-      numXCells={dimensions.numXCells}
-      numZCells={dimensions.numZCells}
-      cellWidth={dimensions.cellWidth}
-      cellLength={dimensions.cellLength}
-      color={color}
+      z={{ cells: dimensions.numYCells, size: dimensions.cellLength }}
+      x={{ cells: dimensions.numXCells, size: dimensions.cellWidth }}
+      color="#ddd"
     />
   );
 };

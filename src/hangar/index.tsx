@@ -381,7 +381,9 @@ const Container: React.FunctionComponent<{}> = () => {
         onCreated={(threeContext) => {
           setThreeContext(threeContext);
           threeContext.gl.toneMapping = three.Uncharted2ToneMapping;
-          threeContext.camera.position.set(50, 70, -24);
+
+          // threeContext.camera.position.set(50, 70, -24);
+          threeContext.camera.position.set(50, 50, 50);
           threeContext.camera.lookAt(0, 0, 0);
           threeContext.camera.updateProjectionMatrix();
         }}
@@ -397,7 +399,7 @@ const Container: React.FunctionComponent<{}> = () => {
         <ambientLight />
 
         <directionalLight
-          position={[20, 100, -20]}
+          position={[20, 100, 20]}
           castShadow
           intensity={0.7}
           shadowBias={-0.00004}
@@ -415,12 +417,17 @@ const Container: React.FunctionComponent<{}> = () => {
           </mesh>
         </group>
 
+        {/* TODO: combine these into a single component w/ major & minor colors */}
         <RectangularGrid
-          numZCells={60}
-          numXCells={60}
-          cellLength={gridZ}
-          cellWidth={gridX}
+          z={{ cells: 20, size: gridZ }}
+          x={{ cells: 6, size: gridX, subDivisions: [1.2, 1.8, 3.9, 4.5] }}
           color="#ddd"
+          dashed
+        />
+        <RectangularGrid
+          z={{ cells: 20, size: gridZ }}
+          x={{ cells: 6, size: gridX }}
+          color="#ccc"
         />
 
         <raycast.Planes refs={raycasting.refs} />
