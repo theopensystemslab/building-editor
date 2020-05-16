@@ -3,6 +3,7 @@ import React from "react";
 import { Canvas, CanvasContext, PointerEvent } from "react-three-fiber";
 import * as three from "three";
 import NewBuilding from "../building/NewBuilding";
+import Panel from "../panels";
 import { wallMaterial, wallMaterialHover } from "../shared/materials";
 import RectangularGrid from "../shared/RectangularGrid";
 import {
@@ -40,6 +41,8 @@ const Container: React.FunctionComponent<{}> = () => {
   // once we figure out how to type zustand middleware properly this should go away.
   const editMode: EditMode = store.editMode;
   const setEditMode: (newEditMode: EditMode) => void = store.setEditMode;
+  const toggleInfoPanel: () => void = store.toggleInfoPanel;
+
   const hangars: undoable.Undoable<Array<Hangar>> = store.hangars;
   const setHangars: (
     fnOrValue: FnOrValue<undoable.Undoable<Array<Hangar>>>
@@ -228,6 +231,8 @@ const Container: React.FunctionComponent<{}> = () => {
         setHangars(undoable.undo);
       } else if (ev.key === "z" && ev.metaKey && ev.shiftKey) {
         setHangars(undoable.redo);
+      } else if (ev.key === "i") {
+        toggleInfoPanel();
       }
     };
     document.addEventListener("keydown", handleKeyDown);
@@ -327,6 +332,7 @@ const Container: React.FunctionComponent<{}> = () => {
             : undefined
         }
         onEditModeChange={setEditMode}
+        onToggleInfoPanelChange={toggleInfoPanel}
       />
       <Canvas
         gl={{ antialias: true, alpha: true }}
@@ -558,6 +564,7 @@ const Container: React.FunctionComponent<{}> = () => {
           );
         })}
       </Canvas>
+      {store.infoVisible && <Panel />}
     </div>
   );
 };

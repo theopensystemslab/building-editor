@@ -42,7 +42,7 @@ export enum EditMode {
 
 export interface State {
   user;
-  flyoutVisible: boolean;
+  infoVisible: boolean;
   editMode: EditMode;
   hangars: undoable.Undoable<Array<Hangar>>;
   grid: {
@@ -111,9 +111,9 @@ const selectorMiddleware = (config) => (set, get, api) =>
 export type FnOrValue<T> = T | ((prevCubes: T) => T);
 
 export const [useStore, api] = create(
-  selectorMiddleware((set) => ({
+  selectorMiddleware((set, get) => ({
     user: undefined,
-    flyoutVisible: true,
+    infoVisible: false,
     grid: {
       properties: {
         color: "lightgray",
@@ -141,6 +141,7 @@ export const [useStore, api] = create(
             ? fnOrValue(state.hangars)
             : fnOrValue,
       })),
+    toggleInfoPanel: () => set(() => ({ infoVisible: !get().infoVisible })),
     set: (fn) => set(produce(fn)),
   }))
 );

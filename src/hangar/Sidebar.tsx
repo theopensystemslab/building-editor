@@ -6,6 +6,7 @@ import "./sidebar.css";
 interface Props {
   editMode: EditMode;
   onEditModeChange: (newEditMode: EditMode) => void;
+  onToggleInfoPanelChange: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
 }
@@ -74,6 +75,14 @@ const Sidebar: React.FC<Props> = (props) => {
         title="Redo (cmd+shift+z)"
       >
         <rf.RotateCw {...svgProps} />
+      </button>
+
+      <button
+        className="sidebar-icon"
+        title="Toggle Info"
+        onClick={props.onToggleInfoPanelChange}
+      >
+        <rf.List {...svgProps} />
       </button>
     </div>
   );

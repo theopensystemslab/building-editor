@@ -1,6 +1,5 @@
 import * as React from "react";
 import ReactDataSheet from "react-datasheet";
-import "react-datasheet/lib/react-datasheet.css";
 
 export interface GridElement extends ReactDataSheet.Cell<GridElement, number> {
   value: number | null;

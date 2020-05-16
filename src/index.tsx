@@ -6,7 +6,7 @@ import * as serviceWorker from "./serviceWorker";
 const [, path] = window.location.pathname.split("/");
 
 const RootComponent = React.lazy(() =>
-  import(`./${path || "Editor"}`).catch(() => {
+  import(`./${path || "hangar"}`).catch(() => {
     // redirect to root if path is not valid
     if (window.location.href !== process.env.REACT_APP_URL) {
       window.location.href = process.env.REACT_APP_URL;

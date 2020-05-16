@@ -3,7 +3,6 @@ import React from "react";
 import { Canvas } from "react-three-fiber";
 import { DoubleSide, PCFSoftShadowMap, Uncharted2ToneMapping } from "three";
 import Building from "./building/Building";
-import InfoPanel from "./info/InfoPanel";
 import RectangularGrid from "./shared/RectangularGrid";
 import { useStore } from "./shared/store";
 
@@ -67,7 +66,6 @@ const Editor: React.FC = () => (
       />
       {process.env.REACT_APP_DEBUG && <Stats />}
     </Canvas>
-    <InfoPanel />
   </>
 );
 
