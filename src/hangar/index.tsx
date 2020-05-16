@@ -14,7 +14,7 @@ import {
   hangarToCube,
   useStore,
 } from "../shared/store";
-import { useSimpleDrag, Drag } from "../utils";
+import { Drag, useSimpleDrag } from "../utils";
 import * as raycast from "../utils/raycast";
 import * as undoable from "../utils/undoable";
 import HangarMesh from "./HangarMesh";
@@ -31,7 +31,22 @@ const matchingIndices = (
   );
 };
 
-const snapToGridX = (val: number): number => Math.round(val / gridX) * gridX;
+const snapToGridX = (val: number, includeSubGrid: boolean = false): number => {
+  if (includeSubGrid) {
+    let vals = [0, 1.2, 1.8, 3.9, 4.5];
+    let remainder = val % gridX;
+
+    let closest = vals.reduce((prev, curr) =>
+      Math.abs(curr - remainder) < Math.abs(prev - remainder) ? curr : prev
+    );
+
+    if (closest > 1.8) closest -= gridX;
+
+    return Math.round(val / gridX) * gridX + closest;
+  } else {
+    return Math.round(val / gridX) * gridX;
+  }
+};
 const snapToGridZ = (val: number): number => Math.round(val / gridZ) * gridZ;
 
 // Update hangar position utility - re-used between rendering the dragged shadow and the state update logic
@@ -97,15 +112,16 @@ const updateHangar = ({
           : clone.wz;
         clone.x = canResize
           ? clone.x
-          : snapToGridX(clone.x + positionOffsets.x);
+          : snapToGridX(clone.x + positionOffsets.x, canResize);
         break;
 
       case 1:
         clone.x = snapToGridX(
-          clone.x + (canResize ? 0 : 1) * positionOffsets.x
+          clone.x + (canResize ? 0 : 1) * positionOffsets.x,
+          canResize
         );
         clone.wx = canResize
-          ? snapToGridX(clone.wx + positionOffsets.x)
+          ? snapToGridX(clone.wx + positionOffsets.x, canResize)
           : clone.wx;
         clone.z = canResize
           ? clone.z
@@ -121,13 +137,13 @@ const updateHangar = ({
           : clone.wz;
         clone.x = canResize
           ? clone.x
-          : snapToGridX(clone.x + positionOffsets.x);
+          : snapToGridX(clone.x + positionOffsets.x, canResize);
         break;
 
       case 3:
-        clone.x = snapToGridX(clone.x + positionOffsets.x);
+        clone.x = snapToGridX(clone.x + positionOffsets.x, canResize);
         clone.wx = canResize
-          ? snapToGridX(clone.wx - positionOffsets.x)
+          ? snapToGridX(clone.wx - positionOffsets.x, canResize)
           : clone.wx;
         clone.z = canResize
           ? clone.z
@@ -418,12 +434,15 @@ const Container: React.FunctionComponent<{}> = () => {
         </group>
 
         {/* TODO: combine these into a single component w/ major & minor colors */}
-        <RectangularGrid
-          z={{ cells: 20, size: gridZ }}
-          x={{ cells: 6, size: gridX, subDivisions: [1.2, 1.8, 3.9, 4.5] }}
-          color="#ddd"
-          dashed
-        />
+
+        {editMode === EditMode.Resize && (
+          <RectangularGrid
+            z={{ cells: 20, size: gridZ }}
+            x={{ cells: 6, size: gridX, subDivisions: [1.2, 1.8, 3.9, 4.5] }}
+            color="#ddd"
+            dashed
+          />
+        )}
         <RectangularGrid
           z={{ cells: 20, size: gridZ }}
           x={{ cells: 6, size: gridX }}
