@@ -384,7 +384,7 @@ const Container: React.FunctionComponent<{}> = () => {
         <raycast.Planes refs={raycasting.refs} />
         <OrbitControls
           enableRotate={!hovered}
-          enablePan={!hovered}
+          enablePan={false}
           minPolarAngle={Math.PI / 8}
           maxPolarAngle={(Math.PI * 7) / 8}
           target={new three.Vector3(0, 0, 0)}
