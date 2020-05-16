@@ -53,6 +53,7 @@ const Sidebar: React.FC<Props> = (props) => {
         <rf.PenTool {...svgProps} />
       </button>
       <button
+        disabled
         className={`sidebar-icon ${
           props.editMode === EditMode.Slice ? "sidebar-icon-active" : ""
         }`}
