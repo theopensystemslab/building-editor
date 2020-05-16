@@ -1,5 +1,6 @@
 import React from "react";
 import * as rf from "react-feather";
+import { toggleClippingHeight } from "../building/ClipPlane";
 import { EditMode } from "../shared/store";
 import "./sidebar.css";
 
@@ -75,6 +76,13 @@ const Sidebar: React.FC<Props> = (props) => {
         title="Redo (cmd+shift+z)"
       >
         <rf.RotateCw {...svgProps} />
+      </button>
+      <button
+        onClick={toggleClippingHeight}
+        className="sidebar-icon"
+        title="Toggle clipping plane (c)"
+      >
+        <rf.Layers {...svgProps} />
       </button>
 
       <button

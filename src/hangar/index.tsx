@@ -2,6 +2,7 @@ import { OrbitControls } from "drei";
 import React from "react";
 import { Canvas, CanvasContext, PointerEvent } from "react-three-fiber";
 import * as three from "three";
+import { toggleClippingHeight } from "../building/ClipPlane";
 import NewBuilding from "../building/NewBuilding";
 import Panel from "../panels";
 import { wallMaterial, wallMaterialHover } from "../shared/materials";
@@ -288,6 +289,8 @@ const Container: React.FunctionComponent<{}> = () => {
         setHangars(undoable.redo);
       } else if (ev.key === "p") {
         toggleInfoPanel();
+      } else if (ev.key === "c") {
+        toggleClippingHeight();
       }
     };
     document.addEventListener("keydown", handleKeyDown);
@@ -400,6 +403,8 @@ const Container: React.FunctionComponent<{}> = () => {
         onCreated={(threeContext) => {
           setThreeContext(threeContext);
           threeContext.gl.toneMapping = three.Uncharted2ToneMapping;
+
+          threeContext.gl.localClippingEnabled = true;
 
           // threeContext.camera.position.set(50, 70, -24);
           threeContext.camera.position.set(50, 50, 50);

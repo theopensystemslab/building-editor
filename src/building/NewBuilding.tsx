@@ -8,6 +8,7 @@ import {
 } from "three";
 import { Hangar, hangarToCube } from "../shared/store";
 import { fastBasicEqualityCheck, sample } from "../utils";
+import { clippingPlanes } from "./ClipPlane";
 import crossSections from "./crossSections";
 
 // Placeholder mesh for the actual building modules
@@ -17,6 +18,8 @@ const material = new MeshStandardMaterial({
   side: DoubleSide,
   polygonOffset: true,
   polygonOffsetFactor: 1,
+  clippingPlanes,
+  clipShadows: true,
 });
 
 const linesMaterial = new LineDashedMaterial({
@@ -25,6 +28,8 @@ const linesMaterial = new LineDashedMaterial({
   scale: 10,
   dashSize: 1,
   gapSize: 1,
+  clippingPlanes,
+  clipShadows: true,
 });
 
 const Module: React.FC<any> = ({ type, position, end = false }) => {
