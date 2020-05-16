@@ -231,7 +231,7 @@ const Container: React.FunctionComponent<{}> = () => {
         setHangars(undoable.undo);
       } else if (ev.key === "z" && ev.metaKey && ev.shiftKey) {
         setHangars(undoable.redo);
-      } else if (ev.key === "i") {
+      } else if (ev.key === "p") {
         toggleInfoPanel();
       }
     };
