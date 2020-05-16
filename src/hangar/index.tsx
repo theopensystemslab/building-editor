@@ -438,19 +438,21 @@ const Container: React.FunctionComponent<{}> = () => {
 
         {/* TODO: combine these into a single component w/ major & minor colors */}
 
+        <group position={[0, 0.001, 0]}>
+          <RectangularGrid
+            z={{ cells: 20, size: gridZ }}
+            x={{ cells: 6, size: gridX }}
+            color="#ccc"
+          />
+        </group>
         {editMode === EditMode.Resize && (
           <RectangularGrid
             z={{ cells: 20, size: gridZ }}
             x={{ cells: 6, size: gridX, subDivisions: [1.2, 1.8, 3.9, 4.5] }}
-            color="#ddd"
-            dashed
+            color="#eee"
+            // dashed
           />
         )}
-        <RectangularGrid
-          z={{ cells: 20, size: gridZ }}
-          x={{ cells: 6, size: gridX }}
-          color="#ccc"
-        />
 
         <raycast.Planes refs={raycasting.refs} />
         <OrbitControls
