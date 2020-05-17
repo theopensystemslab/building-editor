@@ -1,8 +1,12 @@
-import { identity, times } from "ramda";
-import React from "react";
+import { flatten, identity, times } from "ramda";
+import React, { useMemo } from "react";
 import {
+  BufferAttribute,
+  BufferGeometry,
   DoubleSide,
+  LineBasicMaterial,
   LineDashedMaterial,
+  LinePieces,
   LineSegments,
   MeshStandardMaterial,
 } from "three";
@@ -32,16 +36,61 @@ const linesMaterial = new LineDashedMaterial({
   clipShadows: true,
 });
 
+const hangarLineMaterial = new LineBasicMaterial({
+  color: "#53ADF9",
+  linewidth: 2,
+});
+
 const Module: React.FC<any> = ({ type, position, end = false }) => {
   const {
     geometry,
     edgesGeometry,
     endEdgesGeometry,
     endGeometry,
+    width: widthMM,
+    height: heightMM,
   } = crossSections[type];
+
+  const geo = useMemo(() => {
+    const width = widthMM / 1000;
+    const height = heightMM / 1000;
+    const vertices = [];
+    vertices.push([0, 0, 0]);
+    vertices.push([0, height, 0]);
+    vertices.push([0, 0, 1.2]);
+    vertices.push([0, height, 1.2]);
+
+    vertices.push([width, 0, 0]);
+    vertices.push([width, height, 0]);
+    vertices.push([width, 0, 1.2]);
+    vertices.push([width, height, 1.2]);
+
+    vertices.push([0, height, 0]);
+    vertices.push([width, height, 0]);
+
+    vertices.push([0, height, 1.2]);
+    vertices.push([width, height, 1.2]);
+
+    vertices.push([0, height, 0]);
+    vertices.push([0, height, 1.2]);
+
+    vertices.push([width, height, 0]);
+    vertices.push([width, height, 1.2]);
+
+    const g = new BufferGeometry();
+    g.setAttribute(
+      "position",
+      new BufferAttribute(new Float32Array(flatten(vertices)), 3)
+    );
+    return g;
+  }, [geometry]);
 
   return (
     <group position={position}>
+      <lineSegments
+        args={[geo, hangarLineMaterial, LinePieces]}
+        // ref={(e: LineSegments) => dashed && e?.computeLineDistances()}
+      />
       <mesh
         receiveShadow
         castShadow
@@ -76,8 +125,9 @@ const NewBuilding: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
       // });
 
       return (
+        // k.startsWith(type) &&
         (k.startsWith(type) || k.startsWith("D1") || k.startsWith("E1")) &&
-        v.width === Math.round(wx * 1000)
+        v.clipWidth === Math.round(wx * 1000)
       );
     })
     .map(([k]) => k);
@@ -92,12 +142,12 @@ const NewBuilding: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
       {times(identity, rows).map((_r) => {
         return (
           <>
-            <Module
+            {/* <Module
               key={`${_r}front`}
               position={[_r * 5.7, 0, -0.189]}
               type={allTypes[0]}
               end
-            />
+            /> */}
             {times(identity, cols).map((_z) => {
               count += 1;
               return (
@@ -108,12 +158,12 @@ const NewBuilding: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
                 />
               );
             })}
-            <Module
+            {/* <Module
               key={`${_r}back`}
               position={[_r * 5.7, 0, cols * 1.2]}
               type={allTypes[allTypes.length - 1]}
               end
-            />
+            /> */}
           </>
         );
       })}

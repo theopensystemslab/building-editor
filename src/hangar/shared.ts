@@ -3,7 +3,7 @@ import grid from "../shared/grid";
 
 export const { x: gridX, z: gridZ } = grid("m");
 
-export const gridY = 2.5;
+export const gridY = 8.7;
 
 // Pre-calculate the rotation Eulers for box faces
 
