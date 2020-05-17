@@ -66,7 +66,7 @@ const updateHangar = ({
   editMode: EditMode;
   raycasting: raycast.Raycasting;
 }) => (prevHangar: Hangar, faceIndex: number): Hangar => {
-  if (!threeContext) {
+  if (!threeContext || drag.buttons === 2) {
     return prevHangar;
   }
 
