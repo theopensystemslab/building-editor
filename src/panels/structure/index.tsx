@@ -1,43 +1,16 @@
 import React from "react";
 import crossSections from "../../building/crossSections";
-import { State, useStore } from "../../shared/store";
 import DataSheet, { CellFormatters, defaultDataSheetProps } from "../DataSheet";
 
 // TODO: pre-calculate and store all module costs etc in main config file
 
-const ModuleSelector: React.FC<{ selected: string; position: string }> = ({
-  selected,
-  position,
-}) => {
-  const set = useStore((store) => store.set);
-  const handleChange = (e) =>
-    set((state: State) => {
-      state.grid.occupiedCells[position].module = e.target.value;
-    });
-
-  return (
-    <select value={selected} onChange={handleChange}>
-      {Object.keys(crossSections)
-        .sort()
-        .map((key) => (
-          <option key={key} value={key}>
-            {key}
-          </option>
-        ))}
-    </select>
-  );
-};
-
-var TAB_KEY = 9;
-var ENTER_KEY = 13;
-
 class SelectEditor extends React.PureComponent {
-  constructor(props) {
-    super(props);
-    // this.handleChange = this.handleChange.bind(this);
-    // this.handleKeyDown = this.handleKeyDown.bind(this);
-    // this.state = {};
-  }
+  // constructor(props) {
+  //   super(props);
+  //   // this.handleChange = this.handleChange.bind(this);
+  //   // this.handleKeyDown = this.handleKeyDown.bind(this);
+  //   // this.state = {};
+  // }
 
   handleChange(opt) {
     // const { onCommit, onRevert } = this.props;
@@ -119,17 +92,13 @@ const data = [
 ];
 
 const InfoPanel: React.FC = () => {
-  const occupiedCells = useStore(
-    (state) => state.grid.occupiedCells
-  ) as State["grid"]["occupiedCells"];
-
   return (
     <>
       <h2>Structure Information</h2>
       <DataSheet
         {...defaultDataSheetProps}
         data={data as any}
-        dataEditor={(props) => <SelectEditor />}
+        dataEditor={() => <SelectEditor />}
       />
     </>
   );
