@@ -1,7 +1,5 @@
 import produce from "immer";
-import { uniq } from "ramda";
 import create from "zustand";
-import { nextOddInt } from "../utils";
 import * as undoable from "../utils/undoable";
 import grid from "./grid";
 
@@ -50,91 +48,44 @@ export interface State {
       dimensions: {
         cellWidth: number;
         cellLength: number;
-        numXCells?: number;
-        numZCells?: number;
       };
     };
   };
 }
 
-/*
- * calculates size of grid so that there is always a 'padding'
- * of a single grid cell surrounding all of the occupied cells
- */
-const calcSize = (x, i) => {
-  const numbers = uniq(Object.keys(x).map((k) => Number(k.split(",")[i])));
-  const largestAbsoluteNumber = Math.max.apply(null, numbers.map(Math.abs));
-
-  return nextOddInt(Math.max(numbers.length, largestAbsoluteNumber * 2) + 2);
-};
-
-/*
- * wraps the store, writes static outputs to the store iself if dependencies
- * change, effectively caching the results
- */
-const selectorMiddleware = (config) => (set, get, api) =>
-  config(
-    (args) => {
-      const previousState = get().grid.occupiedCells;
-
-      set(args);
-
-      const currentState = get().grid.occupiedCells;
-
-      if (JSON.stringify(previousState) !== JSON.stringify(currentState)) {
-        set((state: State) => {
-          state.grid.properties.dimensions.numXCells = calcSize(
-            currentState,
-            0
-          );
-          state.grid.properties.dimensions.numZCells = calcSize(
-            currentState,
-            1
-          );
-        });
-      }
-    },
-    get,
-    api
-  );
-
 // Helper to type `setState`-style methods that contain either a new value
 // or a function to go from old value to new value.
 export type FnOrValue<T> = T | ((prevCubes: T) => T);
 
-export const [useStore, api] = create(
-  selectorMiddleware((set, get) => ({
-    user: undefined,
-    infoVisible: false,
-    grid: {
-      properties: {
-        color: "lightgray",
-        dimensions: {
-          cellWidth: GRID.x,
-          cellLength: GRID.z,
-        },
+export const [useStore, api] = create((set, get) => ({
+  user: undefined,
+  infoVisible: false,
+  grid: {
+    properties: {
+      color: "lightgray",
+      dimensions: {
+        cellWidth: GRID.x,
+        cellLength: GRID.z,
       },
     },
-    editMode: EditMode.Move,
-    hangars: undoable.create([
-      [
-        { x: 0, z: 0 },
-        { x: GRID.x, z: 0 },
-        { x: GRID.x, z: GRID.z * 4 },
-        { x: 0, z: GRID.z * 4 },
-      ],
-    ]),
-    setEditMode: (newEditMode) => set((state) => ({ editMode: newEditMode })),
-    setHangars: (fnOrValue: FnOrValue<undoable.Undoable<Array<Cube>>>) =>
-      set((state) => ({
-        hangars:
-          typeof fnOrValue === "function"
-            ? fnOrValue(state.hangars)
-            : fnOrValue,
-      })),
-    toggleInfoPanel: () => set(() => ({ infoVisible: !get().infoVisible })),
-    set: (fn) => set(produce(fn)),
-  }))
-);
+  },
+  editMode: EditMode.Move,
+  hangars: undoable.create([
+    [
+      { x: 0, z: 0 },
+      { x: GRID.x, z: 0 },
+      { x: GRID.x, z: GRID.z * 4 },
+      { x: 0, z: GRID.z * 4 },
+    ],
+  ]),
+  setEditMode: (newEditMode) => set((state) => ({ editMode: newEditMode })),
+  setHangars: (fnOrValue: FnOrValue<undoable.Undoable<Array<Cube>>>) =>
+    set((state) => ({
+      hangars:
+        typeof fnOrValue === "function" ? fnOrValue(state.hangars) : fnOrValue,
+    })),
+  toggleInfoPanel: () => set(() => ({ infoVisible: !get().infoVisible })),
+  set: (fn) => set(produce(fn)),
+}));
 
 window["api"] = api;
