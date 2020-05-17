@@ -8,7 +8,7 @@ const PanelsContainer: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   return (
     <Drawer open onClose={console.log} anchor="right" variant="permanent">
-      <div style={{ padding: 20 }}>{children}</div>
+      <div style={{ padding: 20, maxWidth: 400 }}>{children}</div>
     </Drawer>
   );
 };

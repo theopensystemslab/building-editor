@@ -23,8 +23,28 @@
 }
 
 .data-grid {
+  width: 100%;
   font-size: 12px;
 }
+
 .data-grid span {
   padding: 2px;
+}
+
+.data-grid td {
+  vertical-align: top;
+}
+
+.module {
+  /* margin: -5px; */
+  display: flex;
+  align-items: center;
+}
+.module .img {
+  /* width: 40px; */
+  height: 34px;
+  padding: 4px 6px 4px 0;
+}
+.module span {
+  padding: 0 4px;
 }

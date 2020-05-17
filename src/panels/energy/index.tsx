@@ -1,39 +1,10 @@
 import CircularProgress from "@material-ui/core/CircularProgress";
-import classnames from "classnames";
 import { identity } from "ramda";
 import React, { useState } from "react";
-import ReactDataSheet from "react-datasheet";
 import GoogleLogin from "react-google-login";
 import { useStore } from "../../shared/store";
+import DataSheet, { defaultDataSheetProps } from "../DataSheet";
 import { calculateEnergyFigures } from "./energyCalculator";
-
-interface GridElement extends ReactDataSheet.Cell<GridElement, number> {
-  value?: number | string;
-  expr?: string;
-  className?: string;
-  readOnly?: boolean;
-}
-
-class MyReactDataSheet extends ReactDataSheet<GridElement, number> {}
-
-//You can also strongly type all the Components or SFCs that you pass into ReactDataSheet.
-let cellRenderer: ReactDataSheet.CellRenderer<GridElement, number> = (
-  props
-) => {
-  const backgroundStyle =
-    props.cell.value && props.cell.value < 0 ? { color: "red" } : undefined;
-  return (
-    <td
-      style={backgroundStyle}
-      onMouseDown={props.onMouseDown}
-      onMouseOver={props.onMouseOver}
-      onDoubleClick={props.onDoubleClick}
-      className={classnames("cell", props.className)}
-    >
-      {props.children}
-    </td>
-  );
-};
 
 const EnergyPanel: React.FC = () => {
   const [user, set] = useStore((store) => [store.user, store.set]);
@@ -41,20 +12,6 @@ const EnergyPanel: React.FC = () => {
   const [floorArea, setFloorArea] = useState(80);
 
   const [grid, setGrid] = React.useState();
-  //   [
-  //   [
-  //     { value: "Name", readOnly: true },
-  //     { value: "Identifier", readOnly: true },
-  //     { value: "SWC Constants", readOnly: true },
-  //     { value: "Variable calcs", readOnly: true },
-  //     { value: "Units", readOnly: true },
-  //   ],
-  //   [{ value: -2 }, { value: -2 }, { value: -2 }, { value: -2 }, { value: -2 }],
-  //   [{ value: -2 }, { value: -2 }, { value: -2 }, { value: -2 }, { value: -2 }],
-  //   [{ value: -2 }, { value: -2 }, { value: -2 }, { value: -2 }, { value: -2 }],
-  //   [{ value: -2 }, { value: -2 }, { value: -2 }, { value: -2 }, { value: -2 }],
-  //   [{ value: -2 }, { value: -2 }, { value: -2 }, { value: -2 }, { value: -2 }],
-  // ]
 
   if (true) {
     if (!data) {
@@ -125,13 +82,9 @@ const EnergyPanel: React.FC = () => {
         </label>
 
         {grid && (
-          <MyReactDataSheet
+          <DataSheet
+            {...defaultDataSheetProps}
             data={grid}
-            valueRenderer={(cell) => cell.value}
-            dataRenderer={(cell) => cell.expr}
-            onContextMenu={(e, cell, i, j) =>
-              cell.readOnly ? e.preventDefault() : null
-            }
             onCellsChanged={(changes) => {
               const newGrid = grid.map((row) => [...row]);
               changes.forEach(({ row, col, value }) => {
@@ -139,7 +92,6 @@ const EnergyPanel: React.FC = () => {
               });
               setGrid(newGrid as any);
             }}
-            cellRenderer={cellRenderer}
           />
         )}
       </>

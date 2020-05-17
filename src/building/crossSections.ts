@@ -15,6 +15,8 @@ export interface ICrossSection {
   width: number;
   height: number;
   svgPath: string;
+  fill?: string;
+  stroke?: string;
   points;
 }
 
