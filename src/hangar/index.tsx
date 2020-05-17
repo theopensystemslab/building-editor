@@ -351,7 +351,7 @@ const Container: React.FunctionComponent<{}> = () => {
       }
     };
     const handleCanvasMouseMove = (ev: MouseEvent) => {
-      if (ev.buttons !== 1) return;
+      if (ev.buttons === 2) return;
 
       const uv = raycast.calcUv(
         {
