@@ -11,6 +11,8 @@ export type Pt = [number, number];
 export interface Drag {
   dragging: boolean;
   prevDragging: boolean;
+  buttons?: number;
+  prevButtons?: number;
   movement: Pt;
 }
 
@@ -19,6 +21,8 @@ export const useSimpleDrag = () => {
     dragging: false,
     prevDragging: false,
     movement: [0, 0],
+    buttons: undefined,
+    prevButtons: undefined,
   });
 
   // Avoid re-creating this function for every mouse move event
@@ -26,17 +30,19 @@ export const useSimpleDrag = () => {
     (state) => {
       setDrag({
         dragging: state.dragging,
-        prevDragging: state.memo,
+        prevDragging: state.memo && state.memo[0],
+        prevButtons: state.memo && state.memo[1],
         movement: state.movement,
+        buttons: state.buttons,
       });
       // This value is available in `state.memo` in the next call.
       // See https://use-gesture.netlify.app/docs/state#xy-gestures-state-attributes.
-      return state.dragging;
+      return [state.dragging, state.buttons];
     },
     [setDrag]
   );
 
-  const bind = useDrag(handleDrag);
+  const bind = useDrag(handleDrag, { enabled: true, eventOptions: {} });
 
   return {
     dragContainerAttrs: bind(),

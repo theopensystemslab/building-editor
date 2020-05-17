@@ -1,9 +1,8 @@
-import * as d3 from "d3";
+// import * as d3 from "d3";
 import { OrbitControls } from "drei";
 import React from "react";
 import { Canvas, CanvasContext, PointerEvent } from "react-three-fiber";
 import * as three from "three";
-import { OrthographicCamera } from "three";
 import { toggleClippingHeight } from "../building/ClipPlane";
 import NewBuilding from "../building/NewBuilding";
 import Panel from "../panels";
@@ -24,7 +23,7 @@ import HangarMesh from "./HangarMesh";
 import { boxFaceRotationMatrices, gridX, gridY, gridZ } from "./shared";
 import Sidebar from "./Sidebar";
 
-const DZOOM = 200;
+const DZOOM = 5;
 
 const matchingIndices = (
   indices1: { hangarIndex: number; faceIndex: number },
@@ -234,7 +233,7 @@ const Container: React.FunctionComponent<{}> = () => {
         setHovered(undefined);
       }, 50);
     };
-    const handleCanvasMouseDown = () => {
+    const handleCanvasMouseDown = (ev) => {
       if (hovered) {
         setHovered(
           (prevHovered) =>
@@ -255,7 +254,12 @@ const Container: React.FunctionComponent<{}> = () => {
 
   // Handle updating the hanger when dragging is finished
   React.useEffect(() => {
-    if (hovered && !drag.dragging && drag.prevDragging) {
+    if (
+      drag.prevButtons === 1 &&
+      hovered &&
+      !drag.dragging &&
+      drag.prevDragging
+    ) {
       const currentHangars = undoable.current(hangars);
       setHangars(
         undoable.setCurrent(
@@ -347,6 +351,8 @@ const Container: React.FunctionComponent<{}> = () => {
       }
     };
     const handleCanvasMouseMove = (ev: MouseEvent) => {
+      if (ev.buttons !== 1) return;
+
       const uv = raycast.calcUv(
         {
           width,
@@ -404,57 +410,60 @@ const Container: React.FunctionComponent<{}> = () => {
         onToggleInfoPanelChange={toggleInfoPanel}
       />
       <Canvas
-        gl={{ antialias: true, alpha: true }}
+        // concurrent
+        gl={{ antialias: true, alpha: false, powerPreference: "low-power" }}
         onCreated={(threeContext) => {
           setThreeContext(threeContext);
           threeContext.gl.toneMapping = three.Uncharted2ToneMapping;
-
           threeContext.gl.localClippingEnabled = true;
+          threeContext.gl.setClearColor(0xffffff);
 
+          const camera = threeContext.camera as three.OrthographicCamera;
           // threeContext.camera.position.set(50, 70, -24);
-          threeContext.camera.position.set(50, 50, 50);
-          threeContext.camera.lookAt(0, 0, 0);
-          threeContext.camera.updateProjectionMatrix();
+          // camera.position.set(80, 80, 80);
+          // camera.lookAt(0, 0, 0);
+          // camera.updateProjectionMatrix();
+
+          const { d3 } = window as any;
 
           const view = d3.select(containerEl.current);
-
-          const zoom = d3
+          const zoom = d3.behavior
             .zoom()
-            .scaleExtent([0.25, 0.35])
+            .scaleExtent([0.2, 2])
             .on("zoom", function () {
-              const event = d3.event;
-              if (event.sourceEvent) {
-                console.log(event.sourceEvent);
-                let x, y, z, _ref;
+              if (
+                d3.event.sourceEvent.buttons !== 2 &&
+                !d3.event.sourceEvent.wheelDelta
+              )
+                return;
 
-                y = event.sourceEvent.y;
-                // z = zoom.scale();
-                z = event.transform.k;
-                // (_ref = zoom.translate()), (x = _ref[0]), (y = _ref[1]);
+              const aspect = threeContext.size.width / threeContext.size.height;
 
-                const camera = threeContext.camera as OrthographicCamera;
-                x = x - threeContext.size.width / 2;
-                y = y - threeContext.size.height / 2;
+              const _ref = zoom.translate();
+              const z = zoom.scale();
+              const x = _ref[0] - threeContext.size.width / 2;
+              const y = _ref[1] - threeContext.size.height / 2;
 
-                console.log(camera.top);
-                camera.top =
-                  DZOOM / z +
-                  (((y / threeContext.size.height) * DZOOM) / z) * 2;
-                console.log(camera.top);
-                console.log("---");
+              camera.left =
+                (-DZOOM / z) * aspect -
+                (((x / threeContext.size.width) * DZOOM) / z) * 2 * aspect;
 
-                camera.updateProjectionMatrix();
-              } else {
-                // panning
-              }
+              camera.right =
+                (DZOOM / z) * aspect -
+                (((x / threeContext.size.width) * DZOOM) / z) * 2 * aspect;
+              camera.top =
+                DZOOM / z + (((y / threeContext.size.height) * DZOOM) / z) * 2;
+              camera.bottom =
+                -DZOOM / z + (((y / threeContext.size.height) * DZOOM) / z) * 2;
+
+              camera.updateProjectionMatrix();
             });
-
-          view.call(zoom);
+          view.call(zoom).on("dblclick.zoom", null);
         }}
         camera={{
-          near: 1,
-          far: 120,
-          zoom: 40,
+          near: -1000,
+          far: 1000,
+          position: [5, 5, 5],
         }}
         shadowMap={{ enabled: true }}
         orthographic
@@ -500,17 +509,25 @@ const Container: React.FunctionComponent<{}> = () => {
         )}
 
         <raycast.Planes refs={raycasting.refs} />
+
         <OrbitControls
           enableRotate={!hovered}
+          enableKeys={false}
           enablePan={false}
+          enableZoom={false}
+          enableDamping
           minPolarAngle={Math.PI / 8}
           maxPolarAngle={(Math.PI * 7) / 8}
           target={new three.Vector3(0, 0, 0)}
-          enableDamping
-          enableZoom={false}
           dampingFactor={0.2}
           rotateSpeed={0.7}
+          // mouseButtons={{
+          //   LEFT: three.MOUSE.RIGHT,
+          //   RIGHT: three.MOUSE.LEFT,
+          //   MIDDLE: three.MOUSE.MIDDLE,
+          // }}
         />
+
         {editMode === EditMode.Insert && ghostHangar && (
           <HangarMesh hangar={ghostHangar} />
         )}
@@ -522,6 +539,7 @@ const Container: React.FunctionComponent<{}> = () => {
             editMode !== EditMode.Resize;
 
           const cubeMod = hangarToCube(
+            // drag.prevButtons === 1 &&
             drag.dragging && hovered && hovered.hangarIndex === hangarIndex
               ? updateHangar_(hangar, hovered.faceIndex)
               : hangar
@@ -599,6 +617,7 @@ const Container: React.FunctionComponent<{}> = () => {
                       };
 
                 const eventHandlers =
+                  // drag.buttons !== 2 &&
                   (hovered && hovered.active) || (!hovered && drag.dragging)
                     ? {}
                     : {
@@ -629,7 +648,11 @@ const Container: React.FunctionComponent<{}> = () => {
                             distance: ev.distance,
                           };
 
-                          if (!hovered && !drag.dragging) {
+                          if (
+                            !hovered &&
+                            !drag.dragging
+                            // && drag.buttons !== 2
+                          ) {
                             hoveredInfo.current = info;
                             setHovered({
                               hangarIndex,
@@ -647,7 +670,10 @@ const Container: React.FunctionComponent<{}> = () => {
                           }
                         },
                         onPointerOut: () => {
-                          if (!drag.dragging) {
+                          if (
+                            !drag.dragging
+                            // && drag.buttons !== 2
+                          ) {
                             setHovered((prevHovered) =>
                               prevHovered &&
                               prevHovered.hangarIndex === hangarIndex &&

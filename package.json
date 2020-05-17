@@ -23,7 +23,6 @@
     "animejs": "^3.2.0",
     "classnames": "^2.2.6",
     "clipper-fpoint": "^6.4.22",
-    "d3": "^5.16.0",
     "drei": "^0.0.32",
     "expr-eval": "^2.0.2",
     "howler": "^2.1.3",

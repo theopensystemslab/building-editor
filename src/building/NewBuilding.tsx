@@ -91,7 +91,7 @@ const NewBuilding: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
     <group position={[x, 0.001, z]}>
       {times(identity, rows).map((_r) => {
         return (
-          <>
+          <React.Fragment key={_r}>
             <Module
               key={`${_r}front`}
               position={[_r * 5.7, 0, -0.189]}
@@ -114,7 +114,7 @@ const NewBuilding: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
               type={allTypes[allTypes.length - 1]}
               end
             />
-          </>
+          </React.Fragment>
         );
       })}
     </group>

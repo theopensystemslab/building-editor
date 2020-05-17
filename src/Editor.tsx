@@ -1,7 +1,12 @@
 import { OrbitControls, Stats } from "drei";
 import React from "react";
 import { Canvas } from "react-three-fiber";
-import { DoubleSide, PCFSoftShadowMap, Uncharted2ToneMapping } from "three";
+import {
+  DoubleSide,
+  MOUSE,
+  PCFSoftShadowMap,
+  Uncharted2ToneMapping,
+} from "three";
 import Building from "./building/Building";
 import RectangularGrid from "./shared/RectangularGrid";
 import { useStore } from "./shared/store";
@@ -61,6 +66,11 @@ const Editor: React.FC = () => (
         maxPolarAngle={1.49}
         minDistance={5}
         maxDistance={30}
+        mouseButtons={{
+          LEFT: MOUSE.RIGHT,
+          RIGHT: MOUSE.LEFT,
+          MIDDLE: MOUSE.MIDDLE,
+        }}
       />
       {process.env.REACT_APP_DEBUG && <Stats />}
     </Canvas>
