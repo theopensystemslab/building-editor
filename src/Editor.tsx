@@ -8,7 +8,7 @@ import { useStore } from "./shared/store";
 
 const Grid: React.FC = () => {
   const {
-    properties: { dimensions, color },
+    properties: { dimensions },
   } = useStore((store) => store.grid);
 
   return (
