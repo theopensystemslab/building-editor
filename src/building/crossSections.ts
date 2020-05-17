@@ -43,13 +43,18 @@ const floorShape = (height = 0): Point[] => [
 ];
 
 const variants = {
-  A2: 5,
+  A2: 7,
   B2: 7,
-  C2: 5,
+  C2: 7,
+  // A2: 5,
+  // B2: 7,
+  // C2: 5,
+
   D1: 1,
   E1: 1,
   // D1: 4,
   // E1: 4,
+
   // A1: 5,
   // B1: 7,
   // C1: 5,
