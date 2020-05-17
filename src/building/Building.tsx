@@ -62,22 +62,14 @@ const Building: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
   const rows = Math.round(wx / 5.7);
   const cols = Math.round(wz / 1.2);
 
-  const type = sample(["A2", "B2", "C2"]);
-
-  // console.log(Object.entries(crossSections));
-
-  // console.log(Math.round(wx * 1000));
+  // const type = sample(["A2", "B2", "C2"]);
+  const type = "B2";
 
   const types = Object.entries(crossSections)
     .filter(([k, v]: [string, any]) => {
-      // console.log({
-      //   c: v.clipWidth,
-      //   r: Math.round(wx * 1000),
-      // });
-
       return (
-        (k.startsWith(type) || k.startsWith("D1") || k.startsWith("E1")) &&
-        v.width === Math.round(wx * 1000)
+        // (k.startsWith(type) || k.startsWith("D1") || k.startsWith("E1")) &&
+        k.startsWith(type) && v.width === Math.round(wx * 1000)
       );
     })
     .map(([k]) => k);
