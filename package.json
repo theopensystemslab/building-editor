@@ -15,7 +15,8 @@
     "cosmos": "cosmos",
     "cosmos:export": "cosmos-export",
     "type-check": "tsc --noEmit",
-    "type-check:watch": "tsc --noEmit --watch"
+    "type-check:watch": "tsc --noEmit --watch",
+    "lint": "eslint . --ext .ts,.tsx"
   },
   "dependencies": {
     "@bentobots/vector2": "^0.1.17",
@@ -50,6 +51,16 @@
     "@types/ramda": "^0.27.4",
     "@types/react": "^16.9.0",
     "@types/react-dom": "^16.9.0",
+    "@typescript-eslint/eslint-plugin": "2.x",
+    "@typescript-eslint/parser": "2.x",
+    "babel-eslint": "10.x",
+    "eslint": "6.x",
+    "eslint-config-react-app": "^5.2.1",
+    "eslint-plugin-flowtype": "4.x",
+    "eslint-plugin-import": "2.x",
+    "eslint-plugin-jsx-a11y": "6.x",
+    "eslint-plugin-react": "7.x",
+    "eslint-plugin-react-hooks": "2.x",
     "husky": "^4.2.5",
     "lint-staged": "^10.2.2",
     "prettier": "^2.0.5",
@@ -58,7 +69,16 @@
     "typescript": "~3.7.2"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "extends": [
+      "react-app",
+      "eslint:recommended",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended"
+    ]
   },
   "husky": {
     "hooks": {

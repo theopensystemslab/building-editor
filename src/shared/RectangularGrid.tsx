@@ -32,7 +32,7 @@ const RectangularGrid: React.FC<IReactangularGrid> = ({
   const gridGeometry = useMemo(() => {
     const geometry = new BufferGeometry();
 
-    let vertices = [];
+    const vertices = [];
 
     const halfnumXCellsTotal = (x.size * x.cells) / 2;
     const halfnumZCellsTotal = (z.size * z.cells) / 2;

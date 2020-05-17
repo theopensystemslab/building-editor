@@ -35,13 +35,13 @@ const matchingIndices = (
   );
 };
 
-const snapToGridX = (val: number, includeSubGrid: boolean = false): number => {
+const snapToGridX = (val: number, includeSubGrid = false): number => {
   let modifier = 0;
 
   if (includeSubGrid) {
-    let vals = [0, 1.2, 1.8, 3.9, 4.5, gridX];
+    const vals = [0, 1.2, 1.8, 3.9, 4.5, gridX];
 
-    let remainder = val % gridX;
+    const remainder = val % gridX;
 
     modifier = vals.reduce((prev: number, curr: number) =>
       Math.abs(curr - remainder) < Math.abs(prev - remainder) ? curr : prev
