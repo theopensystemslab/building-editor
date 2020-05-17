@@ -126,6 +126,10 @@ const crossSections = Object.entries(variants).reduce(
       );
       const endEdgesGeometry = new EdgesGeometry(endGeometry);
 
+      const numFloors = Number(type[1]);
+
+      const floorArea = ((width - 450 * 2) * grid("mm").z * numFloors) / 1e6;
+
       acc[`${type}_0${i}`] = {
         clipWidth: boxCoords[i][1] - boxCoords[i][0],
         shape,
@@ -138,6 +142,7 @@ const crossSections = Object.entries(variants).reduce(
         endGeometry,
         endEdgesGeometry,
         position,
+        floorArea,
         svgPath: pointsToSVGPath(points),
       };
     }

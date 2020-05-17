@@ -50,7 +50,7 @@ const data = [
   [
     { value: "Bay #", readOnly: true },
     { value: "Module", readOnly: true },
-    { value: "Internal Area m2", readOnly: true },
+    { value: "Floor Area m2", readOnly: true },
     { value: "Cost (€)", readOnly: true },
   ],
   [
@@ -60,7 +60,7 @@ const data = [
       // dataEditor: SelectEditor,
       formatter: CellFormatters.MODULE,
     },
-    { value: 100.0, readOnly: true },
+    { value: crossSections["B2_07"].floorArea, readOnly: true },
     { value: 100.0, readOnly: true, formatter: CellFormatters.CURRENCY },
   ],
   [
@@ -70,7 +70,7 @@ const data = [
       // dataEditor: SelectEditor,
       formatter: CellFormatters.MODULE,
     },
-    { value: 100.0, readOnly: true },
+    { value: crossSections["A2_07"].floorArea, readOnly: true },
     { value: 120.0, readOnly: true, formatter: CellFormatters.CURRENCY },
   ],
   [
@@ -80,7 +80,7 @@ const data = [
       // dataEditor: SelectEditor,
       formatter: CellFormatters.MODULE,
     },
-    { value: 100.0, readOnly: true },
+    { value: crossSections["A2_04"].floorArea, readOnly: true },
     { value: 420.22, readOnly: true, formatter: CellFormatters.CURRENCY },
   ],
   [
