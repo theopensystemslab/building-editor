@@ -419,51 +419,56 @@ const Container: React.FunctionComponent<{}> = () => {
           threeContext.gl.setClearColor(0xffffff);
 
           const camera = threeContext.camera as three.OrthographicCamera;
-          // threeContext.camera.position.set(50, 70, -24);
-          // camera.position.set(80, 80, 80);
-          // camera.lookAt(0, 0, 0);
-          // camera.updateProjectionMatrix();
 
           const { d3 } = window as any;
+
+          let aspect, _ref, z, x, y;
+
+          const doPanZoom = () => {
+            if (
+              d3.event &&
+              d3.event.sourceEvent.buttons !== 2 &&
+              !d3.event.sourceEvent.wheelDelta
+            )
+              return;
+
+            aspect = threeContext.size.width / threeContext.size.height;
+
+            _ref = zoom.translate();
+            z = zoom.scale();
+            x = _ref[0] - threeContext.size.width / 2;
+            y = _ref[1] - threeContext.size.height / 2;
+
+            camera.left =
+              (-DZOOM / z) * aspect -
+              (((x / threeContext.size.width) * DZOOM) / z) * 2 * aspect;
+
+            camera.right =
+              (DZOOM / z) * aspect -
+              (((x / threeContext.size.width) * DZOOM) / z) * 2 * aspect;
+            camera.top =
+              DZOOM / z + (((y / threeContext.size.height) * DZOOM) / z) * 2;
+            camera.bottom =
+              -DZOOM / z + (((y / threeContext.size.height) * DZOOM) / z) * 2;
+
+            camera.updateProjectionMatrix();
+          };
 
           const view = d3.select(containerEl.current);
           const zoom = d3.behavior
             .zoom()
             .scaleExtent([0.2, 2])
-            .on("zoom", function () {
-              if (
-                d3.event.sourceEvent.buttons !== 2 &&
-                !d3.event.sourceEvent.wheelDelta
-              )
-                return;
+            .on("zoom", doPanZoom);
 
-              const aspect = threeContext.size.width / threeContext.size.height;
+          doPanZoom();
 
-              const _ref = zoom.translate();
-              const z = zoom.scale();
-              const x = _ref[0] - threeContext.size.width / 2;
-              const y = _ref[1] - threeContext.size.height / 2;
-
-              camera.left =
-                (-DZOOM / z) * aspect -
-                (((x / threeContext.size.width) * DZOOM) / z) * 2 * aspect;
-
-              camera.right =
-                (DZOOM / z) * aspect -
-                (((x / threeContext.size.width) * DZOOM) / z) * 2 * aspect;
-              camera.top =
-                DZOOM / z + (((y / threeContext.size.height) * DZOOM) / z) * 2;
-              camera.bottom =
-                -DZOOM / z + (((y / threeContext.size.height) * DZOOM) / z) * 2;
-
-              camera.updateProjectionMatrix();
-            });
           view.call(zoom).on("dblclick.zoom", null);
         }}
         camera={{
           near: -1000,
           far: 1000,
-          position: [5, 5, 5],
+          zoom: 0.4,
+          position: [120, 120, 120],
         }}
         shadowMap={{ enabled: true }}
         orthographic
