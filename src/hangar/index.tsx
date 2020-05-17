@@ -463,6 +463,10 @@ const Container: React.FunctionComponent<{}> = () => {
           doPanZoom();
 
           view.call(zoom).on("dblclick.zoom", null);
+          try {
+            window.removeEventListener("resize", doPanZoom, false);
+          } catch (e) {}
+          window.addEventListener("resize", doPanZoom);
         }}
         camera={{
           near: -1000,
