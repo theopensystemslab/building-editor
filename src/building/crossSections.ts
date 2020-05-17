@@ -76,22 +76,18 @@ const crossSections = Object.entries(variants).reduce(
     for (let i = 1; i <= numVariants; i++) {
       let shape = shapes[type[0]];
 
-      const { minX, maxX, minY, maxY } = bounds(shape);
-
-      let width = Math.abs(maxX - minX);
-      let height = Math.abs(maxY - minY);
-
-      if (type.startsWith("D")) height = 4600;
-      else if (type.startsWith("E")) height = 3600;
+      let h = 9000;
+      if (type.startsWith("D")) h = 4600;
+      else if (type.startsWith("E")) h = 3600;
 
       const box: Point[] = [
         [boxCoords[i][0], 0],
-        [boxCoords[i][0], height],
-        [boxCoords[i][1], height],
+        [boxCoords[i][0], h],
+        [boxCoords[i][1], h],
         [boxCoords[i][1], 0],
       ];
 
-      if (height > 8000) shape = intersection([shape], [box])[0];
+      if (h === 9000) shape = intersection([shape], [box])[0];
 
       const holes = offset(-FRAME_WIDTH)([shape]);
 
@@ -100,14 +96,16 @@ const crossSections = Object.entries(variants).reduce(
         [box]
       );
 
+      const { minX, maxX, minY, maxY } = bounds(shape);
+      const width = Math.abs(maxX - minX);
+      const height = Math.abs(maxY - minY);
+
       const [gOutline, ...gHoles] = points.map((pts) =>
         pts.map(([x, y]) => [x / 1000, y / 1000])
       );
 
       const gShape = pointsToThreeShape(gOutline, gHoles);
       const position = [-width / 2000, 0, -grid("m").z / 2];
-
-      width = boxCoords[i][1] - boxCoords[i][0];
 
       const geometry = new ExtrudeBufferGeometry(gShape, extrudeSettings);
       const edgesGeometry = new EdgesGeometry(geometry);

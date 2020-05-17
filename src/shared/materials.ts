@@ -8,15 +8,15 @@ export const wallGhostMaterial = new MeshPhongMaterial({
 });
 
 export const wallMaterial = new MeshPhongMaterial({
-  color: "#53ADF9",
-  opacity: 0.03,
+  color: "#666",
+  opacity: 0.8,
   transparent: true,
   side: DoubleSide,
 });
 
 export const wallMaterialHover = new MeshPhongMaterial({
-  color: "#53ADF9",
-  opacity: 0.6,
+  color: "#F2BB05",
+  opacity: 0.8,
   transparent: true,
   side: DoubleSide,
 });
