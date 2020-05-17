@@ -56,7 +56,7 @@ const Module: React.FC<any> = ({ type, position, end = false }) => {
   );
 };
 
-const NewBuilding: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
+const Building: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
   const { x, z, wx, wz } = hangarToCube(hangar);
 
   const rows = Math.round(wx / 5.7);
@@ -121,4 +121,4 @@ const NewBuilding: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
   );
 }, fastBasicEqualityCheck);
 
-export default NewBuilding;
+export default Building;

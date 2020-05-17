@@ -3,8 +3,8 @@ import { OrbitControls } from "drei";
 import React from "react";
 import { Canvas, CanvasContext, PointerEvent } from "react-three-fiber";
 import * as three from "three";
+import Building from "../building/Building";
 import { toggleClippingHeight } from "../building/ClipPlane";
-import NewBuilding from "../building/NewBuilding";
 import Panel from "../panels";
 import { wallMaterial, wallMaterialHover } from "../shared/materials";
 import RectangularGrid from "../shared/RectangularGrid";
@@ -547,7 +547,7 @@ const Container: React.FunctionComponent<{}> = () => {
 
           return (
             <React.Fragment key={hangarIndex}>
-              <NewBuilding hangar={hangar} />
+              <Building hangar={hangar} />
 
               <mesh
                 position={[
