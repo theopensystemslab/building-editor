@@ -7,7 +7,6 @@ import {
   PCFSoftShadowMap,
   Uncharted2ToneMapping,
 } from "three";
-import Building from "./building/Building";
 import RectangularGrid from "./shared/RectangularGrid";
 import { useStore } from "./shared/store";
 
@@ -18,8 +17,8 @@ const Grid: React.FC = () => {
 
   return (
     <RectangularGrid
-      z={{ cells: dimensions.numYCells, size: dimensions.cellLength }}
-      x={{ cells: dimensions.numXCells, size: dimensions.cellWidth }}
+      z={{ cells: 40, size: dimensions.cellLength }}
+      x={{ cells: 40, size: dimensions.cellWidth }}
       color="#ddd"
     />
   );
@@ -59,7 +58,7 @@ const Editor: React.FC = () => (
           />
         </mesh>
       </group>
-      <Building />
+
       <OrbitControls
         target={[0, 1, 0] as any}
         rotateSpeed={0.7}
