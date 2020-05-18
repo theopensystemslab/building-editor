@@ -162,9 +162,9 @@ const Box = () => {
 
             let startPos;
 
-            const e$ = fromEvent(document, "mousemove").pipe(
+            const e$ = fromEvent(document, "pointermove").pipe(
               throttleTime(50),
-              map((ev: MouseEvent) => {
+              map((ev: PointerEvent) => {
                 mouse.x = (ev.clientX / viewport.width) * 2 - 1;
                 mouse.y = -(ev.clientY / viewport.height) * 2 + 1;
                 raycaster.setFromCamera(mouse, camera);
@@ -172,7 +172,7 @@ const Box = () => {
                 startPos = startPos || intersects[axis];
                 return intersects[axis] - startPos;
               }),
-              takeUntil(fromEvent(document, "mouseup"))
+              takeUntil(fromEvent(document, "pointerup"))
             );
 
             const extrude = (delta) => {
