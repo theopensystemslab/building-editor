@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import produce from "immer";
+import React, { useEffect, useRef } from "react";
 import { Canvas } from "react-three-fiber";
 import { fromEvent, merge, timer } from "rxjs";
 import {
@@ -11,77 +12,156 @@ import {
   takeUntil,
   timeoutWith,
 } from "rxjs/operators";
+import create from "zustand";
 
-// const Interactions = {
-//   NONE: "NONE",
-//   PANNING: "PANNING",
-//   ZOOMING: "ZOOMING",
-//   ORBITING: "ORBITING",
-//   EXTRUDING: "EXTRUDING",
-//   MOVING: "MOVING",
-//   CLONING: "CLONING",
-// };
-
-function Box(props) {
-  return (
-    <mesh {...props}>
-      <boxBufferGeometry attach="geometry" args={[1, 1, 1]} />
-      <meshNormalMaterial attach="material" />
-    </mesh>
-  );
+enum Actions {
+  TAP,
+  DOUBLE_TAP,
+  TAP_AND_HOLD,
 }
 
-const RX = () => {
-  const [action, setAction] = useState("");
+// enum Tool {
+//   PAN,
+//   ZOOM,
+//   ORBIT,
+//   EXTRUDE,
+//   MOVE,
+//   CLONE,
+// }
+
+const quickCompare = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+const [useStore] = create((set) => ({
+  action: null,
+  selected: {
+    tool: null,
+    model: null,
+  },
+  hoveredModel: null,
+  set: (fn) => set(produce(fn)),
+}));
+
+const InteractionsContainer = ({ children }) => {
+  const set = useStore((store) => store.set);
+  const ref = useRef(null);
 
   useEffect(() => {
-    const pointerDown$ = fromEvent(document, "pointerdown");
+    const pointerDown$ = fromEvent(ref.current, "pointerdown");
     const pointerUp$ = fromEvent(document, "pointerup");
 
     const tap$ = pointerDown$.pipe(
       switchMap(() => pointerUp$.pipe(timeoutWith(200, pointerDown$))),
-      map(() => "tap")
+      map(() => Actions.TAP)
     );
 
     const hold$ = pointerDown$.pipe(
-      flatMap(() => timer(500).pipe(takeUntil(pointerUp$))),
-      map(() => "hold")
+      flatMap(() => timer(250).pipe(takeUntil(pointerUp$))),
+      map(() => Actions.TAP_AND_HOLD)
     );
 
     const doubleTap$ = tap$.pipe(
       buffer(tap$.pipe(debounceTime(300))),
       filter(({ length }) => length === 2),
-      map(() => "doubletap")
+      map(() => Actions.DOUBLE_TAP)
     );
 
     const merged$ = merge(tap$, hold$, doubleTap$);
 
-    const clearIfNothingHappensFor3s = merged$
-      .pipe(flatMap(() => timer(3000).pipe(takeUntil(merged$))))
-      .subscribe(() => setAction(""));
-
     const actions = merged$.subscribe((val) => {
-      setAction(val);
+      set((draft) => {
+        draft.action = val;
+      });
     });
 
+    const clearIfNothingHappens = merged$
+      .pipe(debounceTime(1000))
+      .subscribe(() => {
+        set((draft) => {
+          draft.action = null;
+        });
+      });
+
     return () => {
+      console.log("unmounting, unsubscribe");
       actions.unsubscribe();
-      clearIfNothingHappensFor3s.unsubscribe();
+      clearIfNothingHappens.unsubscribe();
     };
-  });
+  }, [set]);
 
   return (
-    <>
-      <div style={{ userSelect: "none" }}>last action: {action}</div>
+    <div ref={ref} style={{ height: "100%" }}>
+      {children}
+    </div>
+  );
+};
+
+const Model = React.memo(({ id, position, setActive, active = false }: any) => {
+  return (
+    <mesh position={position} onPointerDown={(e) => setActive(id)}>
+      <boxBufferGeometry attach="geometry" args={[1, 1, 1]} />
+      <meshBasicMaterial attach="material" color={active ? "red" : "orange"} />
+    </mesh>
+  );
+}, quickCompare);
+
+const Info = () => {
+  const [action, selected] = useStore((store) => [
+    store.action,
+    store.selected,
+  ]);
+
+  return (
+    <div style={{ userSelect: "none", position: "fixed" }}>
+      <div>last action: {action}</div>
+      <div>tool: {selected.tool}</div>
+      <div>model: {selected.model}</div>
+    </div>
+  );
+};
+
+const RX = () => {
+  const [selectedModel, set] = useStore((store) => [
+    store.selected.model,
+    store.set,
+  ]);
+
+  return (
+    <InteractionsContainer>
+      <Info />
+
       <Canvas
+        onPointerDownCapture={() =>
+          set((draft) => {
+            draft.selected.model = null;
+          })
+        }
         camera={{
           position: [5, 5, 5],
           fov: 70,
         }}
       >
-        <Box />
+        <Model
+          id="a"
+          position={[-2, 0, 0]}
+          setActive={(id) =>
+            set((draft) => {
+              draft.selected.model = id;
+            })
+          }
+          active={selectedModel === "a"}
+        />
+        <Model
+          id="b"
+          position={[2, 0, 0]}
+          setActive={(id) =>
+            set((draft) => {
+              draft.selected.model = id;
+            })
+          }
+          active={selectedModel === "b"}
+        />
       </Canvas>
-    </>
+    </InteractionsContainer>
   );
 };
 
