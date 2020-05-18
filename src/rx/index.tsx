@@ -257,7 +257,9 @@ const Box = () => {
 
 const Controls = () => {
   const controlsEnabled = useStore((store) => store.controlsEnabled);
-  return <OrbitControls enabled={controlsEnabled} />;
+  return (
+    <OrbitControls enabled={controlsEnabled} enablePan={false} enableDamping />
+  );
 };
 
 const RX = () => {
