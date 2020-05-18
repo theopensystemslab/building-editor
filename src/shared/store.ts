@@ -38,6 +38,8 @@ export enum EditMode {
 }
 
 export interface State {
+  letter: string;
+  picked: any;
   user;
   infoVisible: boolean;
   editMode: EditMode;
@@ -58,6 +60,8 @@ export interface State {
 export type FnOrValue<T> = T | ((prevCubes: T) => T);
 
 export const [useStore, api] = create((set, get) => ({
+  picked: [],
+  letter: "A",
   user: undefined,
   infoVisible: false,
   grid: {

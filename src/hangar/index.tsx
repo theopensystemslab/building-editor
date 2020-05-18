@@ -556,7 +556,11 @@ const Container: React.FunctionComponent<{}> = () => {
 
           return (
             <React.Fragment key={hangarIndex}>
-              <Building hangar={hangar} />
+              <Building
+                hangar={hangar}
+                picked={store.picked}
+                letter={store.letter}
+              />
 
               <mesh
                 position={[

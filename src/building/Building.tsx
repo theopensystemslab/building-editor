@@ -6,7 +6,7 @@ import {
   LineSegments,
   MeshStandardMaterial,
 } from "three";
-import { Hangar, hangarToCube } from "../shared/store";
+import { api, Hangar, hangarToCube } from "../shared/store";
 import { fastBasicEqualityCheck, sample } from "../utils";
 import { clippingPlanes } from "./ClipPlane";
 import crossSections from "./crossSections";
@@ -57,13 +57,15 @@ const Module: React.FC<any> = ({ type, position, end = false }) => {
 };
 
 export const calculatePieces = (hangar) => {
+  const { picked, letter } = api.getState();
+
   const { x, z, wx, wz } = hangarToCube(hangar);
 
   const rows = Math.round(wx / 5.7);
   const cols = Math.round(wz / 1.2);
 
   // const type = sample(["A2", "B2", "C2"]);
-  const type = "B2";
+  const type = `${letter}2`;
 
   const types = Object.entries(crossSections)
     .filter(([k, v]: [string, any]) => {
@@ -78,7 +80,7 @@ export const calculatePieces = (hangar) => {
         // (k.startsWith(type) || k.startsWith("D1") || k.startsWith("E1")) &&
         k.startsWith(type) &&
         v.clipWidth === Math.round(wx * 1000) &&
-        v.x === Math.round(x * 1000)
+        v.x === Math.round((x % 5.7) * 1000)
       );
     })
     .map(([k]) => k);
@@ -86,13 +88,24 @@ export const calculatePieces = (hangar) => {
   if (types.length === 0) return null;
 
   const allTypes = times(() => sample(types), cols * rows);
-  let count = -1;
+
+  for (let i = 0; i < allTypes.length; i++) {
+    if (picked[i]) allTypes[i] = picked[i];
+  }
 
   return { rows, cols, allTypes, x, z };
 };
 
-const Building: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
-  const { rows, cols, allTypes, x, z } = calculatePieces(hangar);
+const Building: React.FC<{
+  hangar: Hangar;
+  picked: any;
+  letter: string;
+}> = React.memo(({ hangar }) => {
+  const c = calculatePieces(hangar);
+
+  if (!c) return null;
+
+  const { rows, cols, allTypes, x, z } = c;
 
   let count = -1;
 

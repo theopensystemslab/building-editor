@@ -13,6 +13,7 @@ interface GridElement extends ReactDataSheet.Cell<GridElement, number> {
 export enum CellFormatters {
   CURRENCY,
   MODULE,
+  END_MODULE,
 }
 
 class DataSheet extends ReactDataSheet<GridElement, number> {}
@@ -52,15 +53,18 @@ export const defaultDataSheetProps = {
     }
   },
   valueViewer: (props) => {
-    if (props.cell.formatter === CellFormatters.MODULE) {
+    if (
+      props.cell.formatter === CellFormatters.MODULE ||
+      props.cell.formatter === CellFormatters.END_MODULE
+    ) {
+      const ob = { ...crossSections[props.value] };
+      if (props.cell.formatter === CellFormatters.END_MODULE)
+        ob.svgPath = ob.endSvgPath;
+
       return (
         <div className="module">
           <div className="img">
-            <CrossSection
-              {...crossSections[props.value]}
-              fill="black"
-              stroke="none"
-            />
+            <CrossSection {...ob} fill="black" stroke="none" />
           </div>
           <span>{props.value}</span>
         </div>

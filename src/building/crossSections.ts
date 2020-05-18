@@ -5,6 +5,19 @@ import { pointsToThreeShape } from "../utils";
 import { intersection, offset, Point, union } from "../utils/clipper";
 import { pointsToSVGPath } from "../utils/svg";
 
+const costs = {
+  A1_05: 695.0,
+  A1_04: 691.0,
+  A1_03: 760.0,
+  A1_02: 792.0,
+  A1_01: 819.0,
+  A2_05: 1059.0,
+  A2_04: 885.0,
+  A2_03: 1050.0,
+  A2_02: 1077.0,
+  A2_01: 1106.0,
+};
+
 const TOTAL_WIDTH = grid("mm").x;
 const EAVES_HEIGHT = 6000;
 const CEILING_HEIGHT = 3064;
@@ -28,14 +41,21 @@ const shape = (roofPoint) => [
   [TOTAL_WIDTH, 0],
 ];
 
-const shapes = {
+const shape2 = (x1, x2) => [
+  [x1, 0],
+  [x1, EAVES_HEIGHT],
+  [x2, EAVES_HEIGHT],
+  [x2, 0],
+];
+
+const shapes = ([x1, x2]) => ({
   A: shape([TOTAL_WIDTH / 2, 8850]),
   B: shape([TOTAL_WIDTH / 4, 8468]),
   C: shape([TOTAL_WIDTH / 2, 7645]),
-  // roof shape doesn't matter for D & E
-  D: shape([TOTAL_WIDTH / 2, 7645]),
-  E: shape([TOTAL_WIDTH / 2, 7645]),
-};
+
+  D: shape2(x1, x2),
+  E: shape2(x1, x2),
+});
 
 const floorShape = (height = 0): Point[] => [
   [0, height],
@@ -52,10 +72,12 @@ const variants = {
   // B2: 7,
   // C2: 5,
 
-  D1: 1,
-  E1: 1,
+  // D1: 1,
+  // E1: 1,
   // D1: 4,
   // E1: 4,
+  D1: 7,
+  E1: 7,
 
   // A1: 5,
   // B1: 7,
@@ -81,7 +103,7 @@ const boxCoords = {
 const crossSections = Object.entries(variants).reduce(
   (acc, [type, numVariants]) => {
     for (let i = 1; i <= numVariants; i++) {
-      let shape = shapes[type[0]];
+      let shape = shapes(boxCoords[i])[type[0]];
 
       let h = 9000;
       if (type.startsWith("D")) h = 4600;
@@ -144,7 +166,9 @@ const crossSections = Object.entries(variants).reduce(
         endEdgesGeometry,
         position,
         floorArea,
+        cost: costs[`${type}_0${i}`] || 0,
         svgPath: pointsToSVGPath(points),
+        endSvgPath: pointsToSVGPath([points[0], []]),
       };
     }
     return acc;
