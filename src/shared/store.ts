@@ -88,7 +88,6 @@ export const [useStore, api] = create((set, get) => ({
       hangars:
         typeof fnOrValue === "function" ? fnOrValue(state.hangars) : fnOrValue,
     })),
-  toggleInfoPanel: () => set(() => ({ infoVisible: !get().infoVisible })),
   set: (fn) => set(produce(fn)),
 }));
 

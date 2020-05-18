@@ -7,7 +7,6 @@ import "./sidebar.css";
 interface Props {
   editMode: EditMode;
   onEditModeChange: (newEditMode: EditMode) => void;
-  onToggleInfoPanelChange: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
 }
@@ -84,14 +83,6 @@ const Sidebar: React.FC<Props> = (props) => {
         title="Toggle clipping plane (c)"
       >
         <rf.Layers {...svgProps} />
-      </button>
-
-      <button
-        className="sidebar-icon"
-        title="Toggle Info"
-        onClick={props.onToggleInfoPanelChange}
-      >
-        <rf.List {...svgProps} />
       </button>
     </div>
   );
