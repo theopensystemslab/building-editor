@@ -56,7 +56,7 @@ const Module: React.FC<any> = ({ type, position, end = false }) => {
   );
 };
 
-const Building: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
+export const calculatePieces = (hangar) => {
   const { x, z, wx, wz } = hangarToCube(hangar);
 
   const rows = Math.round(wx / 5.7);
@@ -67,9 +67,18 @@ const Building: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
 
   const types = Object.entries(crossSections)
     .filter(([k, v]: [string, any]) => {
+      // console.log({
+      //   clipWidth: v.clipWidth,
+      //   _clipWidth: Math.round(wx * 1000),
+      //   vx: v.x,
+      //   _vx: Math.round(x * 1000),
+      // });
+
       return (
         // (k.startsWith(type) || k.startsWith("D1") || k.startsWith("E1")) &&
-        k.startsWith(type) && v.width === Math.round(wx * 1000)
+        k.startsWith(type) &&
+        v.clipWidth === Math.round(wx * 1000) &&
+        v.x === Math.round(x * 1000)
       );
     })
     .map(([k]) => k);
@@ -77,6 +86,14 @@ const Building: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
   if (types.length === 0) return null;
 
   const allTypes = times(() => sample(types), cols * rows);
+  let count = -1;
+
+  return { rows, cols, allTypes, x, z };
+};
+
+const Building: React.FC<{ hangar: Hangar }> = React.memo(({ hangar }) => {
+  const { rows, cols, allTypes, x, z } = calculatePieces(hangar);
+
   let count = -1;
 
   return (

@@ -131,6 +131,7 @@ const crossSections = Object.entries(variants).reduce(
       const floorArea = ((width - 450 * 2) * grid("mm").z * numFloors) / 1e6;
 
       acc[`${type}_0${i}`] = {
+        x: boxCoords[i][0],
         clipWidth: boxCoords[i][1] - boxCoords[i][0],
         shape,
         holes,

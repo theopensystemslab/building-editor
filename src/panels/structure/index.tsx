@@ -1,5 +1,8 @@
 import React from "react";
+import { calculatePieces } from "../../building/Building";
 import crossSections from "../../building/crossSections";
+import { useStore } from "../../shared/store";
+import { current } from "../../utils/undoable";
 import DataSheet, { CellFormatters, defaultDataSheetProps } from "../DataSheet";
 
 // TODO: pre-calculate and store all module costs etc in main config file
@@ -46,52 +49,40 @@ class SelectEditor extends React.PureComponent {
   }
 }
 
-const data = [
-  [
-    { value: "Bay #", readOnly: true },
-    { value: "Module", readOnly: true },
-    { value: "Floor Area m2", readOnly: true },
-    { value: "Cost (€)", readOnly: true },
-  ],
-  [
-    { value: "1", readOnly: true },
-    {
-      value: "B2_07",
-      // dataEditor: SelectEditor,
-      formatter: CellFormatters.MODULE,
-    },
-    { value: crossSections["B2_07"].floorArea, readOnly: true },
-    { value: 100.0, readOnly: true, formatter: CellFormatters.CURRENCY },
-  ],
-  [
-    { value: "2", readOnly: true },
-    {
-      value: "A2_07",
-      // dataEditor: SelectEditor,
-      formatter: CellFormatters.MODULE,
-    },
-    { value: crossSections["A2_07"].floorArea, readOnly: true },
-    { value: 120.0, readOnly: true, formatter: CellFormatters.CURRENCY },
-  ],
-  [
-    { value: "3", readOnly: true },
-    {
-      value: "A2_04",
-      // dataEditor: SelectEditor,
-      formatter: CellFormatters.MODULE,
-    },
-    { value: crossSections["A2_04"].floorArea, readOnly: true },
-    { value: 420.22, readOnly: true, formatter: CellFormatters.CURRENCY },
-  ],
-  [
-    {},
-    {},
-    { value: 1200, readOnly: true },
-    { value: 24942.3, readOnly: true, formatter: CellFormatters.CURRENCY },
-  ],
-];
-
 const InfoPanel: React.FC = () => {
+  const hangar = useStore((store) => current(store.hangars)[0]);
+
+  let totalCost = 0;
+  let totalArea = 0;
+
+  const data = [
+    [
+      { value: "Bay #", readOnly: true },
+      { value: "Module", readOnly: true },
+      { value: "Floor Area m2", readOnly: true },
+      { value: "Cost (€)", readOnly: true },
+    ],
+    ...calculatePieces(hangar).allTypes.map((k, i) => {
+      totalArea += crossSections[k].floorArea;
+      return [
+        { value: i + 1, readOnly: true },
+        {
+          value: k,
+          // dataEditor: SelectEditor,
+          formatter: CellFormatters.MODULE,
+        },
+        { value: crossSections[k].floorArea.toFixed(2), readOnly: true },
+        { value: 100.0, readOnly: true, formatter: CellFormatters.CURRENCY },
+      ];
+    }),
+    [
+      { value: "", readOnly: true },
+      { value: "", readOnly: true },
+      { value: totalArea.toFixed(2), readOnly: true },
+      { value: totalCost, readOnly: true, formatter: CellFormatters.CURRENCY },
+    ],
+  ];
+
   return (
     <>
       <h2>Structure Information</h2>
