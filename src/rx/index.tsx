@@ -18,7 +18,9 @@ import {
 } from "rxjs/operators";
 import {
   BoxGeometry,
+  EdgesGeometry,
   Geometry,
+  LineBasicMaterial,
   Plane,
   Raycaster,
   Vector2,
@@ -119,16 +121,19 @@ let intersects = new Vector3();
 const Box = () => {
   const { viewport, camera } = useThree();
   const set = useStore((store) => store.set);
-
+  const edges = useRef(null);
   const plane = new Plane();
+
+  const boxGeometry = new BoxGeometry(1, 1, 1);
+  boxGeometry.translate(0, 0.51, 0);
+  const edgesGeometry = new EdgesGeometry(boxGeometry);
+
+  const linesMaterial = new LineBasicMaterial({ color: "#50B8F8" });
 
   return (
     <>
       {/* <planeHelper args={[plane, 10, 0xff0000]} /> */}
       <mesh
-        // onPointerOver={(e) => {
-        //   console.log("over");
-        // }}
         onPointerDown={(e) => {
           e.stopPropagation();
 
@@ -163,7 +168,7 @@ const Box = () => {
             let startPos;
 
             const e$ = fromEvent(document, "pointermove").pipe(
-              throttleTime(50),
+              throttleTime(25),
               map((ev: PointerEvent) => {
                 mouse.x = (ev.clientX / viewport.width) * 2 - 1;
                 mouse.y = -(ev.clientY / viewport.height) * 2 + 1;
@@ -175,22 +180,24 @@ const Box = () => {
               takeUntil(fromEvent(document, "pointerup"))
             );
 
+            // TODO remove this hack!
+            const deltaSign = [0, 1, 4, 5, 8, 9].includes(e.faceIndex) ? 1 : -1;
+
             const extrude = (delta) => {
-              const toAddAgain = normal.clone().multiplyScalar(delta);
+              const toAddAgain = normal
+                .clone()
+                .multiplyScalar(delta * deltaSign);
               allVertices.forEach((v, i) => {
-                // quick and ugly check to ensure we don't end up with a 0-width/length/height polygon
-                // if (
-                //   !vertices.some(
-                //     (x) =>
-                //       JSON.stringify(x) === JSON.stringify(v.clone().add(toAdd))
-                //   )
-                // ) {
                 v.copy(origVertices[i].clone().add(toAddAgain));
-                // }
               });
 
               geometry.verticesNeedUpdate = true;
               geometry.computeBoundingSphere();
+              geometry.computeFaceNormals();
+              geometry.computeVertexNormals();
+
+              edges.current.geometry.dispose();
+              edges.current.geometry = new EdgesGeometry(geometry);
             };
 
             e$.pipe(takeLast(1)).subscribe((delta) => {
@@ -218,14 +225,17 @@ const Box = () => {
             });
           }
         }}
+        geometry={boxGeometry}
       >
-        <boxGeometry
-          attach="geometry"
-          args={[1, 1, 1]}
-          ref={(e) => (e as BoxGeometry)?.translate(0, 0.5, 0)}
+        <meshBasicMaterial
+          color="#81D7F7"
+          opacity={0.2}
+          transparent
+          attach="material"
+          // blending={SubtractiveBlending}
         />
-        <meshNormalMaterial attach="material" />
       </mesh>
+      <lineSegments ref={edges} args={[edgesGeometry, linesMaterial]} />
     </>
   );
 };
@@ -282,7 +292,7 @@ const RX = () => {
         <RectangularGrid
           x={{ cells: 7, size: 1 }}
           z={{ cells: 7, size: 1 }}
-          color="black"
+          color="#ddd"
         />
         {/* <Model id="a" /> */}
         <Box />
