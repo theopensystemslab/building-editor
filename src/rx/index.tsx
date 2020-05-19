@@ -296,7 +296,7 @@ const Controls = () => {
 const onBeforeRender = (v, normal) =>
   function (renderer, scene, camera, geometry, material, group) {
     if (
-      camera.position.y < 20 &&
+      camera.position.y <= 27 &&
       v.subVectors(camera.position, this.position).dot(normal) < 0
     ) {
       geometry.setDrawRange(0, 0);
@@ -358,7 +358,7 @@ const Wall = ({ bg, n, t }) => {
 };
 
 const floorMaterial = new MeshPhongMaterial({
-  // color: "#A87F57",
+  color: "white",
   // color: "#896D4C",
   map: tl.load(
     "materials/0032-parquet-decorated-texture-seamless-hr/32_parquet decorated texture-semaless_hr.jpg",
@@ -381,18 +381,18 @@ const Ground = () => {
     <>
       <RectangularGrid
         x={{ cells: 1, size: GRID_SIZE.x, subDivisions: [1.2, 1.8, 3.9, 4.5] }}
-        z={{ cells: 1, size: GRID_SIZE.z * 5 }}
+        z={{ cells: 1, size: GRID_SIZE.z * 7 }}
         color="#c5c5c5"
         dashed
       />
       <RectangularGrid
         x={{ cells: 1, size: GRID_SIZE.x }}
-        z={{ cells: 5, size: GRID_SIZE.z }}
+        z={{ cells: 7, size: GRID_SIZE.z }}
         color="#c5c5c5"
       />
 
       <Text
-        position={[0, 0, -3.2]}
+        position={[0, 0, -GRID_SIZE.z * 4 + 0.25]}
         rotation={[-Math.PI / 2, 0, 0]}
         color={"#c5c5c5"}
         fontSize={0.22}
@@ -405,20 +405,20 @@ const Ground = () => {
       </Text>
 
       <Text
-        position={[3.25, 0, 2.4]}
+        position={[GRID_SIZE.x / 2 + 0.5, 0, GRID_SIZE.z * 3]}
         rotation={[-Math.PI / 2, 0, 0]}
         color={"#c5c5c5"}
         fontSize={0.25}
-        textAlign={"right"}
+        textAlign={"left"}
         font={process.env.REACT_APP_FONT_URL}
         anchorX="center"
         anchorY="middle"
       >
-        1.2m
+        {`${GRID_SIZE.z}m`}
       </Text>
 
       <Text
-        position={[0, 0, 3.2]}
+        position={[0, 0, GRID_SIZE.z * 4 - 0.25]}
         rotation={[-Math.PI / 2, 0, 0]}
         color={"#c5c5c5"}
         fontSize={0.25}
@@ -427,7 +427,7 @@ const Ground = () => {
         anchorX="center"
         anchorY="middle"
       >
-        5.7m
+        {`${GRID_SIZE.x}m`}
       </Text>
     </>
   );
@@ -525,7 +525,7 @@ const RX = () => {
             camera.near = -1;
             camera.far = 1e5;
           }
-          camera.position.set(10, 15, 10);
+          camera.position.set(10, 25, 10);
           camera.lookAt(0, 0, 0);
           camera.updateProjectionMatrix();
         }}
