@@ -490,10 +490,23 @@ const RX = () => {
         <Box />
 
         <Text
-          position={[2, 0, 3]}
+          position={[0, 0, -2.8]}
           rotation={[-Math.PI / 2, 0, 0]}
           color={"#c5c5c5"}
-          fontSize={0.5}
+          fontSize={0.22}
+          textAlign={"left"}
+          font={process.env.REACT_APP_FONT_URL}
+          anchorX="center"
+          anchorY="middle"
+        >
+          Building Technology: SWIFT
+        </Text>
+
+        <Text
+          position={[2, 0, 2.8]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          color={"#c5c5c5"}
+          fontSize={0.25}
           textAlign={"right"}
           font={process.env.REACT_APP_FONT_URL}
           anchorX="center"
