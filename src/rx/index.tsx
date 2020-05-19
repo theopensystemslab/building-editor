@@ -25,9 +25,14 @@ import {
   Geometry,
   LineBasicMaterial,
   MeshBasicMaterial,
+  MeshPhongMaterial,
   MeshStandardMaterial,
+  PCFSoftShadowMap,
   Plane,
   Raycaster,
+  RepeatWrapping,
+  Texture,
+  TextureLoader,
   Uncharted2ToneMapping,
   Vector2,
   Vector3,
@@ -237,7 +242,7 @@ const Box = () => {
       >
         <meshBasicMaterial
           color="#81D7F7"
-          opacity={0.05}
+          opacity={0.02}
           transparent
           attach="material"
           blending={AdditiveBlending}
@@ -292,16 +297,38 @@ const onAfterRender = (renderer, scene, camera, geometry, material, group) => {
   geometry.setDrawRange(0, Infinity);
 };
 
+const tl = new TextureLoader();
+
+const rpt = function (texture: Texture) {
+  texture.wrapS = texture.wrapT = RepeatWrapping;
+  texture.repeat.set(1, 1);
+};
+
 const a = new MeshStandardMaterial({
   color: "white",
-  emissive: new Color(0xffffff),
-  emissiveIntensity: 0.75,
+  emissive: new Color(0xf2f2f2),
+  emissiveIntensity: 0.02,
   polygonOffsetUnits: 0.1,
-  roughness: 1,
+  roughness: 2,
+
+  map: tl.load(
+    "materials/61_clean fine plaster texture-seamless_hr/61_clean fine plaster texture.jpg",
+    rpt
+  ),
+  normalMap: tl.load(
+    "materials/61_clean fine plaster texture-seamless_hr/61_clean fine plaster_NORM.jpg",
+    rpt
+  ),
+  bumpMap: tl.load(
+    "materials/61_clean fine plaster texture-seamless_hr/61_clean fine plaster_DISPL.jpg",
+    rpt
+  ),
+  normalScale: new Vector2(1, 0),
+
   // polygonOffset
   // flatShading
 });
-const b = new MeshBasicMaterial({ color: "#666" });
+const b = new MeshBasicMaterial({ color: "#444" });
 
 const wallMaterial = [a, a, b, a, a, a];
 
@@ -324,10 +351,72 @@ const Wall = ({ bg, n, t }) => {
   );
 };
 
+const floorMaterial = new MeshPhongMaterial({
+  // color: "#A87F57",
+  // color: "#896D4C",
+  map: tl.load(
+    "materials/0032-parquet-decorated-texture-seamless-hr/32_parquet decorated texture-semaless_hr.jpg",
+    rpt
+  ),
+  bumpMap: tl.load(
+    "materials/0032-parquet-decorated-texture-seamless-hr/32_parquet decorated texture-semaless_hr_bump.jpg",
+    rpt
+  ),
+  normalMap: tl.load(
+    "materials/0032-parquet-decorated-texture-seamless-hr/normal.png",
+    rpt
+  ),
+  bumpScale: 1000,
+  normalScale: new Vector2(0, 1000),
+
+  // aoMap: tl.load(
+  //   "materials/0032-parquet-decorated-texture-seamless-hr/32_parquet decorated texture-semaless_hr_specular.jpg",
+  //   rpt
+  // ),
+  // bumpScale: 1,
+
+  // displacementMap: tl.load(
+  //   "materials/46_plywood texture-seamless_hr/46_plywood texture-seamless_hr_DISPL.jpg",
+  //   rpt
+  // ),
+  // normalMap: tl.load(
+  //   "materials/46_plywood texture-seamless_hr/46_plywood texture-seamless_hr_NORM.jpg",
+  //   rpt
+  // ),
+  // aoMap: tl.load(
+  //   "materials/46_plywood texture-seamless_hr/46_plywood texture-seamless_hr-AO.jpg",
+  //   rpt
+  // ),
+  // // side: THREE.DoubleSide
+  // // specularMap: tl.load('/46_plywood texture-seamless_hr/46_plywood texture-seamless_hr_SPEC.jpg', rpt),
+  // // shininess: 0,
+  // // normalScale: 1.0,
+
+  // // ambientIntensity: 0.3,
+  // aoMapIntensity: 3.0,
+  // envMapIntensity: 1.5,
+  // // https://discourse.threejs.org/t/material-displacement-map-makes-the-texture-unwrap-the-models-surfaces/5119/11
+  // displacementScale: 0,
+  // roughness: 0.8,
+  // metalness: 0,
+  // // side: THREE.DoubleSide,
+  // polygonOffset: true,
+  // polygonOffsetFactor: 1,
+
+  // // flatShading: true,
+  // clippingPlanes: clipPlanes,
+  // clipIntersection: true,
+  // // shadowSide: THREE.DoubleSide,
+  // side: THREE.FrontSide
+  // // clipShadows: true
+});
+
 const Floor = () => {
   const g = new BoxBufferGeometry(1, 0.1, 1);
   g.translate(0, 0.05, 0);
-  return <mesh receiveShadow castShadow geometry={g} material={a} />;
+  return (
+    <mesh receiveShadow castShadow geometry={g} material={floorMaterial} />
+  );
 };
 
 const RX = () => {
@@ -341,6 +430,10 @@ const RX = () => {
         gl={{
           logarithmicDepthBuffer: true,
           alpha: false,
+          antialias: true,
+        }}
+        shadowMap={{
+          type: PCFSoftShadowMap,
         }}
         onCreated={({ gl, camera, viewport }: any) => {
           gl.toneMapping = Uncharted2ToneMapping;
@@ -366,14 +459,15 @@ const RX = () => {
         //   })
         // }
       >
-        <ambientLight intensity={0.05} />
+        <ambientLight intensity={0.9} />
         <rectAreaLight
           position={[0, 1.1, 0]}
-          intensity={0.4}
+          intensity={0.1}
           width={1}
           height={1}
           rotation={[-Math.PI / 2, 0, 0]}
         />
+        <pointLight position={[0.5, 0.2, 0.5]} intensity={0.5} />
 
         <RectangularGrid
           x={{ cells: 7, size: 1 }}
