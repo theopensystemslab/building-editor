@@ -41,9 +41,11 @@ import create from "zustand";
 import RectangularGrid from "../shared/RectangularGrid";
 import { coplanarVertices } from "./utils";
 
-const GRID_WIDTH = 5.7;
-const GRID_LENGTH = 1.2;
-const GRID_HEIGHT = 3;
+const GRID_SIZE = {
+  x: 5.7,
+  y: 3,
+  z: 1.2,
+};
 
 enum Actions {
   TAP,
@@ -139,7 +141,7 @@ const Hanger = () => {
   const edges = useRef(null);
   const plane = new Plane();
 
-  const boxGeometry = new BoxGeometry(3, 3, 3);
+  const boxGeometry = new BoxGeometry(GRID_SIZE.x, GRID_SIZE.y, GRID_SIZE.z);
   boxGeometry.translate(0, 1.51, 0);
   const edgesGeometry = new EdgesGeometry(boxGeometry);
 
@@ -225,7 +227,7 @@ const Hanger = () => {
               anime({
                 targets,
                 duration: 100,
-                delta: Math.round(delta),
+                delta: Math.round(delta / GRID_SIZE[axis]) * GRID_SIZE[axis],
                 update: function () {
                   extrude(targets.delta);
                 },
@@ -296,7 +298,7 @@ const rpt = function (texture: Texture) {
 const a = new MeshStandardMaterial({
   color: "white",
   emissive: new Color(0xf2f2f2),
-  emissiveIntensity: 0.02,
+  emissiveIntensity: 0.2,
   polygonOffsetUnits: 0.1,
   roughness: 2,
 
@@ -356,14 +358,6 @@ const floorMaterial = new MeshPhongMaterial({
   normalScale: new Vector2(0, 1000),
 });
 
-const Floor = () => {
-  const g = new BoxBufferGeometry(1, 0.1, 1);
-  g.translate(0, 0.05, 0);
-  return (
-    <mesh receiveShadow castShadow geometry={g} material={floorMaterial} />
-  );
-};
-
 const Ground = () => {
   return (
     <>
@@ -414,25 +408,57 @@ const Ground = () => {
   );
 };
 
+const Floor = () => {
+  const g = new BoxBufferGeometry(GRID_SIZE.x, 0.1, GRID_SIZE.z);
+  g.translate(0, 0.05, 0);
+  return (
+    <mesh receiveShadow castShadow geometry={g} material={floorMaterial} />
+  );
+};
+
 const Structure = () => {
+  const floorHeight = 0.1;
+  const wallHeight = GRID_SIZE.y - floorHeight;
+  const wallWidth = 0.3;
+
   return (
     <>
       <rectAreaLight
-        position={[0, 1.1, 0]}
-        intensity={0.1}
-        width={1}
-        height={1}
+        position={[0, wallHeight + floorHeight, 0]}
+        intensity={0.7}
+        width={GRID_SIZE.x - wallWidth * 2}
+        height={GRID_SIZE.z - wallWidth * 2}
+        // width={GRID_SIZE.x}
+        // height={GRID_SIZE.z}
         rotation={[-Math.PI / 2, 0, 0]}
       />
-      <pointLight position={[0.5, 0.2, 0.5]} intensity={0.5} />
+      <pointLight position={[0, 0.4, 0.5]} intensity={0.4} />
+
       <group position={[0, 0.01, 0]}>
         <Floor />
-        <group position={[0, 0.6, 0]}>
-          <Wall bg={[0.1, 1, 1]} n={[-1, 0, 0]} t={[0.45, 0, 0]} />
-          <Wall bg={[0.1, 1, 1]} n={[1, 0, 0]} t={[-0.45, 0, 0]} />
+        <group position={[0, wallHeight / 2 + 0.1, 0]}>
+          <Wall
+            bg={[wallWidth, wallHeight, GRID_SIZE.z]}
+            t={[(GRID_SIZE.x - wallWidth) / 2, 0, 0]}
+            n={[-1, 0, 0]}
+          />
+          <Wall
+            bg={[wallWidth, wallHeight, GRID_SIZE.z]}
+            t={[(-GRID_SIZE.x + wallWidth) / 2, 0, 0]}
+            n={[1, 0, 0]}
+          />
 
-          <Wall bg={[1, 1, 0.1]} n={[0, 0, -1]} t={[0, 0, 0.45]} />
-          <Wall bg={[1, 1, 0.1]} n={[0, 0, 1]} t={[0, 0, -0.45]} />
+          <Wall
+            bg={[GRID_SIZE.x, wallHeight, wallWidth]}
+            t={[0, 0, (-GRID_SIZE.z + wallWidth) / 2]}
+            n={[0, 0, 1]}
+          />
+
+          <Wall
+            bg={[GRID_SIZE.x, wallHeight, wallWidth]}
+            t={[0, 0, (GRID_SIZE.z - wallWidth) / 2]}
+            n={[0, 0, -1]}
+          />
         </group>
       </group>
     </>
