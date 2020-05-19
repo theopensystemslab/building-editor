@@ -517,9 +517,10 @@ const RX = () => {
         orthographic
         pixelRatio={window.devicePixelRatio}
         gl={{
-          logarithmicDepthBuffer: true,
+          logarithmicDepthBuffer: false,
           alpha: false,
-          antialias: true,
+          antialias: false,
+          powerPreference: "low-power",
         }}
         shadowMap={{
           type: PCFSoftShadowMap,
