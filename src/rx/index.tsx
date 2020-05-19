@@ -1,5 +1,5 @@
 import anime from "animejs/lib/anime.es.js";
-import { OrbitControls, Text } from "drei";
+import { OrbitControls, Stats, Text } from "drei";
 import produce from "immer";
 import React, { useEffect, useRef } from "react";
 import { Canvas, isOrthographicCamera, useThree } from "react-three-fiber";
@@ -514,6 +514,7 @@ const RX = () => {
         >
           1m
         </Text>
+        <Stats />
       </Canvas>
     </InteractionsContainer>
   );
