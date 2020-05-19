@@ -24,8 +24,11 @@ import {
   EdgesGeometry,
   Geometry,
   LineBasicMaterial,
+  MeshBasicMaterial,
+  MeshStandardMaterial,
   Plane,
   Raycaster,
+  Uncharted2ToneMapping,
   Vector2,
   Vector3,
 } from "three";
@@ -263,7 +266,16 @@ const Box = () => {
 const Controls = () => {
   const controlsEnabled = useStore((store) => store.controlsEnabled);
   return (
-    <OrbitControls enabled={controlsEnabled} enablePan={false} enableDamping />
+    <OrbitControls
+      enabled={controlsEnabled}
+      enablePan={false}
+      rotateSpeed={0.7}
+      dampingFactor={0.1}
+      zoomSpeed={2}
+      enableDamping
+      // minPolarAngle={0}
+      maxPolarAngle={Math.PI / 2}
+    />
   );
 };
 
@@ -280,6 +292,19 @@ const onAfterRender = (renderer, scene, camera, geometry, material, group) => {
   geometry.setDrawRange(0, Infinity);
 };
 
+const a = new MeshStandardMaterial({
+  color: "white",
+  emissive: new Color(0xffffff),
+  emissiveIntensity: 0.75,
+  polygonOffsetUnits: 0.1,
+  roughness: 1,
+  // polygonOffset
+  // flatShading
+});
+const b = new MeshBasicMaterial({ color: "#666" });
+
+const wallMaterial = [a, a, b, a, a, a];
+
 const Wall = ({ bg, n, t }) => {
   const v = new Vector3();
 
@@ -294,34 +319,15 @@ const Wall = ({ bg, n, t }) => {
       geometry={g}
       receiveShadow
       castShadow
-    >
-      <meshStandardMaterial
-        color="white"
-        attach="material"
-        emissive={new Color(0xffffff)}
-        emissiveIntensity={0.8}
-        polygonOffset
-        polygonOffsetUnits={0.1}
-        roughness={1}
-        flatShading
-      />
-    </mesh>
+      material={wallMaterial}
+    />
   );
 };
 
 const Floor = () => {
   const g = new BoxBufferGeometry(1, 0.1, 1);
   g.translate(0, 0.05, 0);
-  return (
-    <mesh receiveShadow castShadow geometry={g}>
-      <meshStandardMaterial
-        color="white"
-        attach="material"
-        emissive={new Color(0xffffff)}
-        emissiveIntensity={0.4}
-      />
-    </mesh>
-  );
+  return <mesh receiveShadow castShadow geometry={g} material={a} />;
 };
 
 const RX = () => {
@@ -337,6 +343,7 @@ const RX = () => {
           alpha: false,
         }}
         onCreated={({ gl, camera, viewport }: any) => {
+          gl.toneMapping = Uncharted2ToneMapping;
           gl.setClearColor(0xf5f5f5);
           if (isOrthographicCamera(camera)) {
             camera.left = viewport.width / -2;
