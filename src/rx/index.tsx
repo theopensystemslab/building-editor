@@ -17,6 +17,7 @@ import {
   timeoutWith,
 } from "rxjs/operators";
 import {
+  BoxBufferGeometry,
   BoxGeometry,
   EdgesGeometry,
   Geometry,
@@ -128,7 +129,9 @@ const Box = () => {
   boxGeometry.translate(0, 0.51, 0);
   const edgesGeometry = new EdgesGeometry(boxGeometry);
 
-  const linesMaterial = new LineBasicMaterial({ color: "#50B8F8" });
+  const linesMaterial = new LineBasicMaterial({
+    color: "#50B8F8",
+  });
 
   return (
     <>
@@ -262,6 +265,56 @@ const Controls = () => {
   );
 };
 
+const onBeforeRender = (v, normal) =>
+  function (renderer, scene, camera, geometry, material, group) {
+    if (
+      camera.position.y < 17 &&
+      v.subVectors(camera.position, this.position).dot(normal) < 0
+    ) {
+      geometry.setDrawRange(0, 0);
+    }
+  };
+const onAfterRender = (renderer, scene, camera, geometry, material, group) => {
+  geometry.setDrawRange(0, Infinity);
+};
+
+const Wall = ({ bg, n, t }) => {
+  const { camera } = useThree();
+
+  const v = new Vector3();
+
+  const g = new BoxGeometry(...bg);
+  const normal = new Vector3(...n);
+  g.translate(t[0], t[1], t[2]);
+
+  return (
+    <mesh
+      onAfterRender={onAfterRender}
+      onBeforeRender={onBeforeRender(v, normal)}
+      geometry={g}
+      receiveShadow
+      castShadow
+    >
+      <meshStandardMaterial
+        color="white"
+        attach="material"
+        polygonOffset
+        polygonOffsetUnits={0.1}
+      />
+    </mesh>
+  );
+};
+
+const Floor = () => {
+  const g = new BoxBufferGeometry(1, 0.1, 1);
+  g.translate(0, 0.05, 0);
+  return (
+    <mesh receiveShadow castShadow geometry={g}>
+      <meshStandardMaterial color="white" attach="material" />
+    </mesh>
+  );
+};
+
 const RX = () => {
   // const [set] = useStore((store) => [store.set]);
 
@@ -290,13 +343,27 @@ const RX = () => {
         //   })
         // }
       >
-        <Controls />
+        <ambientLight intensity={0.4} />
+        <pointLight position={[0, 1, 0]} intensity={0.8} />
+
         <RectangularGrid
           x={{ cells: 7, size: 1 }}
           z={{ cells: 7, size: 1 }}
           color="#ddd"
         />
-        {/* <Model id="a" /> */}
+
+        <group position={[0, 0.01, 0]}>
+          <Floor />
+          <group position={[0, 0.6, 0]}>
+            <Wall bg={[0.1, 1, 1]} n={[-1, 0, 0]} t={[0.45, 0, 0]} />
+            <Wall bg={[0.1, 1, 1]} n={[1, 0, 0]} t={[-0.45, 0, 0]} />
+
+            <Wall bg={[1, 1, 0.1]} n={[0, 0, -1]} t={[0, 0, 0.45]} />
+            <Wall bg={[1, 1, 0.1]} n={[0, 0, 1]} t={[0, 0, -0.45]} />
+          </group>
+        </group>
+
+        <Controls />
         <Box />
       </Canvas>
     </InteractionsContainer>
