@@ -1,5 +1,5 @@
 import anime from "animejs/lib/anime.es.js";
-import { OrbitControls } from "drei";
+import { OrbitControls, Text } from "drei";
 import produce from "immer";
 import React, { useEffect, useRef } from "react";
 import { Canvas, isOrthographicCamera, useThree } from "react-three-fiber";
@@ -279,7 +279,7 @@ const Controls = () => {
       zoomSpeed={2}
       enableDamping
       // minPolarAngle={0}
-      maxPolarAngle={Math.PI / 2}
+      maxPolarAngle={Math.PI / 2 - 0.3}
     />
   );
 };
@@ -470,8 +470,8 @@ const RX = () => {
         <pointLight position={[0.5, 0.2, 0.5]} intensity={0.5} />
 
         <RectangularGrid
-          x={{ cells: 7, size: 1 }}
-          z={{ cells: 7, size: 1 }}
+          x={{ cells: 5, size: 1 }}
+          z={{ cells: 5, size: 1 }}
           color="#c5c5c5"
         />
 
@@ -488,6 +488,19 @@ const RX = () => {
 
         <Controls />
         <Box />
+
+        <Text
+          position={[2, 0, 3]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          color={"#c5c5c5"}
+          fontSize={0.5}
+          textAlign={"right"}
+          font={process.env.REACT_APP_FONT_URL}
+          anchorX="center"
+          anchorY="middle"
+        >
+          1m
+        </Text>
       </Canvas>
     </InteractionsContainer>
   );
