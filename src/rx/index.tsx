@@ -41,6 +41,10 @@ import create from "zustand";
 import RectangularGrid from "../shared/RectangularGrid";
 import { coplanarVertices } from "./utils";
 
+const GRID_WIDTH = 5.7;
+const GRID_LENGTH = 1.2;
+const GRID_HEIGHT = 3;
+
 enum Actions {
   TAP,
   DOUBLE_TAP,
@@ -129,7 +133,7 @@ const raycaster = new Raycaster(); // create once and reuse
 const mouse = new Vector2();
 let intersects = new Vector3();
 
-const Box = () => {
+const Hanger = () => {
   const { viewport, camera } = useThree();
   const set = useStore((store) => store.set);
   const edges = useRef(null);
@@ -253,21 +257,6 @@ const Box = () => {
   );
 };
 
-// const Info = () => {
-//   const [action, selected] = useStore((store) => [
-//     store.action,
-//     store.selected,
-//   ]);
-
-//   return (
-//     <div style={{ userSelect: "none", position: "fixed" }}>
-//       <div>last action: {action}</div>
-//       <div>tool: {selected.tool}</div>
-//       <div>model: {selected.model}</div>
-//     </div>
-//   );
-// };
-
 const Controls = () => {
   const controlsEnabled = useStore((store) => store.controlsEnabled);
   return (
@@ -324,9 +313,6 @@ const a = new MeshStandardMaterial({
     rpt
   ),
   normalScale: new Vector2(1, 0),
-
-  // polygonOffset
-  // flatShading
 });
 const b = new MeshBasicMaterial({ color: "#444" });
 
@@ -368,47 +354,6 @@ const floorMaterial = new MeshPhongMaterial({
   ),
   bumpScale: 1000,
   normalScale: new Vector2(0, 1000),
-
-  // aoMap: tl.load(
-  //   "materials/0032-parquet-decorated-texture-seamless-hr/32_parquet decorated texture-semaless_hr_specular.jpg",
-  //   rpt
-  // ),
-  // bumpScale: 1,
-
-  // displacementMap: tl.load(
-  //   "materials/46_plywood texture-seamless_hr/46_plywood texture-seamless_hr_DISPL.jpg",
-  //   rpt
-  // ),
-  // normalMap: tl.load(
-  //   "materials/46_plywood texture-seamless_hr/46_plywood texture-seamless_hr_NORM.jpg",
-  //   rpt
-  // ),
-  // aoMap: tl.load(
-  //   "materials/46_plywood texture-seamless_hr/46_plywood texture-seamless_hr-AO.jpg",
-  //   rpt
-  // ),
-  // // side: THREE.DoubleSide
-  // // specularMap: tl.load('/46_plywood texture-seamless_hr/46_plywood texture-seamless_hr_SPEC.jpg', rpt),
-  // // shininess: 0,
-  // // normalScale: 1.0,
-
-  // // ambientIntensity: 0.3,
-  // aoMapIntensity: 3.0,
-  // envMapIntensity: 1.5,
-  // // https://discourse.threejs.org/t/material-displacement-map-makes-the-texture-unwrap-the-models-surfaces/5119/11
-  // displacementScale: 0,
-  // roughness: 0.8,
-  // metalness: 0,
-  // // side: THREE.DoubleSide,
-  // polygonOffset: true,
-  // polygonOffsetFactor: 1,
-
-  // // flatShading: true,
-  // clippingPlanes: clipPlanes,
-  // clipIntersection: true,
-  // // shadowSide: THREE.DoubleSide,
-  // side: THREE.FrontSide
-  // // clipShadows: true
 });
 
 const Floor = () => {
@@ -416,6 +361,81 @@ const Floor = () => {
   g.translate(0, 0.05, 0);
   return (
     <mesh receiveShadow castShadow geometry={g} material={floorMaterial} />
+  );
+};
+
+const Ground = () => {
+  return (
+    <>
+      <RectangularGrid
+        x={{ cells: 1, size: 5.7 }}
+        z={{ cells: 5, size: 1.2 }}
+        color="#c5c5c5"
+      />
+      <Text
+        position={[0, 0, -3.2]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        color={"#c5c5c5"}
+        fontSize={0.22}
+        textAlign={"left"}
+        font={process.env.REACT_APP_FONT_URL}
+        anchorX="center"
+        anchorY="middle"
+      >
+        Building Technology: SWIFT
+      </Text>
+
+      <Text
+        position={[3.25, 0, 2.4]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        color={"#c5c5c5"}
+        fontSize={0.25}
+        textAlign={"right"}
+        font={process.env.REACT_APP_FONT_URL}
+        anchorX="center"
+        anchorY="middle"
+      >
+        1.2m
+      </Text>
+
+      <Text
+        position={[0, 0, 3.2]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        color={"#c5c5c5"}
+        fontSize={0.25}
+        textAlign={"center"}
+        font={process.env.REACT_APP_FONT_URL}
+        anchorX="center"
+        anchorY="middle"
+      >
+        5.7m
+      </Text>
+    </>
+  );
+};
+
+const Structure = () => {
+  return (
+    <>
+      <rectAreaLight
+        position={[0, 1.1, 0]}
+        intensity={0.1}
+        width={1}
+        height={1}
+        rotation={[-Math.PI / 2, 0, 0]}
+      />
+      <pointLight position={[0.5, 0.2, 0.5]} intensity={0.5} />
+      <group position={[0, 0.01, 0]}>
+        <Floor />
+        <group position={[0, 0.6, 0]}>
+          <Wall bg={[0.1, 1, 1]} n={[-1, 0, 0]} t={[0.45, 0, 0]} />
+          <Wall bg={[0.1, 1, 1]} n={[1, 0, 0]} t={[-0.45, 0, 0]} />
+
+          <Wall bg={[1, 1, 0.1]} n={[0, 0, -1]} t={[0, 0, 0.45]} />
+          <Wall bg={[1, 1, 0.1]} n={[0, 0, 1]} t={[0, 0, -0.45]} />
+        </group>
+      </group>
+    </>
   );
 };
 
@@ -437,15 +457,14 @@ const RX = () => {
         }}
         onCreated={({ gl, camera, viewport }: any) => {
           gl.toneMapping = Uncharted2ToneMapping;
-          gl.setClearColor(0xf5f5f5);
+          gl.setClearColor(0xfcfbf5);
+          // gl.setClearColor(0x1d537f);
           if (isOrthographicCamera(camera)) {
             camera.left = viewport.width / -2;
             camera.right = viewport.width / 2;
             camera.top = viewport.height / 2;
             camera.bottom = viewport.height / -2;
             camera.zoom = 100;
-            // camera.zoom = 0.1;
-            // camera.near = -1e6;
             camera.near = -1;
             camera.far = 1e5;
           }
@@ -460,73 +479,14 @@ const RX = () => {
         // }
       >
         <ambientLight intensity={0.9} />
-        <rectAreaLight
-          position={[0, 1.1, 0]}
-          intensity={0.1}
-          width={1}
-          height={1}
-          rotation={[-Math.PI / 2, 0, 0]}
-        />
-        <pointLight position={[0.5, 0.2, 0.5]} intensity={0.5} />
 
-        <RectangularGrid
-          x={{ cells: 1, size: 5.7 }}
-          z={{ cells: 5, size: 1.2 }}
-          color="#c5c5c5"
-        />
+        <Structure />
 
-        <group position={[0, 0.01, 0]}>
-          <Floor />
-          <group position={[0, 0.6, 0]}>
-            <Wall bg={[0.1, 1, 1]} n={[-1, 0, 0]} t={[0.45, 0, 0]} />
-            <Wall bg={[0.1, 1, 1]} n={[1, 0, 0]} t={[-0.45, 0, 0]} />
+        <Hanger />
 
-            <Wall bg={[1, 1, 0.1]} n={[0, 0, -1]} t={[0, 0, 0.45]} />
-            <Wall bg={[1, 1, 0.1]} n={[0, 0, 1]} t={[0, 0, -0.45]} />
-          </group>
-        </group>
+        <Ground />
 
         <Controls />
-        <Box />
-
-        <Text
-          position={[0, 0, -3.2]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          color={"#c5c5c5"}
-          fontSize={0.22}
-          textAlign={"left"}
-          font={process.env.REACT_APP_FONT_URL}
-          anchorX="center"
-          anchorY="middle"
-        >
-          Building Technology: SWIFT
-        </Text>
-
-        <Text
-          position={[3.25, 0, 2.4]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          color={"#c5c5c5"}
-          fontSize={0.25}
-          textAlign={"right"}
-          font={process.env.REACT_APP_FONT_URL}
-          anchorX="center"
-          anchorY="middle"
-        >
-          1.2m
-        </Text>
-
-        <Text
-          position={[0, 0, 3.2]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          color={"#c5c5c5"}
-          fontSize={0.25}
-          textAlign={"center"}
-          font={process.env.REACT_APP_FONT_URL}
-          anchorX="center"
-          anchorY="middle"
-        >
-          5.7m
-        </Text>
         <Stats />
       </Canvas>
     </InteractionsContainer>
