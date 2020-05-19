@@ -70,6 +70,11 @@ const [useStore] = create((set) => ({
     model: null,
   },
   hoveredModel: null,
+  hanger: {
+    length: GRID_SIZE.z * 3,
+    height: GRID_SIZE.y,
+    width: GRID_SIZE.x,
+  },
   set: (fn) => set(produce(fn)),
 }));
 
@@ -135,23 +140,29 @@ const raycaster = new Raycaster(); // create once and reuse
 const mouse = new Vector2();
 let intersects = new Vector3();
 
+const linesMaterial = new LineBasicMaterial({
+  color: "#50B8F8",
+});
+
 const Hanger = () => {
   const { viewport, camera } = useThree();
-  const set = useStore((store) => store.set);
+
+  const [hanger, set] = useStore((store) => [store.hanger, store.set]);
+
   const edges = useRef(null);
   const plane = new Plane();
 
-  const boxGeometry = new BoxGeometry(GRID_SIZE.x, GRID_SIZE.y, GRID_SIZE.z);
-  boxGeometry.translate(0, 1.51, 0);
-  const edgesGeometry = new EdgesGeometry(boxGeometry);
+  const boxGeometry = new BoxGeometry(
+    hanger.width,
+    hanger.height,
+    hanger.length
+  );
+  boxGeometry.translate(0, hanger.height / 2, 0);
 
-  const linesMaterial = new LineBasicMaterial({
-    color: "#50B8F8",
-  });
+  const edgesGeometry = new EdgesGeometry(boxGeometry);
 
   return (
     <>
-      {/* <planeHelper args={[plane, 10, 0xff0000]} /> */}
       <mesh
         onPointerDown={(e) => {
           e.stopPropagation();
@@ -235,6 +246,12 @@ const Hanger = () => {
               });
 
               set((draft) => {
+                // const sizes = {
+                //   x: 'width',
+                //   y: 'height',
+                //   z: 'length',
+                // }
+                // draft.hanger[sizes[axis]] = Math.round(targets.delta / )
                 draft.controlsEnabled = true;
               });
             });
@@ -248,10 +265,11 @@ const Hanger = () => {
       >
         <meshBasicMaterial
           color="#81D7F7"
-          opacity={0.02}
+          opacity={0.025}
           transparent
           attach="material"
           blending={AdditiveBlending}
+          visible={false}
         />
       </mesh>
       <lineSegments ref={edges} args={[edgesGeometry, linesMaterial]} />
@@ -278,7 +296,7 @@ const Controls = () => {
 const onBeforeRender = (v, normal) =>
   function (renderer, scene, camera, geometry, material, group) {
     if (
-      camera.position.y < 17 &&
+      camera.position.y < 20 &&
       v.subVectors(camera.position, this.position).dot(normal) < 0
     ) {
       geometry.setDrawRange(0, 0);
@@ -297,7 +315,7 @@ const rpt = function (texture: Texture) {
 
 const a = new MeshStandardMaterial({
   color: "white",
-  emissive: new Color(0xf2f2f2),
+  emissive: new Color(0xffffff),
   emissiveIntensity: 0.2,
   polygonOffsetUnits: 0.1,
   roughness: 2,
@@ -362,10 +380,17 @@ const Ground = () => {
   return (
     <>
       <RectangularGrid
-        x={{ cells: 1, size: 5.7 }}
-        z={{ cells: 5, size: 1.2 }}
+        x={{ cells: 1, size: GRID_SIZE.x, subDivisions: [1.2, 1.8, 3.9, 4.5] }}
+        z={{ cells: 1, size: GRID_SIZE.z * 5 }}
+        color="#c5c5c5"
+        dashed
+      />
+      <RectangularGrid
+        x={{ cells: 1, size: GRID_SIZE.x }}
+        z={{ cells: 5, size: GRID_SIZE.z }}
         color="#c5c5c5"
       />
+
       <Text
         position={[0, 0, -3.2]}
         rotation={[-Math.PI / 2, 0, 0]}
@@ -408,55 +433,61 @@ const Ground = () => {
   );
 };
 
-const Floor = () => {
-  const g = new BoxBufferGeometry(GRID_SIZE.x, 0.1, GRID_SIZE.z);
-  g.translate(0, 0.05, 0);
-  return (
-    <mesh receiveShadow castShadow geometry={g} material={floorMaterial} />
-  );
-};
-
 const Structure = () => {
+  const hanger = useStore((store) => store.hanger);
+
   const floorHeight = 0.1;
-  const wallHeight = GRID_SIZE.y - floorHeight;
+  const wallHeight = hanger.height - floorHeight;
   const wallWidth = 0.3;
+
+  const floorGeo = new BoxBufferGeometry(hanger.width, 0.1, hanger.length);
+  floorGeo.translate(0, 0.05, 0);
 
   return (
     <>
+      <pointLight position={[0, 0.4, 0.5]} intensity={0.25} />
+      {/*
       <rectAreaLight
-        position={[0, wallHeight + floorHeight, 0]}
-        intensity={0.7}
-        width={GRID_SIZE.x - wallWidth * 2}
-        height={GRID_SIZE.z - wallWidth * 2}
+        position={[0, hanger.height, 0]}
+        intensity={1.5}
+        width={(hanger.width - wallWidth) / 3}
+        height={(hanger.length - wallWidth) / 3}
+        // width={hanger.width - wallWidth * 2}
+        // height={hanger.length - wallWidth * 2}
         // width={GRID_SIZE.x}
         // height={GRID_SIZE.z}
         rotation={[-Math.PI / 2, 0, 0]}
-      />
-      <pointLight position={[0, 0.4, 0.5]} intensity={0.4} />
+      /> */}
 
       <group position={[0, 0.01, 0]}>
-        <Floor />
+        <mesh
+          receiveShadow
+          castShadow
+          geometry={floorGeo}
+          material={floorMaterial}
+        />
+
         <group position={[0, wallHeight / 2 + 0.1, 0]}>
           <Wall
-            bg={[wallWidth, wallHeight, GRID_SIZE.z]}
-            t={[(GRID_SIZE.x - wallWidth) / 2, 0, 0]}
+            bg={[wallWidth, wallHeight, hanger.length]}
+            t={[(hanger.width - wallWidth) / 2, 0, 0]}
             n={[-1, 0, 0]}
           />
           <Wall
-            bg={[wallWidth, wallHeight, GRID_SIZE.z]}
-            t={[(-GRID_SIZE.x + wallWidth) / 2, 0, 0]}
+            bg={[wallWidth, wallHeight, hanger.length]}
+            t={[(-hanger.width + wallWidth) / 2, 0, 0]}
             n={[1, 0, 0]}
           />
 
           <Wall
-            bg={[GRID_SIZE.x, wallHeight, wallWidth]}
-            t={[0, 0, (-GRID_SIZE.z + wallWidth) / 2]}
+            bg={[hanger.width, wallHeight, wallWidth]}
+            t={[0, 0, (-hanger.length + wallWidth) / 2]}
             n={[0, 0, 1]}
           />
 
           <Wall
-            bg={[GRID_SIZE.x, wallHeight, wallWidth]}
-            t={[0, 0, (GRID_SIZE.z - wallWidth) / 2]}
+            bg={[hanger.width, wallHeight, wallWidth]}
+            t={[0, 0, (hanger.length - wallWidth) / 2]}
             n={[0, 0, -1]}
           />
         </group>
@@ -494,7 +525,7 @@ const RX = () => {
             camera.near = -1;
             camera.far = 1e5;
           }
-          camera.position.set(10, 10, 10);
+          camera.position.set(10, 15, 10);
           camera.lookAt(0, 0, 0);
           camera.updateProjectionMatrix();
         }}
