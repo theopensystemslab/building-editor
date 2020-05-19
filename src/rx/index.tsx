@@ -17,8 +17,10 @@ import {
   timeoutWith,
 } from "rxjs/operators";
 import {
+  AdditiveBlending,
   BoxBufferGeometry,
   BoxGeometry,
+  Color,
   EdgesGeometry,
   Geometry,
   LineBasicMaterial,
@@ -125,8 +127,8 @@ const Box = () => {
   const edges = useRef(null);
   const plane = new Plane();
 
-  const boxGeometry = new BoxGeometry(1, 1, 1);
-  boxGeometry.translate(0, 0.51, 0);
+  const boxGeometry = new BoxGeometry(3, 3, 3);
+  boxGeometry.translate(0, 1.51, 0);
   const edgesGeometry = new EdgesGeometry(boxGeometry);
 
   const linesMaterial = new LineBasicMaterial({
@@ -232,10 +234,10 @@ const Box = () => {
       >
         <meshBasicMaterial
           color="#81D7F7"
-          opacity={0.2}
+          opacity={0.05}
           transparent
           attach="material"
-          // blending={SubtractiveBlending}
+          blending={AdditiveBlending}
         />
       </mesh>
       <lineSegments ref={edges} args={[edgesGeometry, linesMaterial]} />
@@ -279,8 +281,6 @@ const onAfterRender = (renderer, scene, camera, geometry, material, group) => {
 };
 
 const Wall = ({ bg, n, t }) => {
-  const { camera } = useThree();
-
   const v = new Vector3();
 
   const g = new BoxGeometry(...bg);
@@ -298,8 +298,12 @@ const Wall = ({ bg, n, t }) => {
       <meshStandardMaterial
         color="white"
         attach="material"
+        emissive={new Color(0xffffff)}
+        emissiveIntensity={0.8}
         polygonOffset
         polygonOffsetUnits={0.1}
+        roughness={1}
+        flatShading
       />
     </mesh>
   );
@@ -310,7 +314,12 @@ const Floor = () => {
   g.translate(0, 0.05, 0);
   return (
     <mesh receiveShadow castShadow geometry={g}>
-      <meshStandardMaterial color="white" attach="material" />
+      <meshStandardMaterial
+        color="white"
+        attach="material"
+        emissive={new Color(0xffffff)}
+        emissiveIntensity={0.4}
+      />
     </mesh>
   );
 };
@@ -322,7 +331,13 @@ const RX = () => {
     <InteractionsContainer>
       <Canvas
         orthographic
-        onCreated={({ camera, viewport }: any) => {
+        pixelRatio={window.devicePixelRatio}
+        gl={{
+          logarithmicDepthBuffer: true,
+          alpha: false,
+        }}
+        onCreated={({ gl, camera, viewport }: any) => {
+          gl.setClearColor(0xf5f5f5);
           if (isOrthographicCamera(camera)) {
             camera.left = viewport.width / -2;
             camera.right = viewport.width / 2;
@@ -330,8 +345,9 @@ const RX = () => {
             camera.bottom = viewport.height / -2;
             camera.zoom = 100;
             // camera.zoom = 0.1;
-            camera.near = -1e6;
-            camera.far = 1e6;
+            // camera.near = -1e6;
+            camera.near = -1;
+            camera.far = 1e5;
           }
           camera.position.set(10, 10, 10);
           camera.lookAt(0, 0, 0);
@@ -343,13 +359,19 @@ const RX = () => {
         //   })
         // }
       >
-        <ambientLight intensity={0.4} />
-        <pointLight position={[0, 1, 0]} intensity={0.8} />
+        <ambientLight intensity={0.05} />
+        <rectAreaLight
+          position={[0, 1.1, 0]}
+          intensity={0.4}
+          width={1}
+          height={1}
+          rotation={[-Math.PI / 2, 0, 0]}
+        />
 
         <RectangularGrid
           x={{ cells: 7, size: 1 }}
           z={{ cells: 7, size: 1 }}
-          color="#ddd"
+          color="#c5c5c5"
         />
 
         <group position={[0, 0.01, 0]}>
