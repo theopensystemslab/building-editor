@@ -470,8 +470,8 @@ const RX = () => {
         <pointLight position={[0.5, 0.2, 0.5]} intensity={0.5} />
 
         <RectangularGrid
-          x={{ cells: 5, size: 1 }}
-          z={{ cells: 5, size: 1 }}
+          x={{ cells: 1, size: 5.7 }}
+          z={{ cells: 5, size: 1.2 }}
           color="#c5c5c5"
         />
 
@@ -490,7 +490,7 @@ const RX = () => {
         <Box />
 
         <Text
-          position={[0, 0, -2.8]}
+          position={[0, 0, -3.2]}
           rotation={[-Math.PI / 2, 0, 0]}
           color={"#c5c5c5"}
           fontSize={0.22}
@@ -503,7 +503,7 @@ const RX = () => {
         </Text>
 
         <Text
-          position={[2, 0, 2.8]}
+          position={[3.25, 0, 2.4]}
           rotation={[-Math.PI / 2, 0, 0]}
           color={"#c5c5c5"}
           fontSize={0.25}
@@ -512,7 +512,20 @@ const RX = () => {
           anchorX="center"
           anchorY="middle"
         >
-          1m
+          1.2m
+        </Text>
+
+        <Text
+          position={[0, 0, 3.2]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          color={"#c5c5c5"}
+          fontSize={0.25}
+          textAlign={"center"}
+          font={process.env.REACT_APP_FONT_URL}
+          anchorX="center"
+          anchorY="middle"
+        >
+          5.7m
         </Text>
         <Stats />
       </Canvas>
