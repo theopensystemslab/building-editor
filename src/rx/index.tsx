@@ -32,8 +32,8 @@ export const [useStore] = create((set) => ({
     model: null,
   },
   prefs: {
-    shadows: false,
-    antialias: false,
+    shadows: true,
+    antialias: true,
     background: "#dfded7",
   },
   hoveredModel: null,
