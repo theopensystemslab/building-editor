@@ -1,9 +1,11 @@
 import { Text } from "drei";
 import React from "react";
-import { GRID_SIZE } from ".";
+import { GRID_SIZE, useStore } from ".";
 import RectangularGrid from "../shared/RectangularGrid";
 
 const Ground = () => {
+  const controlsEnabled = useStore((store) => store.controlsEnabled);
+
   return (
     <>
       {/* <group rotation={[-Math.PI / 2, 0, 0]}>

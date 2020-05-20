@@ -16,6 +16,7 @@ const plane = new THREE.Plane();
 
 const linesMaterial = new THREE.LineBasicMaterial({
   color: "#50BFE6",
+  depthTest: true,
 });
 
 const swaps = {
@@ -37,6 +38,24 @@ const hangerMaterials = [
     // blending: MultiplyBlending,
   }),
 ];
+
+const snapToGridX = (val: number, includeSubGrid = false): number => {
+  let modifier = 0;
+
+  if (includeSubGrid) {
+    const vals = [0, 1.2, 1.8, 3.9, 4.5, GRID_SIZE.x];
+
+    const remainder = val % GRID_SIZE.x;
+
+    modifier = vals.reduce((prev: number, curr: number) =>
+      Math.abs(curr - remainder) < Math.abs(prev - remainder) ? curr : prev
+    );
+
+    if (modifier > GRID_SIZE.x / 2) modifier -= GRID_SIZE.x;
+  }
+
+  return Math.round(val / GRID_SIZE.x) * GRID_SIZE.x + modifier;
+};
 
 const NewHanger = () => {
   const [hangerPoints, set] = useStore((store) => [
@@ -68,6 +87,7 @@ const NewHanger = () => {
 
   // GRID_SIZE.x / 2 - h.width
   const position = new THREE.Vector3(
+    // -GRID_SIZE.x / 2,
     -GRID_SIZE.x / 2,
     0,
     (GRID_SIZE.z * 3) / 2
@@ -124,7 +144,7 @@ const NewHanger = () => {
         takeUntil(fromEvent(document, "pointerup"))
       );
 
-      const deltaSign = -1;
+      const deltaSign = normal.x === 1 ? 1 : -1;
 
       // TODO remove this hack!
       // const deltaSign = [0, 1, 4, 5, 8, 9].includes(e.faceIndex) ? 1 : -1;
@@ -154,12 +174,17 @@ const NewHanger = () => {
           delta,
         };
 
-        console.log(axis);
+        let roundedDelta: number;
+        if (axis === "x") {
+          roundedDelta = snapToGridX(delta, true);
+        } else {
+          roundedDelta = Math.round(delta / GRID_SIZE[axis]) * GRID_SIZE[axis];
+        }
 
         anime({
           targets,
           duration: 0,
-          delta: Math.round(delta / GRID_SIZE[axis]) * GRID_SIZE[axis],
+          delta: roundedDelta,
           update: function () {
             extrude(targets.delta);
           },
@@ -172,7 +197,8 @@ const NewHanger = () => {
           draft.hangerPoints = geometry.vertices
             .filter(({ z }) => z === 0)
             .map(({ x, y, z }) => [
-              Math.round(x / GRID_SIZE.x) * GRID_SIZE.x,
+              // Math.round(x / GRID_SIZE.x) * GRID_SIZE.x,
+              snapToGridX(x, true),
               Math.round(y / GRID_SIZE.z) * GRID_SIZE.z,
             ]);
           draft.controlsEnabled = true;

@@ -28,6 +28,7 @@ enum Tool {
 export const [useStore] = create((set) => ({
   controlsEnabled: true,
   prefs: {
+    permanentGrid: true,
     shadows: process.env.NODE_ENV === "production",
     antialias: process.env.NODE_ENV === "production",
     background: "#111",
@@ -67,6 +68,7 @@ const Editor = () => {
       try {
         ctx.setClearColor(prefs.background);
         ctx.shadowMap.enabled = prefs.shadows;
+        ctx.sortObjects = true;
       } catch (e) {}
     }
   }, [prefs, ctx]);

@@ -80,6 +80,7 @@ const Sidebar = () => {
       <Input label="shadows" disabled />
       <Input label="antialias" disabled />
       <Input label="windows" />
+      <Input label="permanentGrid" />
       <Input
         label="background"
         options={[

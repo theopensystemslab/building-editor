@@ -1,6 +1,7 @@
 import { flatten } from "ramda";
 import React, { useMemo } from "react";
 import {
+  AdditiveBlending,
   BufferAttribute,
   BufferGeometry,
   Color,
@@ -8,7 +9,9 @@ import {
   LineDashedMaterial,
   LinePieces,
   LineSegments,
+  NoBlending,
 } from "three";
+import { useStore } from "../rx";
 
 interface Axis {
   cells: number;
@@ -29,6 +32,7 @@ const RectangularGrid: React.FC<IReactangularGrid> = ({
   color = "red",
   dashed = false,
 }) => {
+  const permanentGrid = useStore((store) => store.prefs.permanentGrid);
   const gridGeometry = useMemo(() => {
     const geometry = new BufferGeometry();
 
@@ -69,14 +73,25 @@ const RectangularGrid: React.FC<IReactangularGrid> = ({
     if (dashed) {
       return new LineDashedMaterial({
         color,
-        linewidth: 0.5,
         scale: 10,
         dashSize: 1,
         gapSize: 1,
       });
     }
-    return new LineBasicMaterial({ color });
+    return new LineBasicMaterial({
+      color,
+      // blending: AdditiveBlending,
+      // depthTest: false,
+    });
   }, [color, dashed]);
+
+  if (permanentGrid) {
+    material.blending = AdditiveBlending;
+    material.depthTest = false;
+  } else {
+    material.blending = NoBlending;
+    material.depthTest = true;
+  }
 
   return (
     <lineSegments

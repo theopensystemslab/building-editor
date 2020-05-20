@@ -21,8 +21,8 @@ import CSG from "../utils/three-csg";
 const onBeforeRender = (v, normal) =>
   function (renderer, scene, camera, geometry, material, group) {
     if (
-      camera.zoom > 100 &&
-      camera.position.y <= 27 &&
+      camera.zoom > 95 &&
+      camera.position.y <= 28 &&
       v.subVectors(camera.position, this.position).dot(normal) < 0
     ) {
       geometry.setDrawRange(0, 0);
@@ -182,7 +182,7 @@ const Structure = () => {
 
   const { x, z } = hangerPoints.reduce(
     (acc, [x, z]) => {
-      if (x <= acc.x) {
+      if (x >= acc.x) {
         if (z >= acc.z) {
           acc.x = x;
           acc.z = z;
@@ -190,11 +190,11 @@ const Structure = () => {
       }
       return acc;
     },
-    { x: Infinity, z: -Infinity }
+    { x: -Infinity, z: -Infinity }
   );
 
   const position = new Vector3(
-    x,
+    x - hanger.width / 2 - GRID_SIZE.x / 2,
     0.01,
     -z + hanger.length / 2 + GRID_SIZE.z * 1.5
   );
