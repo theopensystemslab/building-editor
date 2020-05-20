@@ -1,12 +1,14 @@
 import { OrbitControls, Stats } from "drei";
 import produce from "immer";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Canvas, isOrthographicCamera } from "react-three-fiber";
-import { PCFShadowMap, Uncharted2ToneMapping } from "three";
+import { PCFShadowMap, Uncharted2ToneMapping, WebGLRenderer } from "three";
 import create from "zustand";
 import { pointsToThreeShape } from "../utils";
+import "./app.scss";
 import Ground from "./Ground";
 import Hanger from "./Hanger";
+import Sidebar from "./Sidebar";
 import Structure from "./Structure";
 
 export const GRID_SIZE = {
@@ -29,6 +31,11 @@ export const [useStore] = create((set) => ({
   selected: {
     tool: Tool.MOVE,
     model: null,
+  },
+  prefs: {
+    shadows: false,
+    antialias: false,
+    background: "#dfded7",
   },
   hoveredModel: null,
   hanger: {
@@ -90,7 +97,19 @@ const NewHanger = () => {
   );
 };
 
-const RX = () => {
+const Editor = () => {
+  const prefs = useStore((store) => store.prefs);
+  const [ctx, setCtx] = useState<WebGLRenderer | undefined>();
+
+  useEffect(() => {
+    if (ctx) {
+      try {
+        ctx.setClearColor(prefs.background);
+        ctx.shadowMap.enabled = prefs.shadows;
+      } catch (e) {}
+    }
+  }, [prefs, ctx]);
+
   return (
     <Canvas
       orthographic
@@ -98,16 +117,17 @@ const RX = () => {
       gl={{
         logarithmicDepthBuffer: false,
         alpha: false,
-        antialias: false,
+        antialias: prefs.antialias,
         powerPreference: "low-power",
       }}
       shadowMap={{
-        enabled: true,
+        // enabled: prefs.shadows,
         type: PCFShadowMap,
       }}
       onCreated={({ gl, camera, viewport }: any) => {
+        setCtx(gl);
         gl.toneMapping = Uncharted2ToneMapping;
-        gl.setClearColor(0xdfded7);
+
         // gl.setClearColor(0x1d537f);
         if (isOrthographicCamera(camera)) {
           camera.left = viewport.width / -2;
@@ -141,6 +161,15 @@ const RX = () => {
       <Controls />
       <Stats />
     </Canvas>
+  );
+};
+
+const RX = () => {
+  return (
+    <>
+      <Editor />
+      <Sidebar />
+    </>
   );
 };
 
