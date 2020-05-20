@@ -6,13 +6,13 @@ import RectangularGrid from "../shared/RectangularGrid";
 const Ground = () => {
   return (
     <>
-      {/* <group rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
+      {/* <group rotation={[-Math.PI / 2, 0, 0]}>
         <mesh name="ground" receiveShadow>
           <planeBufferGeometry attach="geometry" args={[100, 100, 10, 10]} />
           <shadowMaterial
             attach="material"
             color={0}
-            opacity={0.1}
+            opacity={1}
             side={DoubleSide}
           />
         </mesh>

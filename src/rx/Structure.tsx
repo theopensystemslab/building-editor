@@ -60,7 +60,7 @@ const a = new MeshStandardMaterial({
   normalScale: new Vector2(1, 0),
   // side: DoubleSide,
 });
-const b = new MeshBasicMaterial({ color: "#333" });
+const b = new MeshBasicMaterial({ color: "#f2f2f2" });
 
 // const wallMaterial = [a, a, b, a, a, a];
 // const wallMaterial = a;
@@ -151,8 +151,8 @@ const Structure = () => {
   const floorGeo = new BoxBufferGeometry(hanger.width, 0.1, hanger.length);
   floorGeo.translate(0, 0.05, 0);
 
-  const ceiling = new BoxBufferGeometry(hanger.width, 0.001, hanger.length);
-  ceiling.translate(0, hanger.height + 0.001, 0);
+  const ceiling = new BoxBufferGeometry(hanger.width, 0.1, hanger.length);
+  ceiling.translate(0, hanger.height + 0.05, 0);
   // ceiling.geometrysetDrawRange(0, 0);
 
   return (
