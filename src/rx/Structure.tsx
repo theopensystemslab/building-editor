@@ -21,6 +21,7 @@ import CSG from "../utils/three-csg";
 const onBeforeRender = (v, normal) =>
   function (renderer, scene, camera, geometry, material, group) {
     if (
+      camera.zoom > 100 &&
       camera.position.y <= 27 &&
       v.subVectors(camera.position, this.position).dot(normal) < 0
     ) {
