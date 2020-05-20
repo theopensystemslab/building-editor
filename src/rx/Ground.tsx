@@ -22,14 +22,9 @@ const Ground = () => {
 
       <RectangularGrid
         x={{ cells: 1, size: GRID_SIZE.x, subDivisions: [1.2, 1.8, 3.9, 4.5] }}
-        z={{ cells: 1, size: GRID_SIZE.z * 7 }}
-        color="#b8b8ad"
-        dashed
-      />
-      <RectangularGrid
-        x={{ cells: 1, size: GRID_SIZE.x }}
         z={{ cells: 7, size: GRID_SIZE.z }}
         color="#b8b8ad"
+        dashed
       />
 
       <Text

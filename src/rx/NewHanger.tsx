@@ -131,6 +131,8 @@ const NewHanger = () => {
 
       let startPos;
 
+      const up$ = fromEvent(document, "pointerup");
+
       const e$ = fromEvent(document, "pointermove").pipe(
         throttleTime(25),
         map((ev: PointerEvent) => {
@@ -141,8 +143,15 @@ const NewHanger = () => {
           startPos = startPos || intersects[axis];
           return intersects[axis] - startPos;
         }),
-        takeUntil(fromEvent(document, "pointerup"))
+        takeUntil(up$)
       );
+
+      up$.subscribe(() => {
+        faces.forEach((face) => (face.materialIndex = 0));
+        set((draft) => {
+          draft.controlsEnabled = true;
+        });
+      });
 
       const deltaSign = normal.x === 1 ? 1 : -1;
 
@@ -191,8 +200,6 @@ const NewHanger = () => {
           easing: "easeOutQuint",
         });
 
-        faces.forEach((face) => (face.materialIndex = 0));
-
         set((draft) => {
           draft.hangerPoints = geometry.vertices
             .filter(({ z }) => z === 0)
@@ -201,7 +208,6 @@ const NewHanger = () => {
               snapToGridX(x, true),
               Math.round(y / GRID_SIZE.z) * GRID_SIZE.z,
             ]);
-          draft.controlsEnabled = true;
         });
       });
     }

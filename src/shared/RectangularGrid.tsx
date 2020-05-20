@@ -76,6 +76,8 @@ const RectangularGrid: React.FC<IReactangularGrid> = ({
         scale: 10,
         dashSize: 1,
         gapSize: 1,
+        // blending: AdditiveBlending,
+        // depthTest: false,
       });
     }
     return new LineBasicMaterial({
