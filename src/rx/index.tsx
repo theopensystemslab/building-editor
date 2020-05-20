@@ -1,21 +1,10 @@
 import anime from "animejs/lib/anime.es.js";
 import { OrbitControls, Stats, Text } from "drei";
 import produce from "immer";
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { Canvas, isOrthographicCamera, useThree } from "react-three-fiber";
-import { fromEvent, merge, timer } from "rxjs";
-import {
-  buffer,
-  debounceTime,
-  filter,
-  flatMap,
-  map,
-  switchMap,
-  takeLast,
-  takeUntil,
-  throttleTime,
-  timeoutWith,
-} from "rxjs/operators";
+import { fromEvent } from "rxjs";
+import { map, takeLast, takeUntil, throttleTime } from "rxjs/operators";
 import {
   AdditiveBlending,
   BoxBufferGeometry,
@@ -62,6 +51,14 @@ enum Tool {
   CLONE,
 }
 
+const raycaster = new Raycaster();
+const mouse = new Vector2();
+let intersects = new Vector3();
+
+const linesMaterial = new LineBasicMaterial({
+  color: "#50B8F8",
+});
+
 const [useStore] = create((set) => ({
   controlsEnabled: true,
   action: null,
@@ -77,72 +74,6 @@ const [useStore] = create((set) => ({
   },
   set: (fn) => set(produce(fn)),
 }));
-
-const InteractionsContainer = ({ children }) => {
-  const set = useStore((store) => store.set);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const pointerDown$ = fromEvent(ref.current, "pointerdown");
-    const pointerUp$ = fromEvent(document, "pointerup");
-
-    const tap$ = pointerDown$.pipe(
-      switchMap(() => pointerUp$.pipe(timeoutWith(200, pointerDown$))),
-      map(() => Actions.TAP)
-    );
-
-    const hold$ = pointerDown$.pipe(
-      flatMap(() => timer(250).pipe(takeUntil(pointerUp$))),
-      map(() => Actions.TAP_AND_HOLD)
-    );
-
-    const doubleTap$ = tap$.pipe(
-      buffer(tap$.pipe(debounceTime(300))),
-      filter(({ length }) => length === 2),
-      map(() => Actions.DOUBLE_TAP)
-    );
-
-    const merged$ = merge(tap$, hold$, doubleTap$);
-
-    const actions = merged$.subscribe((val) => {
-      set((draft) => {
-        draft.action = val;
-      });
-    });
-
-    const clearIfNothingHappens = merged$
-      .pipe(debounceTime(1000))
-      .subscribe(() => {
-        set((draft) => {
-          draft.action = null;
-        });
-      });
-
-    return () => {
-      console.log("unmounting, unsubscribe");
-      actions.unsubscribe();
-      clearIfNothingHappens.unsubscribe();
-    };
-  }, [set]);
-
-  return (
-    <div
-      ref={ref}
-      style={{ height: "100%" }}
-      onContextMenu={(e) => e.preventDefault()}
-    >
-      {children}
-    </div>
-  );
-};
-
-const raycaster = new Raycaster(); // create once and reuse
-const mouse = new Vector2();
-let intersects = new Vector3();
-
-const linesMaterial = new LineBasicMaterial({
-  color: "#50B8F8",
-});
 
 const Hanger = () => {
   const { viewport, camera } = useThree();
@@ -302,6 +233,7 @@ const onBeforeRender = (v, normal) =>
       geometry.setDrawRange(0, 0);
     }
   };
+
 const onAfterRender = (renderer, scene, camera, geometry, material, group) => {
   geometry.setDrawRange(0, Infinity);
 };
@@ -509,59 +441,53 @@ const Structure = () => {
 };
 
 const RX = () => {
-  // const [set] = useStore((store) => [store.set]);
-
   return (
-    <InteractionsContainer>
-      <Canvas
-        orthographic
-        pixelRatio={window.devicePixelRatio}
-        gl={{
-          logarithmicDepthBuffer: false,
-          alpha: false,
-          antialias: false,
-          powerPreference: "low-power",
-        }}
-        shadowMap={{
-          type: PCFSoftShadowMap,
-        }}
-        onCreated={({ gl, camera, viewport }: any) => {
-          gl.toneMapping = Uncharted2ToneMapping;
-          gl.setClearColor(0xdfded7);
-          // gl.setClearColor(0x1d537f);
-          if (isOrthographicCamera(camera)) {
-            camera.left = viewport.width / -2;
-            camera.right = viewport.width / 2;
-            camera.top = viewport.height / 2;
-            camera.bottom = viewport.height / -2;
-            camera.zoom = 100;
-            camera.near = -1;
-            camera.far = 1e5;
-          }
-          camera.position.set(10, 25, 10);
-          camera.lookAt(0, 0, 0);
-          camera.updateProjectionMatrix();
-        }}
-        // onPointerDownCapture={() =>
-        //   set((draft) => {
-        //     draft.selected.model = null;
-        //   })
-        // }
-      >
-        {/* <directionalLight position={[5, 20, 5]} castShadow /> */}
+    <Canvas
+      orthographic
+      pixelRatio={window.devicePixelRatio}
+      gl={{
+        logarithmicDepthBuffer: false,
+        alpha: false,
+        antialias: false,
+        powerPreference: "low-power",
+      }}
+      shadowMap={{
+        type: PCFSoftShadowMap,
+      }}
+      onCreated={({ gl, camera, viewport }: any) => {
+        gl.toneMapping = Uncharted2ToneMapping;
+        gl.setClearColor(0xdfded7);
+        // gl.setClearColor(0x1d537f);
+        if (isOrthographicCamera(camera)) {
+          camera.left = viewport.width / -2;
+          camera.right = viewport.width / 2;
+          camera.top = viewport.height / 2;
+          camera.bottom = viewport.height / -2;
+          camera.zoom = 100;
+          camera.near = -1;
+          camera.far = 1e5;
+        }
+        camera.position.set(10, 25, 10);
+        camera.lookAt(0, 0, 0);
+        camera.updateProjectionMatrix();
+      }}
+      // onPointerDownCapture={() =>
+      //   set((draft) => {
+      //     draft.selected.model = null;
+      //   })
+      // }
+    >
+      <ambientLight intensity={0.9} />
 
-        <ambientLight intensity={0.9} />
+      <Structure />
 
-        <Structure />
+      <Hanger />
 
-        <Hanger />
+      <Ground />
 
-        <Ground />
-
-        <Controls />
-        <Stats />
-      </Canvas>
-    </InteractionsContainer>
+      <Controls />
+      <Stats />
+    </Canvas>
   );
 };
 
