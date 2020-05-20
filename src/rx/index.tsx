@@ -78,7 +78,7 @@ const Editor = () => {
       orthographic
       pixelRatio={window.devicePixelRatio}
       gl={{
-        logarithmicDepthBuffer: false,
+        // logarithmicDepthBuffer: false,
         alpha: false,
         antialias: prefs.antialias,
         powerPreference: "low-power",
