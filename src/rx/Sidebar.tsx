@@ -4,10 +4,36 @@ import { useStore } from ".";
 interface Inputs {
   label: string;
   disabled?: boolean;
+  options?: any[];
 }
 
-const Input: React.FC<Inputs> = ({ label, disabled }) => {
+const Input: React.FC<Inputs> = ({ label, disabled, options }) => {
   const [value, set] = useStore((store) => [store.prefs[label], store.set]);
+
+  if (options) {
+    return (
+      <div>
+        <label>
+          {label}
+          <select
+            onChange={(e) =>
+              set((draft) => {
+                draft.prefs[label] = e.target.value;
+              })
+            }
+            value={value}
+            disabled={disabled}
+          >
+            {options.map(({ label, value }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+    );
+  }
 
   if (typeof value === "string") {
     return (
@@ -53,7 +79,13 @@ const Sidebar = () => {
     <div id="sidebar">
       <Input label="shadows" disabled />
       <Input label="antialias" disabled />
-      <Input label="background" />
+      <Input
+        label="background"
+        options={[
+          { label: "paper", value: "#dfded7" },
+          { label: "blueprint", value: "#207AC3" },
+        ]}
+      />
     </div>
   );
 };

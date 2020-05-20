@@ -1,9 +1,17 @@
-import { Geometry, Vector3 } from "three";
+import { Face3, Geometry, Vector3 } from "three";
 
-export const coplanarVertices = (
+type Axis = "x" | "y" | "z";
+
+interface Stuff {
+  vertices: Vector3[];
+  sharedAxis: Axis;
+  faces?: Face3[];
+}
+
+export const coplanarStuff = (
   geometry: Geometry,
   [first, ...rest]: Vector3[]
-): [Vector3[], string] => {
+): Stuff => {
   const sharedAxis = Object.keys(
     rest.reduce(
       (acc, curr) => {
@@ -14,15 +22,29 @@ export const coplanarVertices = (
       },
       { ...first }
     )
-  )[0];
-  return [
-    Array.from(
-      new Set(
-        geometry.vertices.filter((v) => v[sharedAxis] === first[sharedAxis])
-      )
-    ),
+  )[0] as Axis;
+
+  const vertices = Array.from(
+    new Set(
+      geometry.vertices.filter((v) => v[sharedAxis] === first[sharedAxis])
+    )
+  );
+
+  return {
+    vertices,
     sharedAxis,
-  ];
+    // faces: geometry.faces.filter(({ a, b, c }) =>
+    //   vertices
+    //     .map((v) => JSON.stringify(v))
+    //     .some((v) => {
+    //       return (
+    //         v === JSON.stringify(a) ||
+    //         v === JSON.stringify(b) ||
+    //         v === JSON.stringify(c)
+    //       );
+    //     })
+    // ),
+  };
 };
 
 // const quickCompare = (a, b) => JSON.stringify(a) === JSON.stringify(b);

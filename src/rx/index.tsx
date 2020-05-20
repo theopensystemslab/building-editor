@@ -4,10 +4,9 @@ import React, { useEffect, useState } from "react";
 import { Canvas, isOrthographicCamera } from "react-three-fiber";
 import { PCFShadowMap, Uncharted2ToneMapping, WebGLRenderer } from "three";
 import create from "zustand";
-import { pointsToThreeShape } from "../utils";
 import "./app.scss";
 import Ground from "./Ground";
-import Hanger from "./Hanger";
+import NewHanger from "./NewHanger";
 import Sidebar from "./Sidebar";
 import Structure from "./Structure";
 
@@ -68,35 +67,6 @@ const Controls = () => {
   );
 };
 
-const NewHanger = () => {
-  const hangerPoints = useStore((store) => store.hangerPoints);
-
-  const p = pointsToThreeShape(hangerPoints);
-
-  const width = hangerPoints[2][0] - hangerPoints[0][0];
-  const length = hangerPoints[2][1] - hangerPoints[0][1];
-
-  return (
-    <mesh
-      rotation={[-Math.PI / 2, 0, 0]}
-      position={[-width / 2, 0, length / 2]}
-    >
-      <extrudeBufferGeometry
-        args={[
-          p,
-          {
-            depth: GRID_SIZE.y,
-            steps: 2,
-            bevelEnabled: false,
-          },
-        ]}
-        attach="geometry"
-      />
-      <meshBasicMaterial color="yellow" attach="material" />
-    </mesh>
-  );
-};
-
 const Editor = () => {
   const prefs = useStore((store) => store.prefs);
   const [ctx, setCtx] = useState<WebGLRenderer | undefined>();
@@ -153,8 +123,7 @@ const Editor = () => {
 
       <Structure />
 
-      {/* <NewHanger /> */}
-      <Hanger />
+      <NewHanger />
 
       <Ground />
 

@@ -15,7 +15,7 @@ import {
   Vector3,
 } from "three";
 import { GRID_SIZE, useStore } from ".";
-import { coplanarVertices } from "./utils";
+import { coplanarStuff } from "./utils";
 
 const raycaster = new Raycaster();
 const mouse = new Vector2();
@@ -58,7 +58,10 @@ const Hanger = () => {
           if (geometry instanceof Geometry) {
             const { vertices } = geometry;
 
-            const [allVertices, axis] = coplanarVertices(geometry, [
+            const {
+              vertices: allVertices,
+              sharedAxis: axis,
+            } = coplanarStuff(geometry, [
               vertices[a],
               vertices[b],
               vertices[c],

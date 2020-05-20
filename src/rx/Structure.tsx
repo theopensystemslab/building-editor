@@ -1,3 +1,4 @@
+import { bounds } from "@bentobots/vector2";
 import React from "react";
 import {
   BoxBufferGeometry,
@@ -14,7 +15,7 @@ import {
   Vector2,
   Vector3,
 } from "three";
-import { useStore } from ".";
+import { GRID_SIZE, useStore } from ".";
 import CSG from "../utils/three-csg";
 
 const onBeforeRender = (v, normal) =>
@@ -142,7 +143,15 @@ const floorMaterial = new MeshPhongMaterial({
 });
 
 const Structure = () => {
-  const hanger = useStore((store) => store.hanger);
+  const hangerPoints = useStore((store) => store.hangerPoints);
+
+  const b = bounds(hangerPoints);
+
+  const hanger = {
+    length: b.maxY - b.minY,
+    height: GRID_SIZE.y,
+    width: b.maxX - b.minX,
+  };
 
   const floorHeight = 0.1;
   const wallHeight = hanger.height - floorHeight;
