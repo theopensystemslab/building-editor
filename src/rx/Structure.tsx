@@ -171,14 +171,35 @@ const Structure = () => {
   ceiling.translate(0, hanger.height + 0.05, 0);
   // ceiling.geometrysetDrawRange(0, 0);
 
+  // const position = new Vector3(
+  //   0,
+  //   0.01,
+  //   hanger.length / 2 - (GRID_SIZE.z * 3) / 2
+  // );
+
+  // const position = new Vector3(hangerPoints[0][0], 0.01, hangerPoints[0][1]);
+
+  const { x, z } = hangerPoints.reduce(
+    (acc, [x, z]) => {
+      if (x <= acc.x) {
+        if (z >= acc.z) {
+          acc.x = x;
+          acc.z = z;
+        }
+      }
+      return acc;
+    },
+    { x: Infinity, z: -Infinity }
+  );
+
+  const position = new Vector3(
+    x,
+    0.01,
+    -z + hanger.length / 2 + GRID_SIZE.z * 1.5
+  );
+
   return (
     <>
-      <pointLight
-        position={[0, 2, 0]}
-        intensity={0.25}
-        castShadow
-        decay={1.5}
-      />
       {/*
       <rectAreaLight
         position={[0, hanger.height, 0]}
@@ -192,7 +213,13 @@ const Structure = () => {
         rotation={[-Math.PI / 2, 0, 0]}
       /> */}
 
-      <group position={[0, 0.01, 0]}>
+      <group position={position}>
+        <pointLight
+          position={[0, 2, 0]}
+          intensity={0.25}
+          castShadow
+          decay={1.5}
+        />
         <mesh
           receiveShadow
           castShadow

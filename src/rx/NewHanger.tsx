@@ -18,6 +18,12 @@ const linesMaterial = new THREE.LineBasicMaterial({
   color: "#50BFE6",
 });
 
+const swaps = {
+  x: "x",
+  y: "z",
+  z: "y",
+};
+
 const hangerMaterials = [
   new THREE.MeshBasicMaterial({
     color: "yellow",
@@ -61,7 +67,11 @@ const NewHanger = () => {
   // const rotation = new THREE.Euler(0, 0, 0);
 
   // GRID_SIZE.x / 2 - h.width
-  const position = new THREE.Vector3(-GRID_SIZE.x / 2, 0, 0);
+  const position = new THREE.Vector3(
+    -GRID_SIZE.x / 2,
+    0,
+    (GRID_SIZE.z * 3) / 2
+  );
   const rotation = new THREE.Euler(-Math.PI / 2, 0);
 
   geometry.faces.forEach((face) => (face.materialIndex = 0));
@@ -79,12 +89,13 @@ const NewHanger = () => {
     const { geometry } = e.object as THREE.Mesh;
 
     if (geometry instanceof THREE.Geometry) {
-      const { vertices } = geometry;
-
       const { vertices: allVertices, sharedAxis: axis, faces } = coplanarStuff(
         geometry,
         e.face
       );
+
+      // if vertical drag then cancel drag
+      if (axis === "z") return;
 
       faces.forEach((face) => (face.materialIndex = 1));
 
@@ -134,10 +145,16 @@ const NewHanger = () => {
         edges.current.geometry = new THREE.EdgesGeometry(geometry);
       };
 
+      e$.subscribe((delta) => {
+        extrude(delta);
+      });
+
       e$.pipe(takeLast(1)).subscribe((delta) => {
         const targets = {
           delta,
         };
+
+        console.log(axis);
 
         anime({
           targets,
@@ -160,10 +177,6 @@ const NewHanger = () => {
             ]);
           draft.controlsEnabled = true;
         });
-      });
-
-      e$.subscribe((delta) => {
-        extrude(delta);
       });
     }
   };
