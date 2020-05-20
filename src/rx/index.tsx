@@ -68,7 +68,7 @@ const Editor = () => {
       try {
         ctx.setClearColor(prefs.background);
         ctx.shadowMap.enabled = prefs.shadows;
-        ctx.sortObjects = true;
+        // ctx.sortObjects = true;
       } catch (e) {}
     }
   }, [prefs, ctx]);

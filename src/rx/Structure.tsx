@@ -165,7 +165,11 @@ const Structure = () => {
   const wallHeight = hanger.height - floorHeight;
   const wallWidth = 0.3;
 
-  const floorGeo = new BoxBufferGeometry(hanger.width, 0.1, hanger.length);
+  const floorGeo = new BoxBufferGeometry(
+    hanger.width,
+    0.1,
+    hanger.length + wallWidth * 2
+  );
   floorGeo.translate(0, 0.05, 0);
 
   const ceiling = new BoxBufferGeometry(hanger.width, 0.1, hanger.length);
@@ -242,13 +246,13 @@ const Structure = () => {
 
           <Wall
             bg={[hanger.width, wallHeight, wallWidth]}
-            t={[0, 0, (-hanger.length + wallWidth) / 2]}
+            t={[0, 0, -hanger.length / 2 - wallWidth / 2]}
             n={[0, 0, 1]}
           />
 
           <Wall
             bg={[hanger.width, wallHeight, wallWidth]}
-            t={[0, 0, (hanger.length - wallWidth) / 2]}
+            t={[0, 0, hanger.length / 2 + wallWidth / 2]}
             n={[0, 0, -1]}
           />
         </group>
