@@ -4,6 +4,7 @@ import { useThree } from "react-three-fiber";
 import { fromEvent } from "rxjs";
 import { map, takeLast, takeUntil, throttleTime } from "rxjs/operators";
 import * as THREE from "three";
+import { NormalBlending } from "three";
 import { GRID_SIZE, useStore } from ".";
 import { pointsToThreeShape } from "../utils";
 import { coplanarStuff } from "./utils";
@@ -15,7 +16,8 @@ const plane = new THREE.Plane();
 
 const linesMaterial = new THREE.LineBasicMaterial({
   color: "#50BFE6",
-  // depthTest: false,
+  blending: NormalBlending,
+  depthTest: false,
 });
 
 const hangerMaterials = [
