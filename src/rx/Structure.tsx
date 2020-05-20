@@ -40,6 +40,29 @@ const rpt = function (texture: Texture) {
   texture.repeat.set(1, 1);
 };
 
+const zinc = new MeshStandardMaterial({
+  color: 0x444444,
+  emissive: new Color(0x111111),
+  emissiveIntensity: 0.1,
+  // polygonOffsetUnits: 0.1,
+  roughness: 2,
+
+  map: tl.load(
+    "materials/16_steel zinc coated corrugated metal texture-seamless_hr/16_steel zinc coated texture.jpg",
+    rpt
+  ),
+  // normalMap: tl.load(
+  //   "materials/61_clean fine plaster texture-seamless_hr/61_clean fine plaster_NORM.jpg",
+  //   rpt
+  // ),
+  normalMap: tl.load(
+    "public/materials/16_steel zinc coated corrugated metal texture-seamless_hr/16_steel zinc coated_NORM.jpg",
+    rpt
+  ),
+  // normalScale: new Vector2(1, 0),
+  // side: DoubleSide,
+});
+
 const a = new MeshStandardMaterial({
   // color: "white",
   emissive: new Color(0xffffff),
@@ -71,62 +94,40 @@ const wallMaterial = [a, b];
 const Wall = ({ bg, n, t }) => {
   const windows = useStore((store) => store.prefs.windows);
 
-  const v = new Vector3();
+  const innerWallGeom = new BoxGeometry(...bg);
+  innerWallGeom.translate(t[0], t[1], t[2]);
 
-  const g = new BoxGeometry(...bg);
-  const normal = new Vector3(...n);
-  g.translate(t[0], t[1], t[2]);
+  const windowGeom = new BoxGeometry(3, 1.5, 1);
+  windowGeom.translate(t[0], t[1], t[2]);
 
-  const g2 = new BoxGeometry(3, 1.5, 1);
-  g2.translate(t[0], t[1], t[2]);
+  const m1 = new Mesh(innerWallGeom, wallMaterial);
 
-  const m1 = new Mesh(g, wallMaterial);
-
-  let subtractmesh: Mesh;
+  let finalWallMesh: Mesh;
   if (windows) {
-    const m2 = new Mesh(g2, wallMaterial);
-    subtractmesh = CSG.subtract(m1, m2, wallMaterial) as Mesh;
-    // const glassGeo = new BoxBufferGeometry(1.5, 1.5, 0.1);
-    // glassGeo.translate(t[0], t[1], t[2]);
+    const m2 = new Mesh(windowGeom, wallMaterial);
+    finalWallMesh = CSG.subtract(m1, m2, wallMaterial) as Mesh;
   } else {
-    subtractmesh = m1;
+    finalWallMesh = m1;
   }
 
-  subtractmesh.onAfterRender = onAfterRender;
-  subtractmesh.onBeforeRender = onBeforeRender(v, normal);
-  subtractmesh.receiveShadow = true;
-  subtractmesh.castShadow = true;
-
-  (subtractmesh.geometry as Geometry).faces.forEach((face) => {
+  finalWallMesh.onAfterRender = onAfterRender;
+  finalWallMesh.receiveShadow = true;
+  finalWallMesh.castShadow = true;
+  (finalWallMesh.geometry as Geometry).faces.forEach((face) => {
     face.materialIndex =
       face.normal.y === 1 &&
-      (subtractmesh.geometry as Geometry).vertices[face.a].y > 0
+      (finalWallMesh.geometry as Geometry).vertices[face.a].y > 0
         ? 1
         : 0;
   });
 
-  // (subtractmesh.geometry as Geometry).computeVertexNormals();
+  const v = new Vector3();
+  const normal = new Vector3(...n);
+  finalWallMesh.onBeforeRender = onBeforeRender(v, normal);
 
   return (
     <>
-      {/* <mesh geometry={glassGeo}>
-        <meshBasicMaterial
-          color="lightblue"
-          attach="material"
-          opacity={0.3}
-          transparent
-        />
-      </mesh> */}
-
-      <primitive object={subtractmesh} />
-      {/* <mesh
-        onAfterRender={onAfterRender}
-        onBeforeRender={onBeforeRender(v, normal)}
-        geometry={g}
-        receiveShadow
-        castShadow
-        material={wallMaterial}
-      /> */}
+      <primitive object={finalWallMesh} name="innerWall" />
     </>
   );
 };

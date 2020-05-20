@@ -1,4 +1,3 @@
-import { bounds } from "@bentobots/vector2";
 import anime from "animejs/lib/anime.es.js";
 import React, { useRef } from "react";
 import { useThree } from "react-three-fiber";
@@ -16,24 +15,28 @@ const plane = new THREE.Plane();
 
 const linesMaterial = new THREE.LineBasicMaterial({
   color: "#50BFE6",
-  depthTest: true,
+  // depthTest: false,
 });
-
-const swaps = {
-  x: "x",
-  y: "z",
-  z: "y",
-};
 
 const hangerMaterials = [
   new THREE.MeshBasicMaterial({
-    color: "yellow",
     opacity: 0,
     transparent: true,
   }),
   new THREE.MeshBasicMaterial({
     color: "#50B8F8",
-    opacity: 0.25,
+    opacity: 0.1,
+    transparent: true,
+    // blending: MultiplyBlending,
+  }),
+  new THREE.MeshBasicMaterial({
+    color: "#66FF66",
+    opacity: 0.6,
+    transparent: true,
+  }),
+  new THREE.MeshBasicMaterial({
+    color: "#FF355E",
+    opacity: 0.6,
     transparent: true,
     // blending: MultiplyBlending,
   }),
@@ -58,19 +61,14 @@ const snapToGridX = (val: number, includeSubGrid = false): number => {
 };
 
 const NewHanger = () => {
-  const [hangerPoints, set] = useStore((store) => [
+  const [hangerPoints, set, controlsEnabled] = useStore((store) => [
     store.hangerPoints,
     store.set,
+    store.controlsEnabled,
   ]);
+
   const edges = useRef(null);
   const { viewport, camera } = useThree();
-
-  const b = bounds(hangerPoints);
-  const h = {
-    length: b.maxY - b.minY,
-    height: GRID_SIZE.y,
-    width: b.maxX - b.minX,
-  };
 
   const groundPoints = pointsToThreeShape(hangerPoints);
 
@@ -117,7 +115,7 @@ const NewHanger = () => {
       // if vertical drag then cancel drag
       if (axis === "z") return;
 
-      faces.forEach((face) => (face.materialIndex = 1));
+      // faces.forEach((face) => (face.materialIndex = 1));
 
       const toAdd = normal.clone().multiplyScalar(e.buttons === 1 ? 1 : -1);
 
@@ -147,7 +145,7 @@ const NewHanger = () => {
       );
 
       up$.subscribe(() => {
-        faces.forEach((face) => (face.materialIndex = 0));
+        // faces.forEach((face) => (face.materialIndex = 0));
         set((draft) => {
           draft.controlsEnabled = true;
         });
@@ -158,13 +156,33 @@ const NewHanger = () => {
       // TODO remove this hack!
       // const deltaSign = [0, 1, 4, 5, 8, 9].includes(e.faceIndex) ? 1 : -1;
 
+      let extrudeDistance: number;
       const extrude = (delta) => {
-        const toAddAgain = normal.clone().multiplyScalar(delta * deltaSign);
+        extrudeDistance = delta * deltaSign;
+        const toAddAgain = normal.clone().multiplyScalar(extrudeDistance);
+
+        // console.log("set face");
+        faces.forEach((face) => {
+          if (Math.abs(extrudeDistance) < 0.2) {
+            face.materialIndex = 1;
+          } else if (extrudeDistance > 0) {
+            face.materialIndex = 2;
+          } else {
+            face.materialIndex = 3;
+          }
+        });
+
+        // faces.forEach((face) => {
+        //   face.materialIndex = 2;
+        //   console.log(face);
+        //   // geometry.colorsNeedUpdate = true; //deltaSign > 0 ? 3 : 2;
+        // });
 
         allVertices.forEach((v, i) => {
           v.copy(origVertices[i].clone().add(toAddAgain));
         });
 
+        geometry.groupsNeedUpdate = true;
         geometry.verticesNeedUpdate = true;
         geometry.computeBoundingSphere();
         geometry.computeFaceNormals();
@@ -220,7 +238,9 @@ const NewHanger = () => {
         material={hangerMaterials}
         onPointerDown={handlePointerDown}
       />
-      <lineSegments ref={edges} args={[edgesGeometry, linesMaterial]} />
+      {!controlsEnabled && (
+        <lineSegments ref={edges} args={[edgesGeometry, linesMaterial]} />
+      )}
     </group>
   );
 };
