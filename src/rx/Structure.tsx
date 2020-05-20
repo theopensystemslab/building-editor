@@ -3,6 +3,8 @@ import {
   BoxBufferGeometry,
   BoxGeometry,
   Color,
+  Geometry,
+  Mesh,
   MeshBasicMaterial,
   MeshPhongMaterial,
   MeshStandardMaterial,
@@ -13,6 +15,7 @@ import {
   Vector3,
 } from "three";
 import { useStore } from ".";
+import CSG from "../utils/three-csg";
 
 const onBeforeRender = (v, normal) =>
   function (renderer, scene, camera, geometry, material, group) {
@@ -36,9 +39,9 @@ const rpt = function (texture: Texture) {
 };
 
 const a = new MeshStandardMaterial({
-  color: "white",
+  // color: "white",
   emissive: new Color(0xffffff),
-  emissiveIntensity: 0.2,
+  emissiveIntensity: 0.1,
   polygonOffsetUnits: 0.1,
   roughness: 2,
 
@@ -46,19 +49,22 @@ const a = new MeshStandardMaterial({
     "materials/61_clean fine plaster texture-seamless_hr/61_clean fine plaster texture.jpg",
     rpt
   ),
-  normalMap: tl.load(
-    "materials/61_clean fine plaster texture-seamless_hr/61_clean fine plaster_NORM.jpg",
-    rpt
-  ),
+  // normalMap: tl.load(
+  //   "materials/61_clean fine plaster texture-seamless_hr/61_clean fine plaster_NORM.jpg",
+  //   rpt
+  // ),
   bumpMap: tl.load(
     "materials/61_clean fine plaster texture-seamless_hr/61_clean fine plaster_DISPL.jpg",
     rpt
   ),
   normalScale: new Vector2(1, 0),
+  // side: DoubleSide,
 });
-const b = new MeshBasicMaterial({ color: "#444" });
+const b = new MeshBasicMaterial({ color: "#333" });
 
-const wallMaterial = [a, a, b, a, a, a];
+// const wallMaterial = [a, a, b, a, a, a];
+// const wallMaterial = a;
+const wallMaterial = [a, b];
 
 const Wall = ({ bg, n, t }) => {
   const v = new Vector3();
@@ -67,15 +73,52 @@ const Wall = ({ bg, n, t }) => {
   const normal = new Vector3(...n);
   g.translate(t[0], t[1], t[2]);
 
+  const g2 = new BoxGeometry(3, 1.5, 1);
+  g2.translate(t[0], t[1], t[2]);
+
+  const m1 = new Mesh(g);
+  const m2 = new Mesh(g2);
+
+  const subtractmesh = CSG.subtract(m1, m2, wallMaterial) as Mesh;
+
+  subtractmesh.onAfterRender = onAfterRender;
+  subtractmesh.onBeforeRender = onBeforeRender(v, normal);
+  subtractmesh.receiveShadow = true;
+  subtractmesh.castShadow = true;
+
+  (subtractmesh.geometry as Geometry).computeVertexNormals();
+  (subtractmesh.geometry as Geometry).faces.forEach((face) => {
+    face.materialIndex =
+      face.normal.y === 1 &&
+      (subtractmesh.geometry as Geometry).vertices[face.a].y > 0
+        ? 1
+        : 0;
+  });
+
+  // const glassGeo = new BoxBufferGeometry(1.5, 1.5, 0.1);
+  // glassGeo.translate(t[0], t[1], t[2]);
+
   return (
-    <mesh
-      onAfterRender={onAfterRender}
-      onBeforeRender={onBeforeRender(v, normal)}
-      geometry={g}
-      receiveShadow
-      castShadow
-      material={wallMaterial}
-    />
+    <>
+      {/* <mesh geometry={glassGeo}>
+        <meshBasicMaterial
+          color="lightblue"
+          attach="material"
+          opacity={0.3}
+          transparent
+        />
+      </mesh> */}
+
+      <primitive object={subtractmesh} />
+      {/* <mesh
+        onAfterRender={onAfterRender}
+        onBeforeRender={onBeforeRender(v, normal)}
+        geometry={g}
+        receiveShadow
+        castShadow
+        material={wallMaterial}
+      /> */}
+    </>
   );
 };
 
@@ -108,9 +151,13 @@ const Structure = () => {
   const floorGeo = new BoxBufferGeometry(hanger.width, 0.1, hanger.length);
   floorGeo.translate(0, 0.05, 0);
 
+  const ceiling = new BoxBufferGeometry(hanger.width, 0.001, hanger.length);
+  ceiling.translate(0, hanger.height + 0.001, 0);
+  // ceiling.geometrysetDrawRange(0, 0);
+
   return (
     <>
-      <pointLight position={[0, 0.4, 0.5]} intensity={0.25} castShadow />
+      <pointLight position={[0, 0.4, 0.5]} intensity={0.45} castShadow />
       {/*
       <rectAreaLight
         position={[0, hanger.height, 0]}
@@ -157,6 +204,10 @@ const Structure = () => {
           />
         </group>
       </group>
+
+      <mesh geometry={ceiling} castShadow>
+        <meshBasicMaterial opacity={0} transparent attach="material" />
+      </mesh>
     </>
   );
 };

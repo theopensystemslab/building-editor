@@ -129,6 +129,7 @@ const RX = () => {
       // }
     >
       <ambientLight intensity={0.9} />
+      <directionalLight position={[10, 13, 10]} intensity={0.45} castShadow />
 
       <Structure />
 

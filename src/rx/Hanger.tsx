@@ -153,6 +153,7 @@ const Hanger = () => {
           visible={false}
         />
       </mesh>
+
       <lineSegments ref={edges} args={[edgesGeometry, linesMaterial]} />
     </>
   );
