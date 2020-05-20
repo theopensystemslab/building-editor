@@ -58,14 +58,10 @@ const Hanger = () => {
           if (geometry instanceof Geometry) {
             const { vertices } = geometry;
 
-            const {
-              vertices: allVertices,
-              sharedAxis: axis,
-            } = coplanarStuff(geometry, [
-              vertices[a],
-              vertices[b],
-              vertices[c],
-            ]);
+            const { vertices: allVertices, sharedAxis: axis } = coplanarStuff(
+              geometry,
+              e.face
+            );
 
             const toAdd = normal
               .clone()

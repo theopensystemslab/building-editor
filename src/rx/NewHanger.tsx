@@ -15,7 +15,7 @@ let intersects = new THREE.Vector3();
 const plane = new THREE.Plane();
 
 const linesMaterial = new THREE.LineBasicMaterial({
-  color: "#50B8F8",
+  color: "#50BFE6",
 });
 
 const hangerMaterials = [
@@ -24,13 +24,13 @@ const hangerMaterials = [
     opacity: 0,
     transparent: true,
   }),
-  new THREE.MeshBasicMaterial({ color: "red" }),
+  new THREE.MeshBasicMaterial({
+    color: "#50B8F8",
+    opacity: 0.25,
+    transparent: true,
+    // blending: MultiplyBlending,
+  }),
 ];
-// const sizes = {
-//   x: "width",
-//   y: "height",
-//   z: "length",
-// };
 
 const NewHanger = () => {
   const [hangerPoints, set] = useStore((store) => [
@@ -54,6 +54,16 @@ const NewHanger = () => {
     steps: 2,
     bevelEnabled: false,
   });
+
+  // geometry.rotateX(-Math.PI / 2);
+  // geometry.translate(-h.width / 2, 0, h.length / 2);
+  // const position = new THREE.Vector3();
+  // const rotation = new THREE.Euler(0, 0, 0);
+
+  // GRID_SIZE.x / 2 - h.width
+  const position = new THREE.Vector3(-GRID_SIZE.x / 2, 0, 0);
+  const rotation = new THREE.Euler(-Math.PI / 2, 0);
+
   geometry.faces.forEach((face) => (face.materialIndex = 0));
 
   const edgesGeometry = new THREE.EdgesGeometry(geometry);
@@ -71,10 +81,12 @@ const NewHanger = () => {
     if (geometry instanceof THREE.Geometry) {
       const { vertices } = geometry;
 
-      const {
-        vertices: allVertices,
-        sharedAxis: axis,
-      } = coplanarStuff(geometry, [vertices[a], vertices[b], vertices[c]]);
+      const { vertices: allVertices, sharedAxis: axis, faces } = coplanarStuff(
+        geometry,
+        e.face
+      );
+
+      faces.forEach((face) => (face.materialIndex = 1));
 
       const toAdd = normal.clone().multiplyScalar(e.buttons === 1 ? 1 : -1);
 
@@ -137,6 +149,8 @@ const NewHanger = () => {
           easing: "easeOutQuint",
         });
 
+        faces.forEach((face) => (face.materialIndex = 0));
+
         set((draft) => {
           draft.hangerPoints = geometry.vertices
             .filter(({ z }) => z === 0)
@@ -155,11 +169,7 @@ const NewHanger = () => {
   };
 
   return (
-    <group
-      rotation={[-Math.PI / 2, 0, 0]}
-      position={[-h.width / 2, 0, h.length / 2]}
-      name="hanger"
-    >
+    <group position={position} rotation={rotation} name="hanger">
       <mesh
         geometry={geometry}
         material={hangerMaterials}

@@ -61,9 +61,9 @@ const Input: React.FC<Inputs> = ({ label, disabled, options }) => {
         {label}
         <input
           type="checkbox"
-          onChange={() =>
+          onChange={(e) =>
             set((draft) => {
-              draft.prefs[label] = value;
+              draft.prefs[label] = e.target.checked;
             })
           }
           checked={value}
@@ -79,11 +79,13 @@ const Sidebar = () => {
     <div id="sidebar">
       <Input label="shadows" disabled />
       <Input label="antialias" disabled />
+      <Input label="windows" />
       <Input
         label="background"
         options={[
           { label: "paper", value: "#dfded7" },
           { label: "blueprint", value: "#207AC3" },
+          { label: "dark", value: "#111" },
         ]}
       />
     </div>

@@ -8,10 +8,26 @@ interface Stuff {
   faces?: Face3[];
 }
 
+const compare = (a: Vector3, b: Vector3): boolean => {
+  return (
+    Math.abs(a.x - b.x) < 0.0001 &&
+    Math.abs(a.y - b.y) < 0.0001 &&
+    Math.abs(a.z - b.z) < 0.0001
+  );
+};
+
 export const coplanarStuff = (
   geometry: Geometry,
-  [first, ...rest]: Vector3[]
+  face: Face3
+  // [first, ...rest]: Vector3[]
 ): Stuff => {
+  const { normal, a, b, c } = face;
+  const [first, ...rest] = [
+    geometry.vertices[a],
+    geometry.vertices[b],
+    geometry.vertices[c],
+  ];
+
   const sharedAxis = Object.keys(
     rest.reduce(
       (acc, curr) => {
@@ -30,9 +46,20 @@ export const coplanarStuff = (
     )
   );
 
+  const faces = geometry.faces.filter(({ normal: otherNormal }) => {
+    let match = compare(normal, otherNormal);
+    // for (let i = 0; i < vertices.length; i++) {
+    //   if (compare(normal, otherNormal)) return (match = true);
+    //   if (compare(vertices[b], vertices[i])) return (match = true);
+    //   if (compare(vertices[c], vertices[i])) return (match = true);
+    // }
+    return match;
+  });
+
   return {
     vertices,
     sharedAxis,
+    faces,
     // faces: geometry.faces.filter(({ a, b, c }) =>
     //   vertices
     //     .map((v) => JSON.stringify(v))

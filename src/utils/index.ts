@@ -86,7 +86,7 @@ export const createQuad = () => {
 
 // Three Helpers
 
-const makeThreeShapeFromPoints = (points) => {
+const makeThreeShapeFromPoints = (points): three.Shape => {
   const shape = new three.Shape();
   const [first, ...rest] = points.map(([x, y]) => [x, y]);
   shape.moveTo(first[0], first[1]);
@@ -94,7 +94,7 @@ const makeThreeShapeFromPoints = (points) => {
   return shape;
 };
 
-export const pointsToThreeShape = (points, holes = []) => {
+export const pointsToThreeShape = (points, holes = []): three.Shape => {
   const shape = makeThreeShapeFromPoints(points);
   shape.holes = holes.map(makeThreeShapeFromPoints);
   return shape;

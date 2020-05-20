@@ -68,6 +68,8 @@ const b = new MeshBasicMaterial({ color: "#f2f2f2" });
 const wallMaterial = [a, b];
 
 const Wall = ({ bg, n, t }) => {
+  const windows = useStore((store) => store.prefs.windows);
+
   const v = new Vector3();
 
   const g = new BoxGeometry(...bg);
@@ -77,17 +79,23 @@ const Wall = ({ bg, n, t }) => {
   const g2 = new BoxGeometry(3, 1.5, 1);
   g2.translate(t[0], t[1], t[2]);
 
-  const m1 = new Mesh(g);
-  const m2 = new Mesh(g2);
+  const m1 = new Mesh(g, wallMaterial);
 
-  const subtractmesh = CSG.subtract(m1, m2, wallMaterial) as Mesh;
+  let subtractmesh: Mesh;
+  if (windows) {
+    const m2 = new Mesh(g2, wallMaterial);
+    subtractmesh = CSG.subtract(m1, m2, wallMaterial) as Mesh;
+    // const glassGeo = new BoxBufferGeometry(1.5, 1.5, 0.1);
+    // glassGeo.translate(t[0], t[1], t[2]);
+  } else {
+    subtractmesh = m1;
+  }
 
   subtractmesh.onAfterRender = onAfterRender;
   subtractmesh.onBeforeRender = onBeforeRender(v, normal);
   subtractmesh.receiveShadow = true;
   subtractmesh.castShadow = true;
 
-  (subtractmesh.geometry as Geometry).computeVertexNormals();
   (subtractmesh.geometry as Geometry).faces.forEach((face) => {
     face.materialIndex =
       face.normal.y === 1 &&
@@ -96,8 +104,7 @@ const Wall = ({ bg, n, t }) => {
         : 0;
   });
 
-  // const glassGeo = new BoxBufferGeometry(1.5, 1.5, 0.1);
-  // glassGeo.translate(t[0], t[1], t[2]);
+  // (subtractmesh.geometry as Geometry).computeVertexNormals();
 
   return (
     <>
@@ -138,8 +145,8 @@ const floorMaterial = new MeshPhongMaterial({
     "materials/0032-parquet-decorated-texture-seamless-hr/normal.png",
     rpt
   ),
-  bumpScale: 1000,
-  normalScale: new Vector2(0, 1000),
+  // bumpScale: 1000,
+  normalScale: new Vector2(-10, 10),
 });
 
 const Structure = () => {
@@ -166,7 +173,12 @@ const Structure = () => {
 
   return (
     <>
-      <pointLight position={[0, 0.4, 0.5]} intensity={0.45} castShadow />
+      <pointLight
+        position={[0, 2, 0]}
+        intensity={0.25}
+        castShadow
+        decay={1.5}
+      />
       {/*
       <rectAreaLight
         position={[0, hanger.height, 0]}

@@ -12,7 +12,7 @@ import Structure from "./Structure";
 
 export const GRID_SIZE = {
   x: 5.7,
-  y: 3,
+  y: 3.5,
   z: 1.2,
 };
 
@@ -27,20 +27,11 @@ enum Tool {
 
 export const [useStore] = create((set) => ({
   controlsEnabled: true,
-  selected: {
-    tool: Tool.MOVE,
-    model: null,
-  },
   prefs: {
-    shadows: true,
-    antialias: true,
-    background: "#dfded7",
-  },
-  hoveredModel: null,
-  hanger: {
-    length: GRID_SIZE.z * 3,
-    height: GRID_SIZE.y,
-    width: GRID_SIZE.x,
+    shadows: process.env.NODE_ENV === "production",
+    antialias: process.env.NODE_ENV === "production",
+    background: "#111",
+    windows: true,
   },
   hangerPoints: [
     [0, 0],
