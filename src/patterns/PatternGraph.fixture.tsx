@@ -31,26 +31,11 @@ const elements = [
   }),
 ];
 
-// console.log(g.nodes());
-
 const PatternGraph = () => {
   const container = useRef(null);
+  const [cy, setCy] = useState<any | undefined>();
   const [current, setCurrent] = useState<string | undefined>();
-
-  // layout = {
-  //   name: "dagre",
-  //   rankDir: "LR",
-  //   fit: true,
-  //   spacingFactor: 2,
-  // };
-
-  // layout = {
-  //   name: "spread",
-  // };
-
-  // layout = {
-  //   name: "euler",
-  // };
+  const [filter, setFilter] = useState<string>("");
 
   useEffect(() => {
     const cy = Cytoscape({
@@ -88,36 +73,70 @@ const PatternGraph = () => {
 
     cy.nodes().on("tap", (e) => {
       setCurrent(e.target.id());
-      // cy.nodes().forEach(node => node.)
-
-      // if (this.connectedEdges().targets()[1].style("display") == "none"){
-      //   //show the nodes and edges
-      //   this.connectedEdges().targets().style("display", "element");
-      // } else {
-      //   //hide the children nodes and edges recursively
-      //   this.successors().targets().style("display", "none");
-      // }
 
       cy.edges().forEach((edge) => edge.style("display", "none"));
       cy.nodes().forEach((node) => node.style("display", "none"));
 
       e.target.connectedEdges().forEach((edge) => {
-        // console.log({edge});
-        edge.style("display", "element"); //;.select();
+        edge.style("display", "element");
         edge.connectedNodes().forEach((node) => {
-          // node.select();
           node.style("display", "element");
         });
       });
     });
+
+    cy.fit(cy.nodes().visible(), 100);
+
+    setCy(cy);
 
     return () => {
       cy.removeListener("tap");
     };
   }, []);
 
+  useEffect(() => {
+    if (!cy) return;
+
+    const ids = Object.entries(patterns)
+      .filter(([id]) => {
+        return id.includes(filter);
+        // ((v as any).description && (v as any).description.includes(filter))
+      })
+      .map(([k]) => k);
+
+    if (filter) {
+      cy.edges().forEach((edge) => edge.style("display", "none"));
+      cy.nodes().forEach((node) => {
+        node.deselect();
+        node.style("display", "none");
+      });
+
+      cy.nodes()
+        .filter((n) => ids.includes(n.id()))
+        .forEach((node) => {
+          node.style("display", "element");
+          node.select();
+          node.connectedEdges().forEach((edge) => {
+            edge.style("display", "element");
+            edge.connectedNodes().forEach((node) => {
+              node.style("display", "element");
+            });
+          });
+        });
+    } else {
+      cy.edges().forEach((edge) => edge.style("display", "element"));
+      cy.nodes().forEach((node) => {
+        node.deselect();
+        node.style("display", "element");
+      });
+    }
+
+    cy.fit(cy.nodes().visible(), 100);
+  }, [filter]);
+
   return (
     <>
+      <input value={filter} onChange={(e) => setFilter(e.target.value)} />
       <div style={{ width: 1200, height: 700 }} ref={container} />
 
       {current && (
