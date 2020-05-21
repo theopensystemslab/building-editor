@@ -67,13 +67,16 @@ const PatternGraph = () => {
       } catch (e) {
         setCurrent(undefined);
         cy.edges().forEach((edge) => edge.style("display", "element"));
-        cy.nodes().forEach((node) => node.style("display", "element"));
+        cy.nodes().forEach((node) => {
+          node.style("display", "element");
+        });
       }
 
       cy.fit(cy.nodes().visible(), 100);
     });
 
     cy.nodes().on("tap", (e) => {
+      setFilter("");
       setCurrent(e.target.id());
 
       cy.edges().forEach((edge) => edge.style("display", "none"));
@@ -138,7 +141,10 @@ const PatternGraph = () => {
 
   return (
     <>
-      <input value={filter} onChange={(e) => setFilter(e.target.value)} />
+      <input
+        value={filter.replace(/_/gi, " ")}
+        onChange={(e) => setFilter(e.target.value.replace(/ /gi, "_"))}
+      />
       <div style={{ width: 1200, height: 700 }} ref={container} />
 
       {current && (
