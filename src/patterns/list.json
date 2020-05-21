@@ -85,6 +85,10 @@
       "page": 645,
       "description": "In a building with uniform light level, there are few “places” which function as effective settings for human events. This happens because, to a large extent, the places which make effective settings are defined by light."
     },
+    "139__farmhouse_kitchen": {
+      "page": 661,
+      "description": "The isolated kitchen, separate from the family and considered as an efficient but unpleasant factory for food is a hangover from the days of servants; and from the more recent days when women willingly took over the servants' role."
+    },
     "140__private_terrace_on_the_street": {},
     "142__sequence_of_sitting_spaces": {},
     "147__communal_eating": {
@@ -248,6 +252,9 @@
     ["135__tapestry_of_light_and_dark", "132__short_passages"],
     ["135__tapestry_of_light_and_dark", "133__staircase_as_a_stage"],
     ["135__tapestry_of_light_and_dark", "134__zen_view"],
+
+    ["139__farmhouse_kitchen", "129__common_areas_at_the_heart"],
+    ["139__farmhouse_kitchen", "147__communal_eating"],
 
     ["147__communal_eating", "129__common_areas_at_the_heart"],
     ["147__communal_eating", "075__the_family"],

@@ -69,6 +69,8 @@ const PatternGraph = () => {
         cy.edges().forEach((edge) => edge.style("display", "element"));
         cy.nodes().forEach((node) => node.style("display", "element"));
       }
+
+      cy.fit(cy.nodes().visible(), 100);
     });
 
     cy.nodes().on("tap", (e) => {
@@ -83,9 +85,9 @@ const PatternGraph = () => {
           node.style("display", "element");
         });
       });
-    });
 
-    cy.fit(cy.nodes().visible(), 100);
+      cy.fit(cy.nodes().visible(), 100);
+    });
 
     setCy(cy);
 
