@@ -15,8 +15,8 @@ import {
   Vector2,
   Vector3,
 } from "three";
+import { CSG } from "three-csg-ts";
 import { GRID_SIZE, useStore } from ".";
-import CSG from "../utils/three-csg";
 
 const wallWidth = 0.3;
 
@@ -43,10 +43,11 @@ const rpt = function (texture: Texture) {
 };
 
 const cladding = new MeshStandardMaterial({
-  color: 0x444444,
-  emissive: new Color(0x000000),
-  emissiveIntensity: 0.4,
-  roughness: 2,
+  color: 0x555555,
+  emissive: new Color(0x222222),
+  emissiveIntensity: 0.1,
+  roughness: 0.95,
+  metalness: 0.1,
 
   map: tl.load(
     "materials/16_steel zinc coated corrugated metal texture-seamless_hr/16_steel zinc coated texture.jpg",
@@ -80,7 +81,8 @@ const a = new MeshStandardMaterial({
     "materials/61_clean fine plaster texture-seamless_hr/61_clean fine plaster_DISPL.jpg",
     rpt
   ),
-  normalScale: new Vector2(1, 0),
+  bumpScale: 0.00001,
+  // normalScale: new Vector2(1, 0),
   // side: DoubleSide,
 });
 const b = new MeshBasicMaterial({ color: "#f2f2f2" });
@@ -88,6 +90,75 @@ const b = new MeshBasicMaterial({ color: "#f2f2f2" });
 // const wallMaterial = [a, a, b, a, a, a];
 // const wallMaterial = a;
 const wallMaterial = [a, b];
+
+// function recomputeUVs(geometry) {
+//   var uvs = [];
+
+//   geometry.computeBoundingBox();
+
+//   var min = geometry.boundingBox.min;
+//   var max = geometry.boundingBox.max;
+
+//   console.log(min, max);
+
+//   var position = geometry.getAttribute("position");
+
+//   var a = new Vector3();
+//   var b = new Vector3();
+//   var c = new Vector3();
+
+//   var plane = new Plane();
+
+//   for (var i = 0; i < position.count; i += 3) {
+//     a.fromBufferAttribute(position, i);
+//     b.fromBufferAttribute(position, i + 1);
+//     c.fromBufferAttribute(position, i + 2);
+
+//     plane.setFromCoplanarPoints(a, b, c);
+//     var normal = plane.normal;
+
+//     var u, v;
+
+//     var xRange = max.x - min.x;
+//     var yRange = max.y - min.y;
+//     var zRange = max.z - min.z;
+
+//     if (normal.x === 1 || normal.x === -1) {
+//       uvs.push((a.y - min.y) / yRange);
+//       uvs.push((a.z - min.z) / zRange);
+
+//       uvs.push((b.y - min.y) / yRange);
+//       uvs.push((b.z - min.z) / zRange);
+
+//       uvs.push((c.y - min.y) / yRange);
+//       uvs.push((c.z - min.z) / zRange);
+//     }
+
+//     if (normal.y === 1 || normal.y === -1) {
+//       uvs.push((a.x - min.x) / xRange);
+//       uvs.push((a.z - min.z) / zRange);
+
+//       uvs.push((b.x - min.x) / xRange);
+//       uvs.push((b.z - min.z) / zRange);
+
+//       uvs.push((c.x - min.x) / xRange);
+//       uvs.push((c.z - min.z) / zRange);
+//     }
+
+//     if (normal.z === 1 || normal.z === -1) {
+//       uvs.push((a.x - min.x) / xRange);
+//       uvs.push((a.y - min.y) / yRange);
+
+//       uvs.push((b.x - min.x) / xRange);
+//       uvs.push((b.y - min.y) / yRange);
+
+//       uvs.push((c.x - min.x) / xRange);
+//       uvs.push((c.y - min.y) / yRange);
+//     }
+//   }
+
+//   geometry.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
+// }
 
 const Wall = ({ bg, n, t, t2, bg2 }) => {
   const windows = useStore((store) => store.prefs.windows);
@@ -104,24 +175,46 @@ const Wall = ({ bg, n, t, t2, bg2 }) => {
   const innerWall = new Mesh(innerWallGeom, wallMaterial);
   const outerWall = new Mesh(outerWallGeom, cladding);
 
-  let finalInnerWallMesh: Mesh;
-  let finalOuterWallMesh: Mesh;
+  let finalInnerWallMesh: Mesh = innerWall;
+  let finalOuterWallMesh: Mesh = outerWall;
 
   if (windows) {
-    finalInnerWallMesh = CSG.subtract(
-      innerWall,
-      new Mesh(windowGeom),
-      wallMaterial
-    ) as Mesh;
+    const window = new Mesh(windowGeom);
+    window.updateMatrix();
 
-    finalOuterWallMesh = CSG.subtract(
-      outerWall,
-      new Mesh(windowGeom),
-      cladding
-    ) as Mesh;
-  } else {
-    finalInnerWallMesh = innerWall;
-    finalOuterWallMesh = outerWall;
+    finalInnerWallMesh.updateMatrix();
+    const bspInnerWall = CSG.fromMesh(finalInnerWallMesh);
+    const bspWindow = CSG.fromMesh(window);
+
+    finalInnerWallMesh = CSG.toMesh(
+      bspInnerWall.subtract(bspWindow),
+      finalInnerWallMesh.matrix
+    );
+    finalInnerWallMesh.material = wallMaterial;
+
+    finalOuterWallMesh.updateMatrix();
+    const bspOuterWall = CSG.fromMesh(finalOuterWallMesh);
+    // const bspWindow = CSG.fromMesh(window);
+
+    finalOuterWallMesh = CSG.toMesh(
+      bspOuterWall.subtract(bspWindow),
+      finalOuterWallMesh.matrix
+    );
+    finalOuterWallMesh.material = cladding;
+
+    // finalInnerWallMesh = CSG.subtract(
+    //   innerWall,
+    //   new Mesh(windowGeom),
+    //   wallMaterial
+    // ) as Mesh;
+
+    // finalOuterWallMesh = CSG.subtract(
+    //   outerWall,
+    //   new Mesh(windowGeom),
+    //   cladding
+    // ) as Mesh;
+    // finalOuterWallMesh.geometry.computeVertexNormals();
+    // finalOuterWallMesh.geometry.computeBoundingBox();
   }
 
   const v = new Vector3();

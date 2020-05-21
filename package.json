@@ -35,6 +35,7 @@
     "react-use-gesture": "^7.0.15",
     "rxjs": "^6.5.5",
     "three": "^0.116.1",
+    "three-csg-ts": "^1.0.4",
     "zustand": "^2.2.3"
   },
   "devDependencies": {
