@@ -39,15 +39,15 @@ const tl = new TextureLoader();
 
 const rpt = function (texture: Texture) {
   texture.wrapS = texture.wrapT = RepeatWrapping;
-  texture.repeat.set(1, 1);
+  texture.repeat.set(1.2, 1.2);
 };
 
 const cladding = new MeshStandardMaterial({
   color: 0x555555,
   emissive: new Color(0x222222),
   emissiveIntensity: 0.1,
-  roughness: 0.95,
-  metalness: 0.1,
+  roughness: 0.75,
+  metalness: 0.2,
 
   map: tl.load(
     "materials/16_steel zinc coated corrugated metal texture-seamless_hr/16_steel zinc coated texture.jpg",
@@ -57,7 +57,7 @@ const cladding = new MeshStandardMaterial({
     "public/materials/16_steel zinc coated corrugated metal texture-seamless_hr/16_steel zinc coated_NORM.jpg",
     rpt
   ),
-  normalScale: new Vector2(1, 0),
+  normalScale: new Vector2(10, 10),
 
   // side: DoubleSide,
 });
@@ -65,7 +65,7 @@ const cladding = new MeshStandardMaterial({
 const a = new MeshStandardMaterial({
   // color: "white",
   emissive: new Color(0xffffff),
-  emissiveIntensity: 0.1,
+  emissiveIntensity: 0.14,
   polygonOffsetUnits: 0.1,
   roughness: 2,
 

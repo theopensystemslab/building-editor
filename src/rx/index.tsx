@@ -29,8 +29,8 @@ export const [useStore] = create((set) => ({
   controlsEnabled: true,
   prefs: {
     permanentGrid: false,
-    shadows: process.env.NODE_ENV === "production",
-    antialias: process.env.NODE_ENV === "production",
+    shadows: true, // process.env.NODE_ENV === "production",
+    antialias: true, //process.env.NODE_ENV === "production",
     background: "#207AC3",
     windows: true,
   },
@@ -111,8 +111,8 @@ const Editor = () => {
       //   })
       // }
     >
-      <ambientLight intensity={0.9} />
-      <directionalLight position={[10, 13, 10]} intensity={0.45} castShadow />
+      <ambientLight intensity={0.85} />
+      <directionalLight position={[10, 15, 10]} intensity={0.45} castShadow />
 
       <Structure />
 
