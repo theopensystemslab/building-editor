@@ -35,7 +35,10 @@
     "101__building_thoroughfare": {},
     "102__family_of_entrances": {},
     "104__site_repair": {},
-    "105__south-facing_outdoors": {},
+    "105__south-facing_outdoors": {
+      "page": 514,
+      "description": "People use open space if it is sunny, and do not use it if it isn't, in all but desert climates."
+    },
     "106__positive_outdoor_space": {},
     "107__wings_of_light": {
       "page": 525,
@@ -62,7 +65,10 @@
       "page": 610,
       "description": "Unless the spaces in a building are arranged in a sequence which corresponds to their degrees of privateness, the visits made by strangers, friends, guests, clients, family, will always be a little awkward."
     },
-    "128__indoor-sunlight": {},
+    "128__indoor_sunlight": {
+      "page": 615,
+      "description": "If the right rooms are facing south, a house is bright and sunny and cheerful; if the wrong rooms are facing south, the house is dark and gloomy."
+    },
     "129__common_areas_at_the_heart": {},
     "130__entrance_room": {
       "page": 623,
@@ -192,6 +198,8 @@
 
     ["096__number_of_storeys", "021__four_storey_limit"],
 
+    ["105__south-facing_outdoors", "104__site_repair"],
+
     ["107__wings_of_light", "105__south-facing_outdoors"],
     ["107__wings_of_light", "106__positive_outdoor_space"],
     ["107__wings_of_light", "075__the_family"],
@@ -226,6 +234,9 @@
     ["127__intimacy_gradient", "107__wings_of_light"],
     ["127__intimacy_gradient", "096__number_of_storeys"],
     ["127__intimacy_gradient", "110__main_entrance"],
+
+    ["128__indoor_sunlight", "105__south-facing_outdoors"],
+    ["128__indoor_sunlight", "127__intimacy_gradient"],
 
     ["130__entrance_room", "102__family_of_entrances"],
     ["130__entrance_room", "110__main_entrance"],
@@ -266,7 +277,7 @@
     ["159__light_on_two_sides_of_every_room", "116__cascade_of_roofs"],
 
     ["162__north_face", "105__south-facing_outdoors"],
-    ["162__north_face", "128__indoor-sunlight"],
+    ["162__north_face", "128__indoor_sunlight"],
     ["162__north_face", "161__sunny_place"],
 
     ["167__six-foot_balcony", "119__arcades"],
