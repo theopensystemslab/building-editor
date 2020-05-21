@@ -84,9 +84,9 @@ const Sidebar = () => {
       <Input
         label="background"
         options={[
-          { label: "paper", value: "#dfded7" },
           { label: "blueprint", value: "#207AC3" },
           { label: "dark", value: "#111" },
+          { label: "paper", value: "#dfded7" },
         ]}
       />
     </div>

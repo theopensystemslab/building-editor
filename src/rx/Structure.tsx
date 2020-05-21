@@ -18,6 +18,8 @@ import {
 import { GRID_SIZE, useStore } from ".";
 import CSG from "../utils/three-csg";
 
+const wallWidth = 0.3;
+
 const onBeforeRender = (v, normal) =>
   function (renderer, scene, camera, geometry, material, group) {
     if (
@@ -40,26 +42,22 @@ const rpt = function (texture: Texture) {
   texture.repeat.set(1, 1);
 };
 
-const zinc = new MeshStandardMaterial({
+const cladding = new MeshStandardMaterial({
   color: 0x444444,
-  emissive: new Color(0x111111),
-  emissiveIntensity: 0.1,
-  // polygonOffsetUnits: 0.1,
+  emissive: new Color(0x000000),
+  emissiveIntensity: 0.4,
   roughness: 2,
 
   map: tl.load(
     "materials/16_steel zinc coated corrugated metal texture-seamless_hr/16_steel zinc coated texture.jpg",
     rpt
   ),
-  // normalMap: tl.load(
-  //   "materials/61_clean fine plaster texture-seamless_hr/61_clean fine plaster_NORM.jpg",
-  //   rpt
-  // ),
   normalMap: tl.load(
     "public/materials/16_steel zinc coated corrugated metal texture-seamless_hr/16_steel zinc coated_NORM.jpg",
     rpt
   ),
-  // normalScale: new Vector2(1, 0),
+  normalScale: new Vector2(1, 0),
+
   // side: DoubleSide,
 });
 
@@ -91,43 +89,65 @@ const b = new MeshBasicMaterial({ color: "#f2f2f2" });
 // const wallMaterial = a;
 const wallMaterial = [a, b];
 
-const Wall = ({ bg, n, t }) => {
+const Wall = ({ bg, n, t, t2, bg2 }) => {
   const windows = useStore((store) => store.prefs.windows);
 
   const innerWallGeom = new BoxGeometry(...bg);
   innerWallGeom.translate(t[0], t[1], t[2]);
 
+  const outerWallGeom = new BoxGeometry(...bg2);
+  outerWallGeom.translate(t2[0], t2[1], t2[2]);
+
   const windowGeom = new BoxGeometry(3, 1.5, 1);
   windowGeom.translate(t[0], t[1], t[2]);
 
-  const m1 = new Mesh(innerWallGeom, wallMaterial);
+  const innerWall = new Mesh(innerWallGeom, wallMaterial);
+  const outerWall = new Mesh(outerWallGeom, cladding);
 
-  let finalWallMesh: Mesh;
+  let finalInnerWallMesh: Mesh;
+  let finalOuterWallMesh: Mesh;
+
   if (windows) {
-    const m2 = new Mesh(windowGeom, wallMaterial);
-    finalWallMesh = CSG.subtract(m1, m2, wallMaterial) as Mesh;
+    finalInnerWallMesh = CSG.subtract(
+      innerWall,
+      new Mesh(windowGeom),
+      wallMaterial
+    ) as Mesh;
+
+    finalOuterWallMesh = CSG.subtract(
+      outerWall,
+      new Mesh(windowGeom),
+      cladding
+    ) as Mesh;
   } else {
-    finalWallMesh = m1;
+    finalInnerWallMesh = innerWall;
+    finalOuterWallMesh = outerWall;
   }
 
-  finalWallMesh.onAfterRender = onAfterRender;
-  finalWallMesh.receiveShadow = true;
-  finalWallMesh.castShadow = true;
-  (finalWallMesh.geometry as Geometry).faces.forEach((face) => {
+  const v = new Vector3();
+  const normal = new Vector3(...n);
+
+  finalInnerWallMesh.onBeforeRender = finalOuterWallMesh.onBeforeRender = onBeforeRender(
+    v,
+    normal
+  );
+
+  finalInnerWallMesh.onAfterRender = finalOuterWallMesh.onAfterRender = onAfterRender;
+  finalInnerWallMesh.receiveShadow = finalOuterWallMesh.receiveShadow = true;
+  finalInnerWallMesh.castShadow = finalOuterWallMesh.castShadow = true;
+
+  (finalInnerWallMesh.geometry as Geometry).faces.forEach((face) => {
     face.materialIndex =
       face.normal.y === 1 &&
-      (finalWallMesh.geometry as Geometry).vertices[face.a].y > 0
+      (finalInnerWallMesh.geometry as Geometry).vertices[face.a].y > 0
         ? 1
         : 0;
   });
 
-  const v = new Vector3();
-  const normal = new Vector3(...n);
-  finalWallMesh.onBeforeRender = onBeforeRender(v, normal);
-
   return (
     <>
-      <primitive object={finalWallMesh} name="innerWall" />
+      <primitive object={finalInnerWallMesh} name="innerWall" />
+      <primitive object={finalOuterWallMesh} name="outerWall" />
     </>
   );
 };
@@ -164,7 +184,6 @@ const Structure = () => {
 
   const floorHeight = 0.1;
   const wallHeight = hanger.height - floorHeight;
-  const wallWidth = 0.3;
 
   const floorGeo = new BoxBufferGeometry(
     hanger.width,
@@ -237,23 +256,31 @@ const Structure = () => {
           <Wall
             bg={[wallWidth, wallHeight, hanger.length]}
             t={[(hanger.width - wallWidth) / 2, 0, 0]}
+            bg2={[0.1, wallHeight + 0.15, hanger.length + wallWidth * 2]}
+            t2={[hanger.width / 2 + 0.05, 0, 0]}
             n={[-1, 0, 0]}
           />
           <Wall
             bg={[wallWidth, wallHeight, hanger.length]}
             t={[(-hanger.width + wallWidth) / 2, 0, 0]}
+            bg2={[0.1, wallHeight + 0.15, hanger.length + wallWidth * 2]}
+            t2={[-hanger.width / 2 - 0.05, 0, 0]}
             n={[1, 0, 0]}
           />
 
           <Wall
             bg={[hanger.width, wallHeight, wallWidth]}
             t={[0, 0, -hanger.length / 2 - wallWidth / 2]}
+            bg2={[hanger.width + 0.2, wallHeight + 0.15, 0.1]}
+            t2={[0, 0, -hanger.length / 2 - wallWidth - 0.05]}
             n={[0, 0, 1]}
           />
 
           <Wall
             bg={[hanger.width, wallHeight, wallWidth]}
             t={[0, 0, hanger.length / 2 + wallWidth / 2]}
+            bg2={[hanger.width + 0.2, wallHeight + 0.15, 0.1]}
+            t2={[0, 0, hanger.length / 2 + wallWidth + 0.05]}
             n={[0, 0, -1]}
           />
         </group>

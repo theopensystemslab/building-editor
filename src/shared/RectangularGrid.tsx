@@ -32,7 +32,11 @@ const RectangularGrid: React.FC<IReactangularGrid> = ({
   color = "red",
   dashed = false,
 }) => {
-  const permanentGrid = useStore((store) => store.prefs.permanentGrid);
+  const [permanentGrid, controlsEnabled] = useStore((store) => [
+    store.prefs.permanentGrid,
+    store.controlsEnabled,
+  ]);
+
   const gridGeometry = useMemo(() => {
     const geometry = new BufferGeometry();
 
@@ -87,7 +91,7 @@ const RectangularGrid: React.FC<IReactangularGrid> = ({
     });
   }, [color, dashed]);
 
-  if (permanentGrid) {
+  if (!controlsEnabled || permanentGrid) {
     material.blending = AdditiveBlending;
     material.depthTest = false;
   } else {
