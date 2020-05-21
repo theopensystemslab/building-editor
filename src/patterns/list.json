@@ -1,0 +1,207 @@
+{
+  "patterns": {
+    "014__identifiable_neighbourhood": {},
+    "021__four_storey_limit": {},
+    "026__life_cycle": {},
+    "029__density_rings": {},
+    "035__household_mix": {
+      "page": 189,
+      "description": "No one stage in the life cycle is self-sufficient."
+    },
+    "036__degrees_of_publicness": {},
+    "037__house_cluster": {
+      "page": 198,
+      "description": "People will not feel comfortable in their houses unless a group of houses forms a cluster, with the public land between them jointly owned by all the householders."
+    },
+    "041__work-community": {},
+    "075__the_family": {},
+    "076__house_for_a_small_family": {},
+    "077__house_for_a_couple": {
+      "page": 386,
+      "description": "In a small household shared by two, the most important problem whcih arises is the possiblity that each may have too little opportunity for solidarity or privacy."
+    },
+    "078__house_for_one_person": {},
+    "080__self-governing_workshops_and_offices": {},
+    "081__small_services_without_red_tape": {},
+    "082__office_connections": {},
+    "083__master_and_apprentices": {},
+    "087__individually_owned_shops": {},
+    "095__building_complex": {},
+    "096__number_of_storeys": {
+      "page": 474,
+      "description": "Within the four-storey height limit, just exactly how high should your buildings be?"
+    },
+    "098__circulation_realms": {},
+    "101__building_thoroughfare": {},
+    "102__family_of_entrances": {},
+    "104__site_repair": {},
+    "105__south_facing_outdoors": {},
+    "106__positive_outdoor_space": {},
+    "107__wings_of_light": {
+      "page": 525,
+      "description": "Modern buildings are often shaped with no concern for natural light- they depend upon almost entirely artificial light. But buildings which displace natural light as the major source of illumination are not fit places to spend the day."
+    },
+    "110__main_entrance": {
+      "page": 541,
+      "description": "Placing the main entrance (or main entrances) is perhaps the single most important step you take during the evolution of a building plan."
+    },
+    "112__entrance_transition": {},
+    "113__car_connection": {},
+    "116__cascade_of_roofs": {},
+    "117__sheltering_roof": {
+      "page": 570,
+      "description": "The roof plays a primal role in our lives. The most primitive buildings are nothing but a roof. If the roof is hidden, if its presence cannot be felt around the building, or if it cannot be used, then people will lack a fundamental sense of shelter."
+    },
+    "118__roof_garden": {},
+    "127__intimacy_gradient": {
+      "page": 610,
+      "description": "Unless the spaces in a building are arranged in a sequence which corresponds to their degrees of privateness, the visits made by strangers, friends, guests, clients, family, will always be a little awkward."
+    },
+    "129__common_areas_at_the_heart": {},
+    "130__entrance_room": {
+      "page": 623,
+      "description": "Arriving in a building, or leaving it, you need a room to pass through, both inside the building and outside it. This is the entrance room."
+    },
+    "131__flow_through_rooms": {
+      "page": 628,
+      "description": "The movement between rooms is as important as the rooms themselves; and its arrangement has as much effect on social interaction in the rooms, as the interiors of the rooms"
+    },
+    "132__short_passages": {
+      "page": 633,
+      "description": "“... long, sterile corridors set the scene for everything bad about modern architecture.”"
+    },
+    "133__staircase_as_a_stage": {
+      "page": 638,
+      "description": "A staircase is not just a way of getting from one floor to another. The stair is itself a space, a volume, a part of the building; and unless this space is made to live, it will be a dead spot, and work to disconnect the building and to tear its process apart."
+    },
+    "135__tapestry_of_light_and_dark": {},
+    "140__private_terrace_on_the_street": {},
+    "142__sequence_of_sitting_spaces": {},
+    "190__ceiling_height_variety": {},
+    "196__corner_doors": {
+      "page": 904,
+      "description": "The success of a room depends to a great extent on the position of the doors. If the doors create a pattern of movement which destroys the places in the room, the room will never allow people to be comfortable"
+    },
+    "206__efficient_structure": {},
+    "209__roof_layout": {
+      "page": 971,
+      "description": "What kind of roof plan is organically related to the nature of your building?"
+    },
+    "210__floor_and_ceiling_layout": {
+      "page": 978,
+      "description": "Again, the basic problem is to maintain the integrity of the social spaces in the plan"
+    }
+  },
+  "relationships": [
+    ["035__household_mix", "014__identifiable_neighbourhood"],
+    ["035__household_mix", "037__house_cluster"],
+    ["035__household_mix", "041__work-community"],
+    ["035__household_mix", "026__life_cycle"],
+
+    [
+      "037__house_cluster",
+      "014__identifiable_neighbourhood",
+      "is the cluster of a dozen houses."
+    ],
+    ["037__house_cluster", "029__density_rings"],
+    ["037__house_cluster", "035__household_mix"],
+    ["037__house_cluster", "036__degrees_of_publicness"],
+
+    [
+      "077__house_for_a_couple",
+      "075__the_family",
+      "ideally, every couple is part of a larger group household"
+    ],
+    [
+      "077__house_for_a_couple",
+      "037__house_cluster",
+      "if this can not be so, try to build the house for the couple in such a way as to tie it together with some other households, to form the beginnings of a group household, or, if this fails at least to form the beginnings of a {{037__house_cluster}}"
+    ],
+
+    [
+      "096__number_of_storeys",
+      "095__building_complex",
+      "...assume now, that you know roughly how the parts of the building complex are to be articulated {{095__building_complex}}"
+    ],
+
+    ["096__number_of_storeys", "021__four_storey_limit"],
+
+    ["107__wings_of_light", "105__south_facing_outdoors"],
+    ["107__wings_of_light", "106__positive_outdoor_space"],
+    ["107__wings_of_light", "075__the_family"],
+    ["107__wings_of_light", "076__house_for_a_small_family"],
+    ["107__wings_of_light", "077__house_for_a_couple"],
+    ["107__wings_of_light", "078__house_for_one_person"],
+    ["107__wings_of_light", "080__self-governing_workshops_and_offices"],
+    ["107__wings_of_light", "081__small_services_without_red_tape"],
+    ["107__wings_of_light", "082__office_connections"],
+    ["107__wings_of_light", "083__master_and_apprentices"],
+    ["107__wings_of_light", "087__individually_owned_shops"],
+
+    ["110__main_entrance", "104__site_repair"],
+    ["110__main_entrance", "105__south_facing_outdoors"],
+    ["110__main_entrance", "107__wings_of_light"],
+    [
+      "110__main_entrance",
+      "098__circulation_realms",
+      "You also have an idea of the major circulation in the building complex and the lines of approach which lead toward the building"
+    ],
+    [
+      "110__main_entrance",
+      "102__family_of_entrances",
+      "You also have an idea of the major circulation in the building complex and the lines of approach which lead toward the building"
+    ],
+
+    ["117__sheltering_roof", "107__wings_of_light"],
+    ["117__sheltering_roof", "116__cascade_of_roofs"],
+
+    ["127__intimacy_gradient", "107__wings_of_light"],
+    ["127__intimacy_gradient", "096__number_of_storeys"],
+    ["127__intimacy_gradient", "110__main_entrance"],
+
+    ["130__entrance_room", "102__family_of_entrances"],
+    ["130__entrance_room", "110__main_entrance"],
+    ["130__entrance_room", "112__entrance_transition"],
+    ["130__entrance_room", "113__car_connection"],
+    ["130__entrance_room", "140__private_terrace_on_the_street"],
+
+    ["131__flow_through_rooms", "127__intimacy_gradient"],
+    ["131__flow_through_rooms", "129__common_areas_at_the_heart"],
+
+    [
+      "132__short_passages",
+      "101__building_thoroughfare",
+      "when there has to be a passage in an office or a house and when it is too small to be a {{101__building_thoroughfare}}, it must be treated very specially, as if it were itself a room"
+    ],
+    ["132__short_passages", "098__circulation_realms"],
+    ["132__short_passages", "131__flow_through_rooms"],
+
+    ["133__staircase_as_a_stage", "110__main_entrance"],
+    ["133__staircase_as_a_stage", "131__flow_through_rooms"],
+    ["133__staircase_as_a_stage", "132__short_passages"],
+
+    ["196__corner_doors", "131__flow_through_rooms"],
+    [
+      "196__corner_doors",
+      "142__sequence_of_sitting_spaces",
+      "leave small corners for sitting, uninterrupted by doors"
+    ],
+    [
+      "196__corner_doors",
+      "135__tapestry_of_light_and_dark",
+      "every door, if glazed and near a window, will create a natural pool of light that people gravitate towards"
+    ],
+
+    ["209__roof_layout", "116__cascade_of_roofs"],
+    ["209__roof_layout", "117__sheltering_roof"],
+    [
+      "209__roof_layout",
+      "118__roof_garden",
+      "you know where the roof is flat to form {{118__roof_garden}}s next to rooms at different floors"
+    ],
+
+    ["210__floor_and_ceiling_layout", "206__efficient_structure"],
+    ["210__floor_and_ceiling_layout", "190__ceiling_height_variety"],
+    ["210__floor_and_ceiling_layout", "209__roof_layout"]
+  ]
+}
