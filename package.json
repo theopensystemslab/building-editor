@@ -26,6 +26,7 @@
     "cytoscape": "^3.15.0",
     "cytoscape-cose-bilkent": "^4.1.0",
     "drei": "^0.0.40",
+    "durable": "^2.0.34",
     "graphlib": "^2.1.8",
     "immer": "^6.0.5",
     "ramda": "^0.27.0",

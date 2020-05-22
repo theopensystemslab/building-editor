@@ -103,9 +103,10 @@ const PatternGraph = () => {
     if (!cy) return;
 
     const ids = Object.entries(patterns)
-      .filter(([id]) => {
-        return id.includes(filter);
-        // ((v as any).description && (v as any).description.includes(filter))
+      .filter(([id, { description }]: any) => {
+        return (
+          id.includes(filter) || (description && description.includes(filter))
+        );
       })
       .map(([k]) => k);
 
