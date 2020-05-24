@@ -28,6 +28,7 @@
     "drei": "^0.0.40",
     "graphlib": "^2.1.8",
     "immer": "^6.0.5",
+    "mobx": "^5.15.4",
     "ramda": "^0.27.0",
     "react": "^16.13.1",
     "react-cytoscapejs": "^1.2.1",
