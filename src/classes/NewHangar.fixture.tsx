@@ -28,11 +28,11 @@ export interface Point {
 const faceUtils = function () {};
 faceUtils.vertexHash = function (geometry) {
   geometry.vertexHash = [];
-  var faces = geometry.faces;
-  var vLen = geometry.vertices.length;
-  for (var i = 0; i < vLen; i++) {
+  const faces = geometry.faces;
+  const vLen = geometry.vertices.length;
+  for (let i = 0; i < vLen; i++) {
     geometry.vertexHash[i] = [];
-    for (var f in faces) {
+    for (const f in faces) {
       if (faces[f].a === i || faces[f].b === i || faces[f].c === i) {
         geometry.vertexHash[i].push(faces[f]);
       }
@@ -65,13 +65,13 @@ faceUtils.prototype.getCoplanar = function (
     faceUtils.vertexHash(geometry);
   }
   this.pendingRecursive++;
-  var vertexes = ["a", "b", "c"];
-  for (var i in vertexes) {
-    var vertexIndex = face[vertexes[i]];
-    var adjacentFaces = geometry.vertexHash[vertexIndex];
-    for (var a in adjacentFaces) {
-      var newface = adjacentFaces[a];
-      var testF = this.originFace;
+  const vertexes = ["a", "b", "c"];
+  for (const i in vertexes) {
+    const vertexIndex = face[vertexes[i]];
+    const adjacentFaces = geometry.vertexHash[vertexIndex];
+    for (const a in adjacentFaces) {
+      const newface = adjacentFaces[a];
+      let testF = this.originFace;
       if (clamp === false) {
         testF = face;
       }
@@ -130,7 +130,7 @@ class Hangar {
     });
 
     geometry.faces.forEach((face) => {
-      var faceTools = new faceUtils();
+      const faceTools = new faceUtils();
       console.log(faceTools.getCoplanar(10, geometry, face));
     });
 

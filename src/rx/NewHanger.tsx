@@ -11,7 +11,7 @@ import { coplanarStuff } from "./utils";
 
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
-let intersects = new THREE.Vector3();
+const intersects = new THREE.Vector3();
 const plane = new THREE.Plane();
 
 const linesMaterial = new THREE.LineBasicMaterial({

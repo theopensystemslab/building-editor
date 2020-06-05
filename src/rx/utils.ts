@@ -47,7 +47,7 @@ export const coplanarStuff = (
   );
 
   const faces = geometry.faces.filter(({ normal: otherNormal }) => {
-    let match = compare(normal, otherNormal);
+    const match = compare(normal, otherNormal);
     // for (let i = 0; i < vertices.length; i++) {
     //   if (compare(normal, otherNormal)) return (match = true);
     //   if (compare(vertices[b], vertices[i])) return (match = true);

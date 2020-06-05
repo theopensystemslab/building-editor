@@ -19,7 +19,7 @@ import { coplanarStuff } from "./utils";
 
 const raycaster = new Raycaster();
 const mouse = new Vector2();
-let intersects = new Vector3();
+const intersects = new Vector3();
 
 const linesMaterial = new LineBasicMaterial({
   color: "#50B8F8",
