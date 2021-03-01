@@ -11258,10 +11258,10 @@ three-csg-ts@^1.0.4:
   resolved "https://registry.yarnpkg.com/three-csg-ts/-/three-csg-ts-1.0.4.tgz#0e41d283430e6c8f268dac65f3e8170b96a3595c"
   integrity sha512-XdCG2CXt+N+K45KAbZZN/PqEC2aRPItVpACeG24lGGlXxsQmKeih7CjT0Y6Q/a0IGnF7pgI0DAcuARz6vv9gNg==
 
-three@^0.116.1:
-  version "0.116.1"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.116.1.tgz#a393f7a81fdc3e2fbf57ded5ba47dc5bd3678ce0"
-  integrity sha512-l2JCMiA/lVZAuSrLWRYMalvpR+0j8hbIhCpfs4V6JFnw2+JQEQJ5HltNpfFr+9TDpQts1BhtcISehWf/xBGPvQ==
+three@^0.125.0:
+  version "0.125.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.125.0.tgz#19e922b9dc51ad0b706893aeee888de68e99850a"
+  integrity sha512-qL36qUGsPQ/Ofo/RZdXwHwM7A8wzUSAIyawtjIebJSPvounUQeneSqxI0aBY2iwKpseGy+RUtj3C5f/z4poyXw==
 
 throat@^4.0.0:
   version "4.1.0"
